@@ -9,22 +9,29 @@
 
 void usage()
 {
-	printf
-	    ("Handles switches and rotary encoders connected to GPIOs using the portable libgpiod kernel interface.\n");
-	printf
-	    ("Optionally creates JACK MIDI CC messages at %s:%s.\n", JACK_CLIENT_NAME, JACK_PORT_NAME);
-	printf
-	    ("All pins are pulled up, so the return connectors be connected to ground.\n\n");
-	printf("-h|--help                  This help.\n");
-	printf("-v|--verbose               Print current controller values.\n");
-	printf
-	    ("-J|--jack-rotary clk,dt,midi_ch,midi_cc,step\n");
-	printf
-	    ("-A|--amixer-rotary clk,dt,mixer_scontrol,step\n");
-	printf
-	    ("-j|--jack-switch sw,midi_ch,midi_cc,toggled\n");
-	printf
-	    ("-a|--amixer-mute sw,mixer_scontrol\n");
+	printf("\n%s handles switches and rotary encoders connected to GPIOs, using\n", JACK_CLIENT_NAME);
+	printf("the portable libgpiod kernel interface, to create JACK MIDI CC messages\n");
+	printf("at %s:%s or directly interact with an ALSA mixer control.\n", JACK_CLIENT_NAME, JACK_PORT_NAME);
+	printf("All GPI pins are pulled up, so the return should be connected to ground.\n\n");
+	printf("-h|--help    This help.\n");
+	printf("-v|--verbose Print current controller values.\n");
+	printf("-J|--jack-rotary clk,dt,ch,cc,step\n");
+	printf("               Set up a rotary encoder on pins [clk] and [dt], and create MIDI\n");
+	printf("               messages on channel [ch] for CC no. [cc] with step size [step].\n"); 
+	printf("-A|--amixer-rotary clk,dt,name,step\n");
+	printf("               Set up a rotary encoder on pins [clk] and [dt], and control\n");
+	printf("               ALSA mixer element [name] with step size [step].\n");
+	printf("               Use 'amixer scontrols' to get a list.\n"); 
+	printf("-j|--jack-switch sw,ch,cc,toggled\n");
+	printf("               Set up a switch on pin [sw], and create MIDI messages on channel\n");    
+	printf("               [ch] for CC no. [cc]. If [toggled] is 0, the switch will send\n");
+	printf("               value '127' when pressed, and '0' when released. With [toggled]\n");
+	printf("               at 1, one press will latch it to '127', and the next one will\n");
+	printf("               release it to '0'.\n");
+	printf("-a|--amixer-mute sw,mixer_scontrol\n");
+	printf("               Set up a switch on pin [sw], and toggle the MUTE status on ALSA\n");
+	printf("               mixer element [name].\n\n");
+	printf("The options [JAja] may be specified multiple times.\n\n");
 }
 
 static int tokenize(char* argument, char* config[]) {
@@ -48,6 +55,11 @@ int parse_cmdline(int argc, char *argv[])
 	amixer_rotary_t* ardata;
 	jack_switch_t* jsdata;
 	amixer_mute_t* amdata;
+	
+	if (argc < 3) {
+		ERR("You need to set at least one control.");
+		return EXIT_ERR;
+	}
 	while (1) {
 		static struct option long_options[] = {
 			{"help", no_argument, 0, 'h'},
