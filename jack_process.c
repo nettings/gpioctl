@@ -1,5 +1,4 @@
 #include "jack_process.h"
-#include <stdio.h>
 #include <errno.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -30,8 +29,7 @@ int setup_JACK()
 	jack_nframes_t nframes;
 	if ((client =
 	     jack_client_open(JACK_CLIENT_NAME, JackNullOption, NULL)) == 0) {
-		fprintf(stderr,
-			"Failed to create client. Is the JACK server running?");
+		ERR("Failed to create client. Is the JACK server running?");
 		return -1;
 	}
 	jack_set_process_callback(client, process, 0);
@@ -41,7 +39,7 @@ int setup_JACK()
 	nframes = jack_get_buffer_size(client);
 
 	if (jack_activate(client)) {
-		fprintf(stderr, "Failed to activate client.\n");
+		ERR("Failed to activate client.");
 		return -1;
 	}
 }

@@ -1,7 +1,6 @@
 #include "ringbuffer.h"
 #include <jack/ringbuffer.h>
 #include <pthread.h>
-#include <stdio.h>
 
 // event ringbuffer and lock
 #define BUF_SIZE 128

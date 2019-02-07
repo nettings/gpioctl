@@ -1,7 +1,6 @@
 #include "alsa_process.h"
 #include <alsa/asoundlib.h>
 #include <alsa/mixer.h>
-#include <stdio.h>
 #include "globals.h"
 
 snd_mixer_t *handle = NULL;
@@ -10,7 +9,7 @@ const char *card = "default";
 void setup_ALSA() {
         int err;
         err = snd_mixer_open(&handle, 0);
-        if (err) fprintf(stderr, "Error opening mixer: %s.", err);
+        if (err) ERR("Error opening mixer: %s.", err);
         snd_mixer_attach(handle, card);
         snd_mixer_selem_register(handle, NULL, NULL);
         snd_mixer_load(handle);
@@ -36,7 +35,7 @@ int alsa_set_mixer(char *mixer_scontrol, int step, int val) {
         snd_mixer_selem_get_playback_dB_range(elem, &min, &max);
         snd_mixer_selem_get_playback_dB(elem, 0xffff, &setting);         
         int err = snd_mixer_selem_set_playback_dB_all(elem, setting + (step * val), val);
-        fprintf(stderr, "alsa error: %s\n for setting %d", snd_strerror(err), setting + (step * val));
+        ERR("alsa error: %s for setting %d", snd_strerror(err), setting + (step * val));
 }
 
 int alsa_toggle_mute(char * mixer_scontrol){

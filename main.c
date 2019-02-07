@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -17,7 +16,7 @@ int verbose = 0;
 
 static void signal_handler(int sig)
 {
-	fprintf(stderr, "Received signal, terminating.\n");
+	ERR("Received signal, terminating.");
 	shutdown_ALSA();
 	shutdown_JACK();
 	shutdown_ringbuffer();
@@ -47,24 +46,24 @@ void jackrot_callback(int line, int val) {
 	msg[1] = d->midi_cc;
 	msg[2] = d->counter;
         ringbuffer_write(msg, MSG_SIZE);
-	fprintf(stdout, "JACK:\t<R%d|%d> \t0x%02x%02x%02x\n", line, val, msg[0], msg[1], msg[2]);
+	DBG("\t<R%d|%d> \t0x%02x%02x%02x", line, val, msg[0], msg[1], msg[2]);
 }
 
 void jacksw_callback(int line, int val) {
 	if (val == 0) return;
-	fprintf(stdout, "JACK:<S%d|%d>\n", line, val);
+	DBG("\t<S%d|%d>", line, val);
 }
 
 void alsarot_callback(int line, int val) {
 	amixer_rotary_t* ardata = (amixer_rotary_t*) controllers[line].data; 
-	fprintf(stdout, "ALSA:<R%d|%d>\n", line, val);
+	DBG("\t<R%d|%d>", line, val);
 	alsa_set_mixer(ardata->mixer_scontrol, ardata->step, val);	
 }
 
 void alsasw_callback(int line, int val) {
 	if (val == 0) return;
 	amixer_mute_t* amdata = (amixer_mute_t*) controllers[line].data;
-	fprintf(stdout, "ALSA:<S%d|%d>\n", line, val);
+	DBG("\t<S%d|%d>", line, val);
 	alsa_toggle_mute(amdata->mixer_scontrol);
 }
 
@@ -82,7 +81,7 @@ int main(int argc, char *argv[])
 	}
 	
 	for (int i=0; i < MAXGPIO; i++) {
-		fprintf(stdout, "controllers[%d].type = %d\n", i, controllers[i].type);
+		DBG("controllers[%d].type = %d", i, controllers[i].type);
 		switch (controllers[i].type) {
 			case JACKROT:
 				jrdata = (jack_rotary_t*) controllers[i].data;

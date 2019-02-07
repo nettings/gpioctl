@@ -1,6 +1,5 @@
 #include "gpiod_process.h"
 #include <gpiod.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -58,7 +57,6 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 			     GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
 			dt = gpiod_ctxless_get_value(device, d->aux,
 						     ACTIVE_HIGH, consumer);
-			//fprintf(stdout, "<R%d:%d|%d:%d>\n", line, clk, d->aux, dt);
 			if (clk != dt) {
 				d->cb(line, 1);
 			} else {
@@ -71,9 +69,7 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 		        d->cb(line, sw);
 			break;
 		default:
-			fprintf(stderr,
-				"GPIOD callback: no handler for type %d. THIS SHOULD NEVER HAPPEN.",
-				line_handler[line].type);
+			ERR("No handler for type %d. THIS SHOULD NEVER HAPPEN.", line_handler[line].type);
 			return GPIOD_CTXLESS_EVENT_CB_RET_ERR;
 			break;
 		}
@@ -85,34 +81,33 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 int null_callback(int event, unsigned int line, const struct timespec *timeout,
 		  void *data)
 {
-	fprintf(stderr, "null_callback: This should never be called.\n");
+	ERR("This should never be called.");
 	return GPIOD_CTXLESS_EVENT_CB_RET_ERR;
 }
 
 void setup_gpiod_rotary(int clk, int dt, void (*user_callback))
 {
-	fprintf(stdout, "setup_gpiod_rotary(int clk=%d, int dt=%d, void (*user_callback))\n", clk, dt);
+	DBG("int clk=%d, int dt=%d, void (*user_callback)=%p", clk, dt, user_callback);
 	if (line_handler[clk].type != FREE) {
-		fprintf(stderr,
-			"setup_gpiod_rotary: Line %d is already in use: %d.\n",
-			clk, line_handler[clk].type);
+		ERR("Line %d is already in use: %d.", clk, line_handler[clk].type);
 		return;
 	}
 	if (line_handler[dt].type != FREE) {
-		fprintf(stderr,
-			"setup_gpiod_rotary: Aux %d is already in use: %d.\n",
-			dt, line_handler[dt].type);
+		ERR("Aux %d is already in use: %d.", dt, line_handler[dt].type);
 		return;
 	}
 	if (clk == dt) {
-		fprintf(stderr, 
-			"setup_gpiod_rotary: Line and Aux line cannot both be %d.\n", clk);
+		ERR("Line and Aux line cannot both be %d.", clk);
+		return;
+	}
+	line_t *d = malloc(sizeof(line_t));
+	if (d == NULL) {
+		ERR("malloc() failed.");
 		return;
 	}
 	line_handler[clk].type = ROTARY;
 	line_handler[dt].type = AUX;
 	line_handler[dt].data = NULL;
-	line_t *d = malloc(sizeof(line_t));
 	line_handler[clk].data = d;
 	d->aux = dt;
 	d->ts_last = NEVER;
@@ -122,14 +117,15 @@ void setup_gpiod_rotary(int clk, int dt, void (*user_callback))
 
 void setup_gpiod_switch(int sw, void (*user_callback))
 {
-	//fprintf(stdout, "setup_gpiod_switch(int sw=%d, void (*user_callback))\n", sw);
 	if (line_handler[sw].type != FREE) {
-		fprintf(stderr, 
-			"setup_gpiod_switch: Line %d is already in use: %d.\n",
-			sw, line_handler[sw].type);
+		ERR("Line %d is already in use: %d.", sw, line_handler[sw].type);
 		return;
 	}
 	line_t *d = malloc(sizeof(line_t));
+	if (d == NULL) {
+		ERR("malloc() failed.");
+		return;
+	}
 	line_handler[sw].type = SWITCH;
 	line_handler[sw].data = d;
 	
@@ -160,8 +156,7 @@ void setup_gpiod_handler(char *dev, char *cons)
 	int err = 0;
 	for (int i = 0; i < MAXGPIO; i++) {
 		if (line_handler[i].type > FREE) {
-			fprintf(stdout, "Added Pin %d in position %d.\n", i,
-				num_lines);
+			DBG("Added Pin %d in position %d.", i, num_lines);
 			offsets[num_lines++] = i;
 		}
 	}
@@ -170,6 +165,6 @@ void setup_gpiod_handler(char *dev, char *cons)
 	err = gpiod_ctxless_event_loop_multiple(device, offsets, num_lines,
 					  ACTIVE_HIGH, consumer, FOREVER, NULL,
 					  callback, NULL);
-	fprintf(stderr, "ERROR: %d, %d.", err, errno);
+	ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d.", err, errno);
 }
 

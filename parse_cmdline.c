@@ -31,7 +31,6 @@ static int tokenize(char* argument, char* config[]) {
 	int i=0;
 	config[0] = strtok(argument, ",");
 	while (config[i] != NULL) {
-		//fprintf(stdout, "config[%d] = %s\n", i, config[i]);
 		i++;
 		if (i > 4) break;
 		config[i] = strtok(NULL, ",");
@@ -75,7 +74,7 @@ int parse_cmdline(int argc, char *argv[])
 			case 'J':
 				i = tokenize(optarg, config);
 				if (i != 5) {
-					fprintf(stderr, "-J needs exactly 5 options.\n");
+					ERR("-J needs exactly 5 options.");
 					return EXIT_ERR;
 				}
 				jrdata = (jack_rotary_t *)malloc(sizeof(jack_rotary_t));
@@ -90,7 +89,7 @@ int parse_cmdline(int argc, char *argv[])
 			case 'A':
 				i = tokenize(optarg, config);
 				if (i != 4) {
-					fprintf(stderr, "-A needs exactly 4 options.\n");
+					ERR("-A needs exactly 4 options.");
 					return EXIT_ERR;
 				}
 				ardata = (amixer_rotary_t *)malloc(sizeof(amixer_rotary_t));
@@ -104,7 +103,7 @@ int parse_cmdline(int argc, char *argv[])
 			case 'j':
 				i = tokenize(optarg, config);
 				if (i != 4) {
-					fprintf(stderr, "-j needs exactly 4 options.\n");
+					ERR("-j needs exactly 4 options.");
 					return EXIT_ERR;
 				}
 				jsdata = (jack_switch_t *)malloc(sizeof(jack_rotary_t));
@@ -118,7 +117,7 @@ int parse_cmdline(int argc, char *argv[])
 			case 'a':
 				i = tokenize(optarg, config);
 				if (i != 2) {
-					fprintf(stderr, "-a needs exactly 2 options.\n");
+					ERR("-a needs exactly 2 options.");
 					return EXIT_ERR;
 				}
 				amdata = (amixer_mute_t *)malloc(sizeof(amixer_mute_t));
