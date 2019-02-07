@@ -9,7 +9,7 @@ def options(opt):
 
 def configure(cnf):
 	cnf.load('compiler_c', cache=True)
-	cnf.parse_flags('-g -Wall -Werror', 'DEBUG')
+# FIXME:	cnf.parse_flags('-g -Wall -Werror', 'DEBUG')
 	cnf.check(features='c cshlib', lib='pthread', uselib_store='PTHREAD')
 	cnf.check(features='c cshlib', lib='jack', uselib_store='JACK')
 	cnf.check(features='c cshlib', lib='asound', uselib_store='ASOUND')
