@@ -57,14 +57,14 @@ void jacksw_callback(int line, int val) {
 void alsarot_callback(int line, int val) {
 	amixer_rotary_t* ardata = (amixer_rotary_t*) controllers[line].data; 
 	DBG("\t<R%d|%d>", line, val);
-	alsa_set_mixer(ardata->mixer_scontrol, ardata->step, val);	
+	set_ALSA_mixer_elem(ardata->elem, ardata->step, val);	
 }
 
 void alsasw_callback(int line, int val) {
 	if (val == 0) return;
 	amixer_mute_t* amdata = (amixer_mute_t*) controllers[line].data;
 	DBG("\t<S%d|%d>", line, val);
-	alsa_toggle_mute(amdata->mixer_scontrol);
+	toggle_ALSA_mute(amdata->elem);
 }
 
 int main(int argc, char *argv[])
@@ -79,6 +79,10 @@ int main(int argc, char *argv[])
 		usage();
 		exit(rval);
 	}
+
+	setup_ringbuffer();
+	setup_ALSA();
+	setup_JACK();
 	
 	for (int i=0; i < MAXGPIO; i++) {
 		DBG("controllers[%d].type = %d", i, controllers[i].type);
@@ -93,18 +97,17 @@ int main(int argc, char *argv[])
 				break;
 			case ALSAROT:
 				ardata = (amixer_rotary_t*) controllers[i].data;
+				ardata->elem = setup_ALSA_mixer_handle(ardata->mixer_scontrol);
 				setup_gpiod_rotary(ardata->clk, ardata->dt, &alsarot_callback);
 				break;
 			case ALSASW:
 				amdata = (amixer_mute_t*) controllers[i].data;
+				amdata->elem = setup_ALSA_mixer_handle(amdata->mixer_scontrol);
 				setup_gpiod_switch(amdata->sw, &alsasw_callback);
 				break;
 		}
 	}
 
-	setup_ringbuffer();
-	setup_ALSA();
-	setup_JACK();
 	setup_gpiod_handler(GPIOD_DEVICE, JACK_CLIENT_NAME);
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
