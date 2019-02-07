@@ -11,7 +11,7 @@ is welcome.
 ## Usage
 
 $ ./build/gpioctl -h
-'''
+```
 gpioctl handles switches and rotary encoders connected to GPIOs, using
 the portable libgpiod kernel interface, to create JACK MIDI CC messages
 at gpioctl:midi_out or directly interact with an ALSA mixer control.
@@ -37,7 +37,7 @@ All GPI pins are pulled up, so the return should be connected to ground.
                mixer element [name].
 
 The options [JAja] may be specified multiple times.
-'''
+```
 
 ## Connecting rotary encoders
 
@@ -54,3 +54,8 @@ If you get an edge interrupt on [clk] and both switches are the same (either
 open or closed), you know you just went one click clockwise.
 If the switches are in opposite states, you went one click
 counter-clockwise.
+
+![Figure 1](doc/RaspberryPi3B+_HifiBerryAMP2_ALPSRotaryEnc.jpg "A Raspberry Pi 3B+ and
+HifiBerry AMP2 with an ALPS rotary encoder as Master Volume")
+![Figure 2](doc/Wiring.jpg "The rotary is on the left, with the ground pin
+in the middle tied to the return of the switch on the right.")
