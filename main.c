@@ -30,9 +30,17 @@ void jackrot_callback(int line, int val) {
 	int nbytes;
 
 	if ((val < 0 && d->counter > 0)) {
-		(d->counter)--;
+		if (d->counter > d->step) {
+			d->counter -= d->step;
+		} else{
+			d->counter = 0;
+		}
 	} else 	if ((val > 0 && d->counter < MIDI_MAX)) {
-		(d->counter)++;
+		if (d->counter + d->step < MIDI_MAX) {
+			d->counter += d->step;
+		} else {
+			d->counter = MIDI_MAX;
+		}
 	} else return;
 	
 	msg[0] = (MIDI_CC << 4) + (d->midi_ch - 1);
