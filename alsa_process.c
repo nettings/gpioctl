@@ -42,21 +42,23 @@ int set_ALSA_mixer_elem(snd_mixer_elem_t* elem, int step, int val) {
         long min = 0;
         long max = 0;
         
-        snd_mixer_selem_get_playback_dB_range(elem, &min, &max);
+        snd_mixer_handle_events(handle); // make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
         for (int i=0; i<nch; i++) {
                 err = snd_mixer_selem_get_playback_dB(elem, chlist[i], &chval[i]);         
                 if (err) {
                         ERR("ALSA error getting value for %s ch %d: %s.", snd_mixer_selem_get_name(elem), i, snd_strerror(err));
                 } else {
-                        DBG("ALSA reports current setting for %s ch %d as %d milliBel [%d..%d]", snd_mixer_selem_get_name(elem), i, chval[i], min, max);
+                        DBG("ALSA reports current setting for %s ch %d as %d milliBel", snd_mixer_selem_get_name(elem), i, chval[i]);
                 }
                 chval[i] += (step * val * 100);
                 err = snd_mixer_selem_set_playback_dB(elem, chlist[i], chval[i], val);
+                /* This call creates spurious error conditions even though it succeeds. Deactivate error reporting until fixed.
                 if (err) {
                         ERR("ALSA error: %s while setting %s to %d milliBel", snd_strerror(err), snd_mixer_selem_get_name(elem), chval[i]);
                 } else {
                         DBG("ALSA reports %s while setting %s to %d milliBel", snd_strerror(err), snd_mixer_selem_get_name(elem), chval[i]);
                 }
+                */
         }
 }
 
