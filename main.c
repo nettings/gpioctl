@@ -50,8 +50,22 @@ void jackrot_callback(int line, int val) {
 }
 
 void jacksw_callback(int line, int val) {
-	if (val == 0) return;
-	NFO("Jack Switch\t<%02d|% 2d>", line, val);
+	jack_switch_t* d = (jack_switch_t*) controllers[line].data;
+	unsigned char msg[MSG_SIZE];
+	int nbytes;
+
+	if (d->toggled) {
+		if (val == 0) return;
+		d->value = MIDI_MAX - d->value;
+	} else {
+		d->value = val * MIDI_MAX;
+	}
+	msg[0] = (MIDI_CC << 4) + (d->midi_ch - 1);
+	msg[1] = d->midi_cc;
+	msg[2] = d->value;
+        ringbuffer_write(msg, MSG_SIZE);
+	NFO("Jack Switch\t<%02d|% 2d>\t0x%02x%02x%02x", line, val, msg[0], msg[1], msg[2]);
+	
 }
 
 void alsarot_callback(int line, int val) {
