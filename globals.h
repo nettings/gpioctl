@@ -52,6 +52,7 @@ typedef struct {
         int dt;
         int step;
         char mixer_scontrol[MAXNAME];
+        void* elem;
 } amixer_rotary_t;
 
 typedef struct {
@@ -64,6 +65,7 @@ typedef struct {
 typedef struct {
         int sw;
         char mixer_scontrol[MAXNAME];
+        void* elem;
 } amixer_mute_t;
 
 
