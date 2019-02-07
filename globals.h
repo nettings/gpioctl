@@ -31,8 +31,9 @@ typedef struct {
         int clk;
         int dt;
         int step;
-        int midi_ch;
-        int midi_cc;
+        unsigned char midi_ch;
+        unsigned char midi_cc;
+        unsigned char counter;
 } jack_rotary_t;
 
 typedef struct {
@@ -44,9 +45,9 @@ typedef struct {
 
 typedef struct {
         int sw;
-        int midi_ch;
-        int midi_cc;
-        int toggled;
+        unsigned char midi_ch;
+        unsigned char midi_cc;
+        bool toggled;
 } jack_switch_t;
 
 typedef struct {
