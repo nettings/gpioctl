@@ -17,7 +17,7 @@
 #define ERR(fmt, args...) fprintf(stderr, "%s:%d %s(): \x1b[01;31m" fmt "\x1b[0m\n", __FILE__, __LINE__, __func__, ## args)
 #else
 #define DBG(fmt, args...) 
-#define ERR(fmt, args...) fprintf(stderr, "\x1b[31m"fmt"\x1b[0m\n")
+#define ERR(fmt, args...) fprintf(stderr, "\x1b[31m"fmt"\x1b[0m\n", ## args)
 #endif
 
 
