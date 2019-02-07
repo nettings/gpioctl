@@ -14,6 +14,9 @@ def configure(cnf):
 	cnf.check(features='c cshlib', lib='jack', uselib_store='JACK')
 	cnf.check(features='c cshlib', lib='asound', uselib_store='ASOUND')
 	cnf.check(features='c cshlib', lib='gpiod', uselib_store='GPIOD')
+	cnf.cc_add_flags()
+	cnf.link_add_flags()
+	cnf.cxx_add_flags()
 	
 def build(bld):
 	bld.program(source='main.c', 
