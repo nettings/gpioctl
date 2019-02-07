@@ -46,24 +46,24 @@ void jackrot_callback(int line, int val) {
 	msg[1] = d->midi_cc;
 	msg[2] = d->counter;
         ringbuffer_write(msg, MSG_SIZE);
-	DBG("\t<R%d|%d> \t0x%02x%02x%02x", line, val, msg[0], msg[1], msg[2]);
+	NFO("Jack Rotary\t<%02d|% 2d>\t0x%02x%02x%02x", line, val, msg[0], msg[1], msg[2]);
 }
 
 void jacksw_callback(int line, int val) {
 	if (val == 0) return;
-	DBG("\t<S%d|%d>", line, val);
+	NFO("Jack Switch\t<%02d|% 2d>", line, val);
 }
 
 void alsarot_callback(int line, int val) {
 	amixer_rotary_t* ardata = (amixer_rotary_t*) controllers[line].data; 
-	DBG("\t<R%d|%d>", line, val);
+	NFO("ALSA Rotary\t<%02d|% 2d>", line, val);
 	set_ALSA_mixer_elem(ardata->elem, ardata->step, val);	
 }
 
 void alsasw_callback(int line, int val) {
 	if (val == 0) return;
 	amixer_mute_t* amdata = (amixer_mute_t*) controllers[line].data;
-	DBG("\t<S%d|%d>", line, val);
+	NFO("ALSA Switch\t<%02d|% 2d>", line, val);
 	toggle_ALSA_mute(amdata->elem);
 }
 
