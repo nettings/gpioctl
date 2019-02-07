@@ -20,6 +20,7 @@
 #define ERR(fmt, args...) fprintf(stderr, "\x1b[31m"fmt"\x1b[0m\n", ## args)
 #endif
 
+#define NFO(fmt, args...) if (verbose) fprintf(stdout, fmt "\n", ## args);
 
 int verbose;
 
@@ -59,6 +60,7 @@ typedef struct {
         int sw;
         unsigned char midi_ch;
         unsigned char midi_cc;
+        unsigned char value;
         int toggled;
 } jack_switch_t;
 
