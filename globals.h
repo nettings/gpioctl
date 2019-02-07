@@ -10,11 +10,16 @@
 #define MSG_SIZE 3
 #define MAXNAME 64
 
+#include <stdio.h>
+
 #ifdef DEBUG
-#define DBG(fmt, args...) fprintf(stdout, "%s:%d:%s(): " fmt "\n", __FILE__, __LINE__, __func__,  ## args)
+#define DBG(fmt, args...) fprintf(stdout, "%s:%d %s(): " fmt "\n", __FILE__, __LINE__, __func__,  ## args)
+#define ERR(fmt, args...) fprintf(stderr, "%s:%d %s(): \x1b[01;31m" fmt "\x1b[0m\n", __FILE__, __LINE__, __func__, ## args)
 #else
 #define DBG(fmt, args...) 
+#define ERR(fmt, args...) fprintf(stderr, "\x1b[31m"fmt"\x1b[0m\n")
 #endif
+
 
 int verbose;
 
