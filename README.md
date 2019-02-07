@@ -57,5 +57,26 @@ counter-clockwise.
 
 ![Figure 1](doc/RaspberryPi3B+_HifiBerryAMP2_ALPSRotaryEnc.jpg "A Raspberry Pi 3B+ and
 HifiBerry AMP2 with an ALPS rotary encoder as Master Volume")
+A Raspberry Pi 3B+ with a HifiBerry AMP2 and an ALPS rotary encoder with
+switch connected to the GPIOs. I'm using GPIOs 17 (white), 27 (grey), 6
+(purple) in this example, the ground is black:
+```gpioctl -v -A 17,27,Digital,3 -a 6,Digital```
+
 ![Figure 2](doc/Wiring.jpg "The rotary is on the left, with the ground pin
 in the middle tied to the return of the switch on the right.")
+The wiring side: the rotary connections are visible on the left, with the
+return pin in the middle tied to the return of the switch and grounded.
+The solder blobs at the top and bottom don't do anything, they just secure
+the encoder case in place.
+
+## Controlling the ALSA mixer
+
+In order to find the right mixer control, play some music and look at 
+```amixer scontrols```. Then try to manipulate a control with ```amixer sset
+[YOURCONTROL] 30%```, and see if the playback volume changes.
+
+Once you've found the appropriate control name, plug it into the command
+above (for HifiBerry AMP2 users, it's "Digital").
+If you want to see what's going on, use the -v switch.
+You can also run ```watch -n 0.5 amixer sget [YOURCONTROL]``` in another
+terminal and watch the mixer update live.
