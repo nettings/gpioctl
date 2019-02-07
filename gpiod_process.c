@@ -1,6 +1,5 @@
 #include "gpiod_process.h"
 #include <gpiod.h>
-#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <errno.h>
