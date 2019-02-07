@@ -1,7 +1,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define JACK_CLIENT_NAME "rot2midi"
+#define JACK_CLIENT_NAME "gpioctl"
 #define JACK_PORT_NAME "midi_out"
 #define GPIOD_DEVICE "pinctrl-bcm2835"
 #define MAXGPIO 32
@@ -47,7 +47,7 @@ typedef struct {
         int sw;
         unsigned char midi_ch;
         unsigned char midi_cc;
-        bool toggled;
+        int toggled;
 } jack_switch_t;
 
 typedef struct {
