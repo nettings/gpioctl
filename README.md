@@ -33,7 +33,7 @@ All GPI pins are pulled up, so the return should be connected to ground.
                value '127' when pressed, and '0' when released. With [toggled]
                at 1, one press will latch it to '127', and the next one will
                release it to '0'.
--a|--amixer-mute sw,mixer_scontrol
+-a|--amixer-mute sw,name
                Set up a switch on pin [sw], and toggle the MUTE status on ALSA
                mixer element [name].
 
