@@ -10,6 +10,12 @@
 #define MSG_SIZE 3
 #define MAXNAME 64
 
+#ifdef DEBUG
+#define DBG(fmt, args...) fprintf(stdout, "%s:%d:%s(): " fmt "\n", __FILE__, __LINE__, __func__,  ## args)
+#else
+#define DBG(fmt, args...) 
+#endif
+
 int verbose;
 
 enum ctl_types {
