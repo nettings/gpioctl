@@ -68,6 +68,7 @@ typedef struct {
         int sw;
         char mixer_scontrol[MAXNAME];
         void* elem;
+        int value;
 } amixer_mute_t;
 
 

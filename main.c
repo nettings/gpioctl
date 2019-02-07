@@ -71,14 +71,15 @@ void jacksw_callback(int line, int val) {
 void alsarot_callback(int line, int val) {
 	amixer_rotary_t* ardata = (amixer_rotary_t*) controllers[line].data; 
 	NFO("ALSA Rotary\t<%02d|% 2d>", line, val);
-	set_ALSA_mixer_elem(ardata->elem, ardata->step, val);	
+	set_ALSA_volume(ardata->elem, ardata->step, val);	
 }
 
 void alsasw_callback(int line, int val) {
 	if (val == 0) return;
-	amixer_mute_t* amdata = (amixer_mute_t*) controllers[line].data;
-	NFO("ALSA Switch\t<%02d|% 2d>", line, val);
-	toggle_ALSA_mute(amdata->elem);
+	amixer_mute_t* d = (amixer_mute_t*) controllers[line].data;
+	d->value = 1 - d->value;
+	NFO("ALSA Switch\t<%02d|% 2d>", line, d->value);
+	set_ALSA_mute(d->elem, d->value);
 }
 
 int main(int argc, char *argv[])
@@ -117,6 +118,7 @@ int main(int argc, char *argv[])
 			case ALSASW:
 				amdata = (amixer_mute_t*) controllers[i].data;
 				amdata->elem = setup_ALSA_mixer_handle(amdata->mixer_scontrol);
+				amdata->value = 1; //default to on
 				setup_gpiod_switch(amdata->sw, &alsasw_callback);
 				break;
 		}
