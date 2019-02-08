@@ -103,4 +103,23 @@ You can also run
 ```
 $ watch -n 0.5 amixer sget [YOURCONTROL]
 ```
+or
+```
+$ alsamixer
+```
 in another terminal and watch the mixer update live.
+
+## Building gpioctl
+
+In addition to the usual system header files, gpioctl requires
+`libgpiod-dev`, either `libjack-jackd2-dev` or `libjack-dev` (untested), and
+`libasound2-dev`.
+
+It uses waf as a build system. My understanding of it is very limited. For
+now, from the root your working copy do
+```
+$ CFLAGS="-DDEBUG -g" ./waf configure
+$ ./waf
+```
+Install/uninstall targets are not yet supported. To use the code in
+production, unset the CFLAGS and run `./waf configure` and `./waf` again.
