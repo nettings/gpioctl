@@ -46,6 +46,12 @@ void usage()
 	    ("               Set up a switch on pin [sw], and toggle the MUTE status on ALSA\n");
 	printf("               mixer element [name].\n\n");
 	printf("The options [JAja] may be specified multiple times.\n\n");
+	printf
+	    ("Pin numbers below are hardware GPIO numbers. They do not usually correspond\n");
+	printf
+	    ("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
+	printf
+	    ("for the Broadcom ('BCM') numbers.\n\n");
 }
 
 static int tokenize(char *argument, char *config[])

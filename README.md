@@ -38,6 +38,11 @@ All GPI pins are pulled up, so the return should be connected to ground.
                mixer element [name].
 
 The options [JAja] may be specified multiple times.
+
+Pin numbers below are hardware GPIO numbers. They do not usually correspond
+to physical pin numbers. For the RPi, check https://pinout.xyz/# and look
+for the Broadcom ('BCM') numbers.
+
 ```
 
 ## Connecting rotary encoders
