@@ -16,7 +16,7 @@ typedef struct {
 	int aux;
 	unsigned long ts_last;
 	int ts_delta;
-	int (*cb)();
+	int (*cb) ();
 } line_t;
 
 enum line_types {
@@ -32,6 +32,7 @@ typedef struct {
 } line_handler_t;
 
 static line_handler_t line_handler[MAXGPIO] = { 0 };
+
 static char consumer[MAXNAME];
 static char device[MAXNAME];
 
@@ -63,12 +64,13 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 			}
 			break;
 		case SWITCH:
-			sw =
-		           (event == GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0;
-		        d->cb(line, sw);
+			sw = (event ==
+			      GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0;
+			d->cb(line, sw);
 			break;
 		default:
-			ERR("No handler for type %d. THIS SHOULD NEVER HAPPEN.", line_handler[line].type);
+			ERR("No handler for type %d. THIS SHOULD NEVER HAPPEN.",
+			    line_handler[line].type);
 			return GPIOD_CTXLESS_EVENT_CB_RET_ERR;
 			break;
 		}
@@ -86,9 +88,11 @@ int null_callback(int event, unsigned int line, const struct timespec *timeout,
 
 void setup_gpiod_rotary(int clk, int dt, void (*user_callback))
 {
-	DBG("int clk=%d, int dt=%d, void (*user_callback)=%p", clk, dt, user_callback);
+	DBG("int clk=%d, int dt=%d, void (*user_callback)=%p", clk, dt,
+	    user_callback);
 	if (line_handler[clk].type != FREE) {
-		ERR("Line %d is already in use: %d.", clk, line_handler[clk].type);
+		ERR("Line %d is already in use: %d.", clk,
+		    line_handler[clk].type);
 		return;
 	}
 	if (line_handler[dt].type != FREE) {
@@ -117,7 +121,8 @@ void setup_gpiod_rotary(int clk, int dt, void (*user_callback))
 void setup_gpiod_switch(int sw, void (*user_callback))
 {
 	if (line_handler[sw].type != FREE) {
-		ERR("Line %d is already in use: %d.", sw, line_handler[sw].type);
+		ERR("Line %d is already in use: %d.", sw,
+		    line_handler[sw].type);
 		return;
 	}
 	line_t *d = malloc(sizeof(line_t));
@@ -127,7 +132,7 @@ void setup_gpiod_switch(int sw, void (*user_callback))
 	}
 	line_handler[sw].type = SWITCH;
 	line_handler[sw].data = d;
-	
+
 	d->aux = NOAUX;
 	d->ts_last = NEVER;
 	d->ts_delta = 100;
@@ -159,11 +164,11 @@ void setup_gpiod_handler(char *dev, char *cons)
 			offsets[num_lines++] = i;
 		}
 	}
-	strncpy (consumer, cons, MAXNAME);
-	strncpy (device, dev, MAXNAME);
+	strncpy(consumer, cons, MAXNAME);
+	strncpy(device, dev, MAXNAME);
 	err = gpiod_ctxless_event_loop_multiple(device, offsets, num_lines,
-					  ACTIVE_HIGH, consumer, FOREVER, NULL,
-					  callback, NULL);
-	ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d.", err, errno);
+						ACTIVE_HIGH, consumer, FOREVER,
+						NULL, callback, NULL);
+	ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d.", err,
+	    errno);
 }
-
