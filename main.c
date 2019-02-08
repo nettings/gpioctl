@@ -14,13 +14,16 @@
 controller_t controllers[] = { 0 };
 
 int verbose = 0;
+int use_jack = 0;
 
 static void signal_handler(int sig)
 {
 	ERR("Received signal, terminating.");
 	shutdown_ALSA();
-	shutdown_JACK();
-	shutdown_ringbuffer();
+	if (use_jack) {
+		shutdown_JACK();
+		shutdown_ringbuffer();
+	}
 	shutdown_gpiod();
 }
 
@@ -105,9 +108,7 @@ int main(int argc, char *argv[])
 		exit(rval);
 	}
 
-	setup_ringbuffer();
 	setup_ALSA();
-	setup_JACK();
 
 	for (int i = 0; i < MAXGPIO; i++) {
 		DBG("controllers[%d].type = %d", i, controllers[i].type);
@@ -116,10 +117,12 @@ int main(int argc, char *argv[])
 			jrdata = (jack_rotary_t *) controllers[i].data;
 			setup_gpiod_rotary(jrdata->clk, jrdata->dt,
 					   &jackrot_callback);
+			use_jack = 1;
 			break;
 		case JACKSW:
 			jsdata = (jack_switch_t *) controllers[i].data;
 			setup_gpiod_switch(jsdata->sw, &jacksw_callback);
+			use_jack = 1;
 			break;
 		case ALSAROT:
 			ardata = (amixer_rotary_t *) controllers[i].data;
@@ -138,6 +141,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (use_jack) {
+		setup_JACK();
+		setup_ringbuffer();
+	}
 	setup_gpiod_handler(GPIOD_DEVICE, JACK_CLIENT_NAME);
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
