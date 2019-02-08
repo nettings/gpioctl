@@ -49,7 +49,6 @@ void jackrot_callback(int line, int val)
 {
 	jack_rotary_t *d = (jack_rotary_t *) controllers[line].data;
 	unsigned char msg[MSG_SIZE];
-	int nbytes;
 
 	if ((val < 0 && d->counter > 0)) {
 		if (d->counter > d->step) {
@@ -78,7 +77,6 @@ void jacksw_callback(int line, int val)
 {
 	jack_switch_t *d = (jack_switch_t *) controllers[line].data;
 	unsigned char msg[MSG_SIZE];
-	int nbytes;
 
 	if (d->toggled) {
 		if (val == 0)

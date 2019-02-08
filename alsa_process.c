@@ -29,7 +29,7 @@ void setup_ALSA()
 	int err;
 	err = snd_mixer_open(&handle, 0);
 	if (err)
-		ERR("Error opening mixer: %s.", err);
+		ERR("Error opening mixer: %s.", snd_strerror(err));
 	snd_mixer_attach(handle, card);
 	snd_mixer_selem_register(handle, NULL, NULL);
 	snd_mixer_load(handle);
@@ -88,6 +88,7 @@ int set_ALSA_volume(snd_mixer_elem_t * elem, int step, int val)
 		   }
 		 */
 	}
+	return 0;
 }
 
 int set_ALSA_mute(snd_mixer_elem_t * elem, int val)

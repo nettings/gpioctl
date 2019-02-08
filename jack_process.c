@@ -30,7 +30,6 @@ static int process(jack_nframes_t nframes, void *arg)
 {
 	void *port_buf = jack_port_get_buffer(output_port, nframes);
 	unsigned char buffer[3];
-	jack_midi_data_t *dest;
 	jack_nframes_t time = 0;
 	jack_midi_clear_buffer(port_buf);
 	while (ringbuffer_read(buffer, MSG_SIZE) == MSG_SIZE) {
@@ -44,7 +43,6 @@ static int process(jack_nframes_t nframes, void *arg)
 
 int setup_JACK()
 {
-	jack_nframes_t nframes;
 	if ((client =
 	     jack_client_open(JACK_CLIENT_NAME, JackNullOption, NULL)) == 0) {
 		ERR("Failed to create client. Is the JACK server running?");
@@ -54,15 +52,16 @@ int setup_JACK()
 	output_port =
 	    jack_port_register(client, JACK_PORT_NAME, JACK_DEFAULT_MIDI_TYPE,
 			       JackPortIsOutput, 0);
-	nframes = jack_get_buffer_size(client);
 
 	if (jack_activate(client)) {
 		ERR("Failed to activate client.");
 		return -1;
 	}
+	return 0;
 }
 
 int shutdown_JACK()
 {
 	jack_client_close(client);
+	return 0;
 }
