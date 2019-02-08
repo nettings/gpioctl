@@ -18,7 +18,7 @@ int use_jack = 0;
 
 static void signal_handler(int sig)
 {
-	ERR("Received signal, terminating.");
+	NFO("Received signal, terminating.");
 	shutdown_ALSA();
 	if (use_jack) {
 		shutdown_JACK();
@@ -45,9 +45,9 @@ void jackrot_callback(int line, int val)
 		} else {
 			d->counter = MIDI_MAX;
 		}
-	} else
+	} else {
 		return;
-
+	}
 	msg[0] = (MIDI_CC << 4) + (d->midi_ch - 1);
 	msg[1] = d->midi_cc;
 	msg[2] = d->counter;

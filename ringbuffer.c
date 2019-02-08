@@ -4,7 +4,6 @@
 
 // event ringbuffer and lock
 #define BUF_SIZE 128
-
 static jack_ringbuffer_t *buf;
 static pthread_mutex_t buflock = PTHREAD_MUTEX_INITIALIZER;
 
