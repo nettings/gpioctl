@@ -127,6 +127,10 @@ int parse_cmdline(int argc, char *argv[])
 			}
 			jrdata =
 			    (jack_rotary_t *) malloc(sizeof(jack_rotary_t));
+			if (jrdata == NULL) {
+				ERR("malloc() failed.");
+				return EXIT_ERR;
+			}
 			line = jrdata->clk = atoi(config[0]);
 			controllers[line].type = JACKROT;
 			controllers[line].data = jrdata;
@@ -143,6 +147,10 @@ int parse_cmdline(int argc, char *argv[])
 			}
 			ardata =
 			    (amixer_rotary_t *) malloc(sizeof(amixer_rotary_t));
+			if (ardata == NULL) {
+				ERR("malloc() failed.");
+				return EXIT_ERR;
+			}
 			line = ardata->clk = atoi(config[0]);
 			controllers[line].type = ALSAROT;
 			controllers[line].data = ardata;
@@ -158,6 +166,10 @@ int parse_cmdline(int argc, char *argv[])
 			}
 			jsdata =
 			    (jack_switch_t *) malloc(sizeof(jack_rotary_t));
+			if (jsdata == NULL) {
+				ERR("malloc() failed.");
+				return EXIT_ERR;
+			}
 			line = jsdata->sw = atoi(config[0]);
 			controllers[line].type = JACKSW;
 			controllers[line].data = jsdata;
@@ -173,6 +185,10 @@ int parse_cmdline(int argc, char *argv[])
 			}
 			amdata =
 			    (amixer_mute_t *) malloc(sizeof(amixer_mute_t));
+			if (amdata == NULL) {
+				ERR("malloc() failed.");
+				return EXIT_ERR;
+			}
 			line = amdata->sw = atoi(config[0]);
 			controllers[line].type = ALSASW;
 			controllers[line].data = amdata;
