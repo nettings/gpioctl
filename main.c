@@ -22,10 +22,10 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include "config.h"
 #include "globals.h"
 #include "parse_cmdline.h"
 #include "gpiod_process.h"
+#include "build/config.h"
 
 #ifdef HAVE_JACK
 #include "ringbuffer.h"

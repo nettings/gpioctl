@@ -29,6 +29,7 @@
 #define MAXNAME 64
 
 #include <stdio.h>
+#include "build/config.h"
 
 #ifdef DEBUG
 #define DBG(fmt, args...) fprintf(stdout, "%s:%d %s(): " fmt "\n", __FILE__, __LINE__, __func__,  ## args)
@@ -95,4 +96,3 @@ typedef struct {
 #endif
 
 #endif
-

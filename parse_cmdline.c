@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
-#include "config.h"
 #include "globals.h"
+#include "build/config.h"
 
 #define MAXARG 5
 
