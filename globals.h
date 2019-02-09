@@ -57,6 +57,7 @@ typedef struct {
 
 controller_t controllers[MAXGPIO];
 
+#ifdef HAVE_JACK
 typedef struct {
         int clk;
         int dt;
@@ -67,6 +68,16 @@ typedef struct {
 } jack_rotary_t;
 
 typedef struct {
+        int sw;
+        unsigned char midi_ch;
+        unsigned char midi_cc;
+        unsigned char value;
+        int toggled;
+} jack_switch_t;
+#endif
+
+#ifdef HAVE_ALSA
+typedef struct {
         int clk;
         int dt;
         int step;
@@ -76,19 +87,12 @@ typedef struct {
 
 typedef struct {
         int sw;
-        unsigned char midi_ch;
-        unsigned char midi_cc;
-        unsigned char value;
-        int toggled;
-} jack_switch_t;
-
-typedef struct {
-        int sw;
         char mixer_scontrol[MAXNAME];
         void* elem;
         int value;
 } amixer_mute_t;
 
+#endif
 
 #endif
 
