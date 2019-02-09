@@ -22,12 +22,19 @@
 #include <errno.h>
 #include <pthread.h>
 
+#include "config.h"
 #include "globals.h"
 #include "parse_cmdline.h"
-#include "jack_process.h"
 #include "gpiod_process.h"
-#include "alsa_process.h"
+
+#ifdef HAVE_JACK
 #include "ringbuffer.h"
+#include "jack_process.h"
+#endif
+
+#ifdef HAVE_ALSA
+#include "alsa_process.h"
+#endif
 
 controller_t controllers[] = { 0 };
 
@@ -37,14 +44,19 @@ int use_jack = 0;
 static void signal_handler(int sig)
 {
 	NFO("Received signal, terminating.");
+#ifdef HAVE_ALSA
 	shutdown_ALSA();
+#endif
+#ifdef HAVE_JACK
 	if (use_jack) {
 		shutdown_JACK();
 		shutdown_ringbuffer();
 	}
+#endif
 	shutdown_gpiod();
 }
 
+#ifdef HAVE_JACK
 void jackrot_callback(int line, int val)
 {
 	jack_rotary_t *d = (jack_rotary_t *) controllers[line].data;
@@ -93,7 +105,9 @@ void jacksw_callback(int line, int val)
 	    msg[1], msg[2]);
 
 }
+#endif
 
+#ifdef HAVE_ALSA
 void alsarot_callback(int line, int val)
 {
 	amixer_rotary_t *ardata = (amixer_rotary_t *) controllers[line].data;
@@ -110,25 +124,32 @@ void alsasw_callback(int line, int val)
 	NFO("ALSA Switch\t<%02d|% 2d>", line, d->value);
 	set_ALSA_mute(d->elem, d->value);
 }
+#endif
 
 int main(int argc, char *argv[])
 {
+#ifdef HAVE_JACK
 	jack_rotary_t *jrdata;
 	jack_switch_t *jsdata;
+#endif
+
+#ifdef HAVE_ALSA
 	amixer_rotary_t *ardata;
 	amixer_mute_t *amdata;
+#endif
 
 	int rval = parse_cmdline(argc, argv);
 	if (rval != EXIT_CLEAN) {
 		usage();
 		exit(rval);
 	}
-
+#ifdef HAVE_ALSA
 	setup_ALSA();
-
+#endif
 	for (int i = 0; i < MAXGPIO; i++) {
 		DBG("controllers[%d].type = %d", i, controllers[i].type);
 		switch (controllers[i].type) {
+#ifdef HAVE_JACK
 		case JACKROT:
 			jrdata = (jack_rotary_t *) controllers[i].data;
 			setup_gpiod_rotary(jrdata->clk, jrdata->dt,
@@ -140,6 +161,8 @@ int main(int argc, char *argv[])
 			setup_gpiod_switch(jsdata->sw, &jacksw_callback);
 			use_jack = 1;
 			break;
+#endif
+#ifdef HAVE_ALSA
 		case ALSAROT:
 			ardata = (amixer_rotary_t *) controllers[i].data;
 			ardata->elem =
@@ -154,13 +177,17 @@ int main(int argc, char *argv[])
 			amdata->value = 1;	//default to on
 			setup_gpiod_switch(amdata->sw, &alsasw_callback);
 			break;
+#endif
 		}
 	}
 
+#ifdef HAVE_JACK
 	if (use_jack) {
 		setup_JACK();
 		setup_ringbuffer();
 	}
+#endif
+
 	setup_gpiod_handler(GPIOD_DEVICE, JACK_CLIENT_NAME);
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
