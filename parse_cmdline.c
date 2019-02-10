@@ -25,7 +25,9 @@
 #include "globals.h"
 #include "build/config.h"
 
-#define MAXARG 5
+// one more than real max, so we can check for excess arguments:
+#define MAXARG 10
+
 
 void usage()
 {
@@ -39,16 +41,16 @@ void usage()
 	printf("-r|--rotary clk,dt,type,...\n");
 	printf("               Set up a rotary encoder. All parameters must be separated\n");
 	printf("               by commas, no spaces.\n");
-	printf("               clk:     the GPI pin number of the first encoder contact\n");
-	printf("               dt:      the GPI pin number of the second encoder contact\n");
+	printf("               clk:     the GPI number of the first encoder contact (0-%d)\n", MAXGPIO);
+	printf("               dt:      the GPI number of the second encoder contact (0-%d)\n", MAXGPIO);
         printf("               Depending on 'type', other options must follow:\n\n");
 #ifdef HAVE_JACK
 	printf("      ...,jack,cc,[ch[,min[,max[,step[,default]]]]]\n");
-	printf("               cc:      MIDI continous controller number (0-120)\n");
+	printf("               cc:      MIDI continous controller number (0-%d)\n", MAXCC);
 	printf("               ch:      MIDI channel (1-16), default 1\n");
-	printf("               min:     minimum controller value (0-127), default 0\n");
-	printf("               max:     maximum controller value (0-127), default 127\n");
-	printf("               step:    the step size per 'click'(1-127), default 1\n");
+	printf("               min:     minimum controller value (0-%d), default 0\n", MAXCCVAL);
+	printf("               max:     maximum controller value (0-%d), default %d\n", MAXCCVAL, MAXCCVAL);
+	printf("               step:    the step size per 'click'(1-%d), default 1\n", MAXCCVAL);
 	printf("               default: the initial value, default is 'min'\n\n"); 
 #endif
 #ifdef HAVE_ALSA
@@ -58,8 +60,8 @@ void usage()
 	printf("               step: the step size in dB per click, default 3\n\n");
 #endif
 	printf("      ...,stdout,format[,min[,max[,step[,default]]]]].\n");
-	printf("               format:  a string that can contain the special tokens '%pin%'\n");
-	printf("                        (the pin number) and '%val%' (the value)\n");
+	printf("               format:  a string that can contain the special tokens '%%pin%%'\n");
+	printf("                        (the pin number) and '%%val%%' (the value)\n");
 	printf("               min:     minimum value (%d-%d), default 0\n", INT_MIN, INT_MAX);
 	printf("               max:     maximum value (%d-%d), default 100\n", INT_MIN, INT_MAX);
 	printf("               step:    the step size per click, default 1\n"); 
@@ -67,15 +69,15 @@ void usage()
 	printf("-s|--switch sw,type...\n");
 	printf("               Set up a switch. Again, all following parameters must be\n");
 	printf("               separated only by commas:\n");
-	printf("               sw:      the GPI pin number of the switch contact\n");
+	printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO);
         printf("               Depending on 'type', other options must follow:\n\n");
 #ifdef HAVE_JACK
 	printf("      ...,jack,cc,[ch[,latch[,min[,max[,default]]]]]]\n");
 	printf("               cc:      MIDI continous controller number (0-120)\n");
 	printf("               ch:      MIDI channel (1-16), default 1\n");
 	printf("               latch:   can be 0 (momentary on) or 1 (toggled on/off)\n");
-	printf("               min:     controller value when open (0-127), default 0\n");
-	printf("               max:     controller value when closed (0-127), default 127\n");
+	printf("               min:     controller value when open (0-%d), default 0\n", MAXCCVAL);
+	printf("               max:     controller value when closed (0-%d), default %d\n", MAXCCVAL, MAXCCVAL);
 	printf("               default: the initial value, default is 'min'\n\n"); 
 #endif
 #ifdef HAVE_ALSA
@@ -85,8 +87,8 @@ void usage()
 	printf("               card:    the name of a sound interface (defaults to hw:0)\n\n");
 #endif
 	printf("      ...,stdout,format[,latch[,min[,max[,default]]]]\n");
-	printf("               format:  a string that can contain the special tokens '%pin%'\n");
-	printf("                        (the pin number) and '%val%' (the value)\n");
+	printf("               format:  a string that can contain the special tokens '%%pin%%'\n");
+	printf("                        (the pin number) and '%%val%%' (the value)\n");
 	printf("               latch:   can be 0 (momentary on) or 1 (toggled on/off)\n");
 	printf("               min:     minimum value (%d-%d), default 0\n", INT_MIN, INT_MAX);
 	printf("               max:     maximum value (%d-%d), default 100\n", INT_MIN, INT_MAX);
@@ -104,47 +106,41 @@ static int tokenize(char *argument, char *config[])
 {
 	int i = 0;
 	config[0] = strtok(argument, ",");
-	while (config[i] != NULL) {
-		i++;
-		if (i > 4)
-			break;
-		config[i] = strtok(NULL, ",");
+	// always go up to MAXARG, to make sure we overwrite all previous hits with NULL
+	for (int k=1; i <= MAXARG; i++) {
+		if (config[i] != NULL) i++;
+		config[k] = strtok(NULL, ",");
 	}
 	return i;
 }
+
+static int match(char *string1, char *string2) {
+	if (strncmp(string1, string2, strlen(string2)) == 0) {
+		return 1;
+	} else {
+		return 0;
+	}
+}	
 
 int parse_cmdline(int argc, char *argv[])
 {
 	int c;
 	int i;
-	int line;
-	char *config[MAXARG] = { 0 };
-#ifdef HAVE_JACK
-	jack_rotary_t *jrdata;
-	jack_switch_t *jsdata;
-#endif
-#ifdef HAVE_ALSA
-	amixer_rotary_t *ardata;
-	amixer_mute_t *amdata;
-#endif
+	char *config[MAXARG];
 
+	control_t* data;
+
+	static struct option long_options[] = {
+		{"help", no_argument, 0, 'h'},
+		{"verbose", no_argument, 0, 'v'},
+		{"rotary", required_argument, 0, 'r'},
+		{"switch", required_argument, 0, 's'},
+		{0, 0, 0, 0}
+	};
+	
 	while (1) {
-		static struct option long_options[] = {
-			{"help", no_argument, 0, 'h'},
-			{"verbose", no_argument, 0, 'v'},
-#ifdef HAVE_JACK
-			{"jack-rotary", required_argument, 0, 'J'},
-			{"jack-switch", required_argument, 0, 'j'},
-#endif
-#ifdef HAVE_ALSA
-			{"amixer-rotary", required_argument, 0, 'A'},
-			{"amixer-mute", required_argument, 0, 'a'},
-#endif
-			{0, 0, 0, 0}
-		};
 		int optind = 0;
-
-		c = getopt_long(argc, argv, "hvJ:A:j:a:", long_options,
+		c = getopt_long(argc, argv, "hvr:s:", long_options,
 				&optind);
 		if (c == -1)
 			break;
@@ -155,100 +151,132 @@ int parse_cmdline(int argc, char *argv[])
 		case 'v':
 			verbose = 1;
 			break;
-#ifdef HAVE_JACK
-		case 'J':
+		case 'r':
 			i = tokenize(optarg, config);
-			if (i != 5) {
-				ERR("-J needs exactly 5 options.");
+			if (i < 4) {
+				ERR("Not enough options for -r.");
 				return EXIT_ERR;
 			}
-			jrdata =
-			    (jack_rotary_t *) malloc(sizeof(jack_rotary_t));
-			if (jrdata == NULL) {
+			data = (control_t*) malloc(sizeof(control_t));
+			if (data == NULL) {
 				ERR("malloc() failed.");
 				return EXIT_ERR;
 			}
-			line = jrdata->clk = atoi(config[0]);
-			controllers[line].type = JACKROT;
-			controllers[line].data = jrdata;
-			jrdata->dt = atoi(config[1]);
-			jrdata->midi_ch = atoi(config[2]);
-			jrdata->midi_cc = atoi(config[3]);
-			jrdata->step = atoi(config[4]);
+			data->pin1 = atoi(config[0]);
+			if (data->pin1 < 0 || data->pin1 > MAXGPIO) {
+				ERR("clk value out of range.");
+				goto error;
+			}
+			if (controllers[data->pin1] == NULL) {
+				ERR("clk pin already assigned.");
+				goto error;
+			}
+			controllers[data->pin1] = data;
+			data->pin2 = atoi(config[1]);
+			if (data->pin2 < 0 || data->pin2 > MAXGPIO) {
+				ERR("dt value of of range.");
+				goto error;
+			}
+			if (controllers[data->pin2] == NULL) {
+				ERR("dt pin already assigned.");
+				goto error;
+			}
+			data->type = SWITCH;
+			if (match(config[2], "jack")) {
+				data->target = JACK;
+				data->midi_cc = atoi(config[3]);
+				if (data->midi_cc < 0 || data->midi_cc > MAXCC) {
+					ERR("MIDI CC value out of range.");
+					goto error;
+				}
+				if (config[4] == NULL) {
+					data->midi_ch = 0;
+				} else {
+					data->midi_ch = atoi(config[4]) - 1;
+					if (data->midi_ch < 0 || data->midi_ch > MAXMIDICH) {
+						ERR("MIDI channel value out of range.");
+						goto error;
+					}
+				}		
+				if (config[5] == NULL) {
+					data->min = 0;
+				} else {
+					data->min = atoi(config[5]);
+					if (data->min < 0 || data->min > MAXCCVAL) {
+						ERR("min value out of range.");
+						goto error;
+					}
+				}
+				if (config[6] == NULL) {
+					data->max = MAXCCVAL;
+				} else {
+					data->max = atoi(config[6]);
+					if (data->max < 0 || data->min > MAXCCVAL) {
+						ERR("max value out of range.");
+						goto error;
+					}
+				}
+				if (config[7] == NULL) {
+					data->step = 1;
+				} else {
+					data->step = atoi(config[7]);
+					if (data->step < 1 || data->step > MAXCCVAL) {
+						ERR("step value out of range.");
+						goto error;
+					}
+				}
+				if (config[8] == NULL) {
+					data->def = data->min;
+				} else {
+					data->def = atoi(config[8]);
+					if (data->def < data->min || data->def > data->max) {
+						ERR("default value out of range.");
+						goto error;
+					}
+				}
+				if (config[9] != NULL) {
+					ERR("Too many arguments.");
+					goto error;
+				}
+				
+			} else if (match(config[2], "alsa")) {
+				data->target = ALSA;
+				data->param1 = strncpy(data->param1, config[3], MAXNAME);
+				if (config[4] == NULL) {
+					data->param2 = "hw:0";
+				} else {
+					data->param2 = strncpy(data->param2, config[4], MAXNAME);
+				}
+				if (config[5] == NULL) {
+					data->step = 3;
+				} else {
+					data->step = atoi(config[5]);
+				}
+				if (config[6] != NULL) {
+					ERR("Too many arguments.");
+					goto error;
+				}					
+			} else if (match(config[2], "stdout")) {	
+					data->target = STDOUT;
+			} else {
+				ERR("Unknown type '%s'.", config[2]);
+				goto error;
+			}			
 			break;
-		case 'j':
-			i = tokenize(optarg, config);
-			if (i != 4) {
-				ERR("-j needs exactly 4 options.");
-				return EXIT_ERR;
-			}
-			jsdata =
-			    (jack_switch_t *) malloc(sizeof(jack_rotary_t));
-			if (jsdata == NULL) {
-				ERR("malloc() failed.");
-				return EXIT_ERR;
-			}
-			line = jsdata->sw = atoi(config[0]);
-			controllers[line].type = JACKSW;
-			controllers[line].data = jsdata;
-			jsdata->midi_ch = atoi(config[1]);
-			jsdata->midi_cc = atoi(config[2]);
-			jsdata->toggled = atoi(config[3]);
+		case 's':
 			break;
-#endif
-#ifdef HAVE_ALSA
-		case 'A':
-			i = tokenize(optarg, config);
-			if (i != 4) {
-				ERR("-A needs exactly 4 options.");
-				return EXIT_ERR;
-			}
-			ardata =
-			    (amixer_rotary_t *) malloc(sizeof(amixer_rotary_t));
-			if (ardata == NULL) {
-				ERR("malloc() failed.");
-				return EXIT_ERR;
-			}
-			line = ardata->clk = atoi(config[0]);
-			controllers[line].type = ALSAROT;
-			controllers[line].data = ardata;
-			ardata->dt = atoi(config[1]);
-			strncpy(ardata->mixer_scontrol, config[2], MAXNAME);
-			ardata->step = atoi(config[3]);
-			break;
-		case 'a':
-			i = tokenize(optarg, config);
-			if (i != 2) {
-				ERR("-a needs exactly 2 options.");
-				return EXIT_ERR;
-			}
-			amdata =
-			    (amixer_mute_t *) malloc(sizeof(amixer_mute_t));
-			if (amdata == NULL) {
-				ERR("malloc() failed.");
-				return EXIT_ERR;
-			}
-			line = amdata->sw = atoi(config[0]);
-			controllers[line].type = ALSASW;
-			controllers[line].data = amdata;
-			strncpy(amdata->mixer_scontrol, config[1], MAXNAME);
-			break;
-#endif
-		case 'X':
-			i = tokenize(optarg, config);
-			if (i != 3) {
-				ERR("-X needs exactly 3 options.");
-				return EXIT_ERR;
-			}
-			
 		default:
-			ERR("Unknown option or feature not compiled in.");
+			ERR("Unknown option.");
 			return EXIT_ERR;
 		}
 	}
-	if (argc < 3) {
+	if (argc < 1) {
 		ERR("You need to set at least one control.");
 		return EXIT_ERR;
 	}
 	return EXIT_CLEAN;
+	error: {
+		free(data);
+		return EXIT_ERR;
+	}
 }
