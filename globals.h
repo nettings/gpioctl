@@ -22,8 +22,10 @@
 #define JACK_CLIENT_NAME "gpioctl"
 #define JACK_PORT_NAME "midi_out"
 #define GPIOD_DEVICE "pinctrl-bcm2835"
-#define MAXGPIO 32
-#define MIDI_MAX 0x7f
+#define MAXGPIO 64
+#define MAXMIDICH 15
+#define MAXCCVAL 0x7f
+#define MAXCC 119
 #define MIDI_CC 0xb
 #define MSG_SIZE 3
 #define MAXNAME 64
@@ -43,56 +45,33 @@
 
 int verbose;
 
-enum ctl_types {
-        UNUSED,
-        JACKROT,
-        JACKSW,
-        ALSAROT,
-        ALSASW
-};
+typedef enum { 
+        ROTARY, 
+        SWITCH 
+} control_type_t;
+
+typedef enum {
+	STDOUT,
+	JACK,
+	ALSA
+} control_target_t;
 
 typedef struct {
-        enum ctl_types type;
-        void *data;
-} controller_t;
+	unsigned char pin1;
+	unsigned char pin2;
+	control_type_t type;
+	control_target_t target;
+	int min;
+	int max;
+	int step;
+	int def;
+	int toggle;
+	unsigned char midi_ch;
+	unsigned char midi_cc;
+	char *param1;
+	char *param2;
+} control_t;
 
-controller_t controllers[MAXGPIO];
-
-#ifdef HAVE_JACK
-typedef struct {
-        int clk;
-        int dt;
-        int step;
-        unsigned char midi_ch;
-        unsigned char midi_cc;
-        unsigned char counter;
-} jack_rotary_t;
-
-typedef struct {
-        int sw;
-        unsigned char midi_ch;
-        unsigned char midi_cc;
-        unsigned char value;
-        int toggled;
-} jack_switch_t;
-#endif
-
-#ifdef HAVE_ALSA
-typedef struct {
-        int clk;
-        int dt;
-        int step;
-        char mixer_scontrol[MAXNAME];
-        void* elem;
-} amixer_rotary_t;
-
-typedef struct {
-        int sw;
-        char mixer_scontrol[MAXNAME];
-        void* elem;
-        int value;
-} amixer_mute_t;
-
-#endif
+extern control_t* controllers[];
 
 #endif
