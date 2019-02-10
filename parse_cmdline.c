@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <limits.h>
 #include "globals.h"
 #include "build/config.h"
 
@@ -28,59 +29,75 @@
 
 void usage()
 {
-	printf
-	    ("\n%s handles switches and rotary encoders connected to GPIOs, using the\n",
-	     JACK_CLIENT_NAME);
-	printf
-	    ("portable libgpiod kernel interface, to create JACK MIDI CC messages at\n");
-	printf("%s:%s or directly interact with an ALSA mixer control.\n",
-	       JACK_CLIENT_NAME, JACK_PORT_NAME);
-	printf
-	    ("We assume GPI pins have a pull-up, so the return should be connected to ground.\n");
+	printf("\n%s handles switches and rotary encoders connected to GPIOs, using the\n", JACK_CLIENT_NAME);
+	printf("portable libgpiod kernel interface, to create JACK MIDI CC messages at\n");
+	printf("%s:%s or directly interact with an ALSA mixer control.\n", JACK_CLIENT_NAME, JACK_PORT_NAME);
+	printf("We assume GPI pins have a pull-up, so the return should be connected to ground.\n");
 	printf("-h|--help      This help.\n");
 	printf("-v|--verbose   Print current controller values.\n\n");
-	printf("The following options may be specified multiple times:\n");
+	printf("The following options may be specified multiple times:\n\n");
+	printf("-r|--rotary clk,dt,type,...\n");
+	printf("               Set up a rotary encoder. All parameters must be separated\n");
+	printf("               by commas, no spaces.\n");
+	printf("               clk:     the GPI pin number of the first encoder contact\n");
+	printf("               dt:      the GPI pin number of the second encoder contact\n");
+        printf("               Depending on 'type', other options must follow:\n\n");
 #ifdef HAVE_JACK
-	printf("-J|--jack-rotary clk,dt,ch,cc,step\n");
-	printf
-	    ("               Set up a rotary encoder on pins [clk] and [dt], and create MIDI\n");
-	printf
-	    ("               messages on channel [ch] for CC no. [cc] with step size [step].\n");
-	printf("-j|--jack-switch sw,ch,cc,toggled\n");
-	printf
-	    ("               Set up a switch on pin [sw], and create MIDI messages on channel\n");
-	printf
-	    ("               [ch] for CC no. [cc]. If [toggled] is 0, the switch will send\n");
-	printf
-	    ("               value '127' when pressed, and '0' when released. With [toggled]\n");
-	printf
-	    ("               at 1, one press will latch it to '127', and the next one will\n");
-	printf("               release it to '0'.\n");
+	printf("      ...,jack,cc,[ch[,min[,max[,step[,default]]]]]\n");
+	printf("               cc:      MIDI continous controller number (0-120)\n");
+	printf("               ch:      MIDI channel (1-16), default 1\n");
+	printf("               min:     minimum controller value (0-127), default 0\n");
+	printf("               max:     maximum controller value (0-127), default 127\n");
+	printf("               step:    the step size per 'click'(1-127), default 1\n");
+	printf("               default: the initial value, default is 'min'\n\n"); 
 #endif
 #ifdef HAVE_ALSA
-	printf("-A|--amixer-rotary clk,dt,name,step\n");
-	printf
-	    ("               Set up a rotary encoder on pins [clk] and [dt], and control\n");
-	printf
-	    ("               ALSA mixer element [name] with step size [step].\n");
-	printf("               Use 'amixer scontrols' to get a list.\n");
-	printf("-a|--amixer-mute sw,name\n");
-	printf
-	    ("               Set up a switch on pin [sw], and toggle the MUTE status on ALSA\n");
-	printf("               mixer element [name].\n");
-#endif	
-	printf
-	    ("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
-	printf
-	    ("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
-	printf
-	    ("for the Broadcom ('BCM') numbers.\n");
-	printf
-	    ("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
-	printf
-	    ("GPIO pins. Use an external tool to enable them, or add physical pull-ups.\n\n");
-	printf
-	    ("%s is meant to run as a daemon. Use CTRL-C or send it SIGTERM to exit.\n\n", JACK_CLIENT_NAME);
+	printf("      ...,alsa,control[,card[,step]]\n");
+	printf("               control: the name of a simple controller in ALSA mixer\n");
+	printf("               card:    the name of a sound interface (defaults to hw:0)\n");
+	printf("               step: the step size in dB per click, default 3\n\n");
+#endif
+	printf("      ...,stdout,format[,min[,max[,step[,default]]]]].\n");
+	printf("               format:  a string that can contain the special tokens '%pin%'\n");
+	printf("                        (the pin number) and '%val%' (the value)\n");
+	printf("               min:     minimum value (%d-%d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d-%d), default 100\n", INT_MIN, INT_MAX);
+	printf("               step:    the step size per click, default 1\n"); 
+	printf("               default:	the initial value, default is 'min'\n\n");
+	printf("-s|--switch sw,type...\n");
+	printf("               Set up a switch. Again, all following parameters must be\n");
+	printf("               separated only by commas:\n");
+	printf("               sw:      the GPI pin number of the switch contact\n");
+        printf("               Depending on 'type', other options must follow:\n\n");
+#ifdef HAVE_JACK
+	printf("      ...,jack,cc,[ch[,latch[,min[,max[,default]]]]]]\n");
+	printf("               cc:      MIDI continous controller number (0-120)\n");
+	printf("               ch:      MIDI channel (1-16), default 1\n");
+	printf("               latch:   can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               min:     controller value when open (0-127), default 0\n");
+	printf("               max:     controller value when closed (0-127), default 127\n");
+	printf("               default: the initial value, default is 'min'\n\n"); 
+#endif
+#ifdef HAVE_ALSA
+	printf("      ...,alsa,control[,card]\n");
+	printf("               control: the name of a simple controller in ALSA mixer\n");
+	printf("                        (switch will operate the MUTE function)\n");
+	printf("               card:    the name of a sound interface (defaults to hw:0)\n\n");
+#endif
+	printf("      ...,stdout,format[,latch[,min[,max[,default]]]]\n");
+	printf("               format:  a string that can contain the special tokens '%pin%'\n");
+	printf("                        (the pin number) and '%val%' (the value)\n");
+	printf("               latch:   can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               min:     minimum value (%d-%d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d-%d), default 100\n", INT_MIN, INT_MAX);
+	printf("               default:	the start value, default is 'min'\n\n");
+	printf("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
+	printf("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
+	printf("for the Broadcom ('BCM') numbers.\n");
+	printf("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
+	printf("GPIO pins. Use a hardware-specific external tool to enable them, or add\n");
+	printf("physical pull-ups.\n\n");
+	printf("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n", JACK_CLIENT_NAME);
 }
 
 static int tokenize(char *argument, char *config[])
