@@ -92,12 +92,6 @@ static void update_alsa(control_t* c, int val) {
 
 void handle_gpi(int line, int val) {
 	control_t* c = controller[line];
-#ifdef HAVE_ALSA
-	if (c->target == ALSA) {
-		update_alsa(c, val);
-		return;
-	}
-#endif
 	switch (c->type) {
 	case ROTARY:
 		if ((val < 0 && c->value > c->min)) {
@@ -145,8 +139,9 @@ void handle_gpi(int line, int val) {
 #endif
 #ifdef HAVE_ALSA
 	case ALSA:
+		update_alsa(c,val);
 		break;
-#endif;
+#endif
 	default:
 		ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.", c->target);
 	}

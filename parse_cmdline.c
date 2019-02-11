@@ -399,6 +399,7 @@ int parse_cmdline(int argc, char *argv[])
 				c->min = 0;
 				c->max = 1;
 				c->value = 0;
+				c->toggle = 1;
 				use_alsa = 1;
 			} else
 #endif			 
