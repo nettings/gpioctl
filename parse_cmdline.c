@@ -351,6 +351,7 @@ int parse_cmdline(int argc, char *argv[])
 				}
 				if (config[8] != NULL) {
 					ERR("Too many arguments.");
+					goto error;
 				}
 				DBG("Parsed control type=%d pin1=%d pin2=%d target=%d min=%d max=%d step=%d default=%d.", c->type, c->pin1, c->pin2, c->target, c->min, c->max, c->step, c->value);
 			} else {
@@ -493,6 +494,7 @@ int parse_cmdline(int argc, char *argv[])
 				}
 				if (config[7] != NULL) {
 					ERR("Too many arguments.");
+					goto error;
 				}
 				DBG("Parsed control type=%d pin1=%d pin2=%d target=%d min=%d max=%d step=%d default=%d.", c->type, c->pin1, c->pin2, c->target, c->min, c->max, c->step, c->value);
 			} else {
