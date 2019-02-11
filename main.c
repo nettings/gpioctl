@@ -26,6 +26,7 @@
 #include "parse_cmdline.h"
 #include "gpiod_process.h"
 #include "build/config.h"
+#include "stdout_process.h"
 
 #ifdef HAVE_JACK
 #include "ringbuffer.h"
@@ -56,87 +57,99 @@ static void signal_handler(int sig)
 	shutdown_gpiod();
 }
 
-void stdout_callback(int line, int val) {
-	NFO("stdout callback on %d with val=%d.", line, val);
+static void update_stdout(control_t* c) {
+	NFO("STDOUT:\t<%02d|%02d>", c->pin1, c->value);
 }
 
 #ifdef HAVE_JACK
-void jack_callback(int line, int val)
-{
-	control_t* data = controller[line];
+static void update_jack(control_t* c) {
 	unsigned char msg[MSG_SIZE];
-	switch (data->type) {
-	case ROTARY:
-		if ((val < 0 && data->value > 0)) {
-			if (data->value > data->step) {
-				data->value -= data->step;
-			} else {
-				data->value = 0;
-			}
-		} else if ((val > 0 && data->value < MAXCCVAL)) {
-			if (data->value + data->step < MAXCCVAL) {
-				data->value += data->step;
-			} else {
-				data->value = MAXCCVAL;
-			}
-		} else {
-			return;
-		}
-		break;
-	case SWITCH:
-		if (data->toggle) {
-			if (val == 0)
-				return;
-			data->value = (data->value < data->max) ? data->min : data->max;
-		} else {
-			data->value = val ? data->min : data->max;
-		}
-		break;
-	default:
-		ERR("Unknown data->type %d. THIS SHOULD NEVER HAPPEN.", data->type);
-		break;	
-	} 
-	msg[0] = (MIDI_CC << 4) + (data->midi_ch - 1);
-	msg[1] = data->midi_cc;
-	msg[2] = data->value;
+	msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
+	msg[1] = c->midi_cc;
+	msg[2] = c->value;
 	ringbuffer_write(msg, MSG_SIZE);
-	NFO("JACK:\t<%02d|%02d>\t0x%02x%02x%02x", line, val, msg[0],
+	NFO("JACK:\t<%02d|%02d>\t0x%02x%02x%02x", c->pin1, c->value, msg[0],
 	    msg[1], msg[2]);
 }
 #endif
 
 #ifdef HAVE_ALSA
-void alsa_callback(int line, int val)
-{
-	control_t* data = controller[line];
-	switch (data->type) {
+static void update_alsa(control_t* c) {
+	switch (c->type) {
 	case ROTARY:
-		set_ALSA_volume(data->param1, data->step, val);
+		set_ALSA_volume(c->param1, c->step, val);
 		break;
 	case SWITCH:
 		if (val == 0)
 			return;
-		data->value = 1 - data->value;
-		set_ALSA_mute(data->elem, data->value);
+		c->value = 1 - c->value;
+		set_ALSA_mute(c->param1, c->value);
 		break;
 	}
 	NFO("ALSA:\t<%02d|% 2d>", line, val);
 }
 #endif
 
-static void* cb[3] = {
-	&stdout_callback
+void handle_gpi(int line, int val) {
+	control_t* c = controller[line];
+	switch (c->type) {
+	case ROTARY:
+		if ((val < 0 && c->value > c->min)) {
+			if (c->value - c->step > c->min) {
+				c->value -= c->step;
+			} else {
+				c->value = c->min;
+			}
+		} else if ((val > 0 && c->value < c->max)) {
+			if (c->value + c->step < c->max) {
+				c->value += c->step;
+			} else {
+				c->value = c->max;
+			}
+		} else return;
+		break;
+	case SWITCH:
+		if (c->toggle) {
+			if (val == 0) return;
+			if (c->value > c->min) {
+				c->value = c->min;
+			} else {
+				c->value = c->max;
+			}
+		} else {
+			 if (val == 0) {
+			 	c->value = c->min;
+			} else {
+				c->value = c->max;
+			}
+		}
+		break;
+	default:
+		ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
+		break;	
+	} 
+	switch (c->target) {
+	case STDOUT:
+		update_stdout(c);
+		break;
 #ifdef HAVE_JACK
-	,&jack_callback
+	case JACK:
+		update_jack(c);
+		break;
 #endif
 #ifdef HAVE_ALSA
-	,&alsa_callback
+	case ALSA:
+		update_alsa(c);
+		break;
 #endif
-};
+	}
+}
+
+
 
 int main(int argc, char *argv[])
 {
-	control_t *data;
+	control_t *c;
 	
 
 	int rval = parse_cmdline(argc, argv);
@@ -149,21 +162,36 @@ int main(int argc, char *argv[])
 #endif
 	for (int i = 0; i < MAXGPIO; i++) {
 		if (controller[i] == NULL) continue;
-		data = controller[i];
-		switch (data->type) {
+		c = controller[i];
+		switch (c->type) {
 		case ROTARY:
-			setup_gpiod_rotary(data->pin1, data->pin2, cb[data->target]);
+			setup_gpiod_rotary(c->pin1, c->pin2, &handle_gpi);
 			break;
 		case SWITCH:
-			setup_gpiod_switch(data->pin1, cb[data->target]);
+			setup_gpiod_switch(c->pin1, &handle_gpi);
+			break;
+		}
+		switch (c->target) {
+#ifdef HAVE_JACK
+		case JACK:
+			use_jack = 1;
+			break;
+#endif
+#ifdef HAVE_ALSA
+		case ALSA:
+			setup_ALSA_mixer_handle(c->param1);
+			break;
+#endif
+		case STDOUT:
+			setup_STDOUT_format(c);
 			break;
 		}
 	}
 
 #ifdef HAVE_JACK
 	if (use_jack) {
-		setup_JACK();
 		setup_ringbuffer();
+		setup_JACK();
 	}
 #endif
 
