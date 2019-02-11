@@ -164,6 +164,13 @@ int main(int argc, char *argv[])
 		usage();
 		exit(rval);
 	}
+
+#ifdef HAVE_JACK
+	if (use_jack) {
+		setup_ringbuffer();
+		setup_JACK();
+	}
+#endif
 #ifdef HAVE_ALSA
 	if (use_alsa) {
 		setup_ALSA_mixer();
@@ -196,13 +203,6 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-
-#ifdef HAVE_JACK
-	if (use_jack) {
-		setup_ringbuffer();
-		setup_JACK();
-	}
-#endif
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
 
