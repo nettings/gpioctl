@@ -47,11 +47,14 @@ int verbose;
 int use_jack;
 
 typedef enum { 
+	NOCTL,
+	AUX,
         ROTARY, 
         SWITCH 
 } control_type_t;
 
 typedef enum {
+	NOTGT,
 	STDOUT,
 	JACK,
 	ALSA
