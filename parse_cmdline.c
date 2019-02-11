@@ -70,10 +70,10 @@ void usage()
 	printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO);
         printf("               Depending on 'type', other options must follow:\n\n");
 #ifdef HAVE_JACK
-	printf("      ...,jack,cc,[ch[,latch[,min[,max[,default]]]]]]\n");
+	printf("      ...,jack,cc,[ch[,toggle[,min[,max[,default]]]]]]\n");
 	printf("               cc:      MIDI continous controller number (0-120)\n");
 	printf("               ch:      MIDI channel (1-16), default 1\n");
-	printf("               latch:   can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
 	printf("               min:     controller value when open (0-%d), default 0\n", MAXCCVAL);
 	printf("               max:     controller value when closed (0-%d), default %d\n", MAXCCVAL, MAXCCVAL);
 	printf("               default: the initial value, default is 'min'\n\n"); 
@@ -83,12 +83,12 @@ void usage()
 	printf("               control: the name of a simple controller in ALSA mixer\n");
 	printf("                        (switch will operate the MUTE function)\n");
 #endif
-	printf("      ...,stdout,format[,latch[,min[,max[,default]]]]\n");
+	printf("      ...,stdout,format[,toggle[,min[,max[,default]]]]\n");
 	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
 	printf("                        (the pin number) and '%%val%%' (the value)\n");
-	printf("               latch:   can be 0 (momentary on) or 1 (toggled on/off)\n");
-	printf("               min:     minimum value (%d-%d), default 0\n", INT_MIN, INT_MAX);
-	printf("               max:     maximum value (%d-%d), default 100\n", INT_MIN, INT_MAX);
+	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d - %d), default 1\n", INT_MIN, INT_MAX);
 	printf("               default:	the start value, default is 'min'\n\n");
 	printf("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
 	printf("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
@@ -124,6 +124,8 @@ int parse_cmdline(int argc, char *argv[])
 	int o;
 	int i;
 	char *config[MAXARG];
+	
+	int ncontrols;
 
 	control_t* c = NULL;
 	control_t* d = NULL;
@@ -300,16 +302,152 @@ int parse_cmdline(int argc, char *argv[])
 			} else {
 				ERR("Unknown type '%s'.", config[2]);
 				goto error;
-			}			
+			}
+			ncontrols++;			
 			break;
 		case 's':
+			i = tokenize(optarg, config);
+			c = (control_t*) calloc(sizeof(control_t), 1);
+			if (c == NULL) {
+				ERR("calloc() failed.");
+				goto error;
+			}
+			if (i < 3) {
+				ERR("Not enough options for -s.");
+				goto error;
+			}
+			c->pin1 = atoi(config[0]);
+			if (c->pin1 < 0 || c->pin1 > MAXGPIO) {
+				ERR("sw value out of range.");
+				goto error;
+			}
+			if (controller[c->pin1] != NULL) {
+				ERR("sw pin already assigned.");
+				goto error;
+			}
+			controller[c->pin1] = c;
+			c->type = SWITCH;
+#ifdef HAVE_JACK
+			if (match(config[1], "jack")) {
+				c->target = JACK;
+				c->midi_cc = atoi(config[2]);
+				if (c->midi_cc < 0 || c->midi_cc > MAXCC) {
+					ERR("MIDI CC value out of range.");
+					goto error;
+				}
+				if (config[3] == NULL) {
+					c->midi_ch = 0;
+				} else {
+					c->midi_ch = atoi(config[4]) - 1;
+					if (c->midi_ch < 0 || c->midi_ch > MAXMIDICH) {
+						ERR("MIDI channel value out of range.");
+						goto error;
+					}
+				}		
+				if (config[4] == NULL) {
+					c->toggle = 0;
+				} else {
+					c->toggle = atoi(config[5]);
+					if (c->toggle != 0 && c->toggle != 1) {
+						ERR("toggle must be 0 or 1.");
+						goto error;
+					}
+				}
+				if (config[5] == NULL) {
+					c->min = 0;
+				} else {
+					c->min = atoi(config[5]);
+					if (c->min < 0 || c->min > MAXCCVAL) {
+						ERR("min value out of range.");
+						goto error;
+					}
+				}
+				if (config[6] == NULL) {
+					c->max = MAXCCVAL;
+				} else {
+					c->max = atoi(config[6]);
+					if (c->max < 0 || c->max > MAXCCVAL) {
+						ERR("max value out of range.");
+						goto error;
+					}
+				}
+				if (config[7] == NULL) {
+					c->value = c->min;
+				} else {
+					c->value = atoi(config[7]);
+					if (c->value < c->min || c->value > c->max) {
+						ERR("default value out of range.");
+						goto error;
+					}
+				}
+				if (config[8] != NULL) {
+					ERR("Too many arguments.");
+					goto error;
+				}
+				use_jack = 1;
+			} else
+#endif
+#ifdef HAVE_ALSA			 
+			if (match(config[1], "alsa")) {
+				c->target = ALSA;
+				c->param1 = calloc(sizeof(char), MAXNAME);
+				c->param1 = strncpy(c->param1, config[2], MAXNAME);
+				if (config[3] != NULL) {
+					ERR("Too many arguments.");
+					goto error;
+				}					
+				c->min = 0;
+				c->max = 1;
+				c->value = 0;
+				use_alsa = 1;
+			} else
+#endif			 
+			if (match(config[1], "stdout")) {	
+				c->target = STDOUT;
+				c->param1 = calloc(sizeof(char), MAXNAME);
+				c->param1 = strncpy(c->param1, config[2], MAXNAME);
+				// TODO: check for presence of %% tokens instead!
+				if (strlen(c->param1) < 1) {
+					ERR("format cannot be empty.");
+					goto error;					
+				}
+				if (config[3] == NULL) {
+					c->toggle = 0;
+				} else {
+					c->toggle = atoi(config[3]);
+				}
+				if (config[4] == NULL) {
+					c->min = 0;
+				} else {
+					c->min = atoi(config[4]);
+				}
+				if (config[5] == NULL) {
+					c->max = 1;
+				} else {
+					c->max = atoi(config[5]);
+				}
+				if (config[6] == NULL) {
+					c->value = c->min;
+				} else {
+					c->value = atoi(config[6]);
+				}
+				if (config[7] != NULL) {
+					ERR("Too many arguments.");
+				}
+				DBG("Parsed control type=%d pin1=%d pin2=%d target=%d min=%d max=%d step=%d default=%d.",
+					c->type, c->pin1, c->pin2, c->target, c->min, c->max, c->step, c->value);
+			} else {
+				ERR("Unknown type '%s'.", config[2]);
+				goto error;
+			}
+			ncontrols++;			
 			break;
 		default:
 			ERR("Unknown option.");
 			return EXIT_ERR;
 		}
 	}
-	if (argc < 2) {
+	if (ncontrols == 0) {
 		ERR("You need to set at least one control.");
 		return EXIT_ERR;
 	}
