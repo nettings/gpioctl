@@ -36,7 +36,7 @@
 #include "alsa_process.h"
 #endif
 
-control_t* controllers[MAXGPIO] = { 0 };
+control_t* controller[MAXGPIO] = { 0 };
 
 int verbose = 0;
 int use_jack = 0;
@@ -63,7 +63,7 @@ void stdout_callback(int line, int val) {
 #ifdef HAVE_JACK
 void jack_callback(int line, int val)
 {
-	control_t* data = controllers[line];
+	control_t* data = controller[line];
 	unsigned char msg[MSG_SIZE];
 	switch (data->type) {
 	case ROTARY:
@@ -108,7 +108,7 @@ void jack_callback(int line, int val)
 #ifdef HAVE_ALSA
 void alsa_callback(int line, int val)
 {
-	control_t* data = controllers[line];
+	control_t* data = controller[line];
 	switch (data->type) {
 	case ROTARY:
 		set_ALSA_volume(data->param1, data->step, val);
@@ -148,8 +148,8 @@ int main(int argc, char *argv[])
 	setup_ALSA();
 #endif
 	for (int i = 0; i < MAXGPIO; i++) {
-		if (controllers[i] == NULL) continue;
-		data = controllers[i];
+		if (controller[i] == NULL) continue;
+		data = controller[i];
 		switch (data->type) {
 		case ROTARY:
 			setup_gpiod_rotary(data->pin1, data->pin2, cb[data->target]);
