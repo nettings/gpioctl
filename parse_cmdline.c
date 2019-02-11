@@ -107,7 +107,7 @@ static int tokenize(char *argument, char *config[])
 	int i = 0;
 	config[0] = strtok(argument, ",");
 	// always go up to MAXARG, to make sure we overwrite all previous hits with NULL
-	for (int k=1; i <= MAXARG; i++) {
+	for (int k=1; k <= MAXARG; k++) {
 		if (config[i] != NULL) i++;
 		config[k] = strtok(NULL, ",");
 	}
@@ -153,35 +153,37 @@ int parse_cmdline(int argc, char *argv[])
 			break;
 		case 'r':
 			i = tokenize(optarg, config);
-			if (i < 4) {
-				ERR("Not enough options for -r.");
-				return EXIT_ERR;
-			}
 			data = (control_t*) malloc(sizeof(control_t));
 			if (data == NULL) {
 				ERR("malloc() failed.");
 				return EXIT_ERR;
+			}
+			if (i < 4) {
+				ERR("Not enough options for -r.");
+				goto error;
 			}
 			data->pin1 = atoi(config[0]);
 			if (data->pin1 < 0 || data->pin1 > MAXGPIO) {
 				ERR("clk value out of range.");
 				goto error;
 			}
-			if (controllers[data->pin1] == NULL) {
+			if (controllers[data->pin1] != NULL) {
 				ERR("clk pin already assigned.");
 				goto error;
 			}
-			controllers[data->pin1] = data;
 			data->pin2 = atoi(config[1]);
 			if (data->pin2 < 0 || data->pin2 > MAXGPIO) {
 				ERR("dt value of of range.");
 				goto error;
 			}
-			if (controllers[data->pin2] == NULL) {
+			if (controllers[data->pin2] != NULL) {
 				ERR("dt pin already assigned.");
 				goto error;
 			}
-			data->type = SWITCH;
+			controllers[data->pin1] = data;
+			controllers[data->pin2] = data;
+			data->type = ROTARY;
+#ifdef HAVE_JACK
 			if (match(config[2], "jack")) {
 				data->target = JACK;
 				data->midi_cc = atoi(config[3]);
@@ -226,10 +228,10 @@ int parse_cmdline(int argc, char *argv[])
 					}
 				}
 				if (config[8] == NULL) {
-					data->def = data->min;
+					data->value = data->min;
 				} else {
-					data->def = atoi(config[8]);
-					if (data->def < data->min || data->def > data->max) {
+					data->value = atoi(config[8]);
+					if (data->value < data->min || data->value > data->max) {
 						ERR("default value out of range.");
 						goto error;
 					}
@@ -238,10 +240,15 @@ int parse_cmdline(int argc, char *argv[])
 					ERR("Too many arguments.");
 					goto error;
 				}
-				
-			} else if (match(config[2], "alsa")) {
+				use_jack = 1;
+			} else
+#endif
+#ifdef HAVE_ALSA			 
+			if (match(config[2], "alsa")) {
 				data->target = ALSA;
+				data->param1 = calloc(sizeof(char), MAXNAME);
 				data->param1 = strncpy(data->param1, config[3], MAXNAME);
+				data->param2 = calloc(sizeof(char), MAXNAME);
 				if (config[4] == NULL) {
 					data->param2 = "hw:0";
 				} else {
@@ -256,8 +263,43 @@ int parse_cmdline(int argc, char *argv[])
 					ERR("Too many arguments.");
 					goto error;
 				}					
-			} else if (match(config[2], "stdout")) {	
-					data->target = STDOUT;
+			} else
+#endif			 
+			if (match(config[2], "stdout")) {	
+				data->target = STDOUT;
+				data->param1 = calloc(sizeof(char), MAXNAME);
+				data->param1 = strncpy(data->param1, config[3], MAXNAME);
+				// TODO: check for presence of %% tokens instead!
+				if (strlen(data->param1) < 1) {
+					ERR("format cannot be empty.");
+					goto error;					
+				}
+				if (config[4] == NULL) {
+					data->min = 0;
+				} else {
+					data->min = atoi(config[4]);
+				}
+				if (config[5] == NULL) {
+					data->max = 100;
+				} else {
+					data->max = atoi(config[5]);
+				}
+				if (config[6] == NULL) {
+					data->step = 1;
+				} else {
+					data->step = atoi(config[6]);
+				}
+				if (config[7] == NULL) {
+					data->value = data->min;
+				} else {
+					data->value = atoi(config[7]);
+				}
+				if (config[8] != NULL) {
+					ERR("Too many arguments.");
+				}
+				DBG("Parsed control type=%d pin1=%d pin2=%d target=%d min=%d max=%d step=%d default=%d.",
+					data->type, data->pin1, data->pin2, data->target, data->min, data->max, data->step,
+					data->value);
 			} else {
 				ERR("Unknown type '%s'.", config[2]);
 				goto error;
@@ -270,7 +312,7 @@ int parse_cmdline(int argc, char *argv[])
 			return EXIT_ERR;
 		}
 	}
-	if (argc < 1) {
+	if (argc < 2) {
 		ERR("You need to set at least one control.");
 		return EXIT_ERR;
 	}
@@ -280,3 +322,4 @@ int parse_cmdline(int argc, char *argv[])
 		return EXIT_ERR;
 	}
 }
+
