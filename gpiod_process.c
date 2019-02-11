@@ -37,11 +37,11 @@ typedef struct {
 	int (*cb) ();
 } line_t;
 
-enum line_types {
-	AUX = -1,		// used as secondary port for other line, no separate interrupt handler
-	FREE = 0,
-	ROTARY = 1,
-	SWITCH = 2
+static enum line_types {
+	AUX_ = -1,		// used as secondary port for other line, no separate interrupt handler
+	FREE_ = 0,
+	ROTARY_ = 1,
+	SWITCH_ = 2
 };
 
 typedef struct {
@@ -69,7 +69,7 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 	if ((now - d->ts_last) > d->ts_delta) {
 		// we're not bouncing:
 		switch (line_handler[line].type) {
-		case ROTARY:
+		case ROTARY_:
 			clk =
 			    (event ==
 			     GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
@@ -81,7 +81,7 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 				d->cb(line, -1);
 			}
 			break;
-		case SWITCH:
+		case SWITCH_:
 			sw = (event ==
 			      GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0;
 			d->cb(line, sw);
@@ -108,12 +108,12 @@ void setup_gpiod_rotary(int clk, int dt, void (*user_callback))
 {
 	DBG("int clk=%d, int dt=%d, void (*user_callback)=%p", clk, dt,
 	    user_callback);
-	if (line_handler[clk].type != FREE) {
+	if (line_handler[clk].type != FREE_) {
 		ERR("Line %d is already in use: %d.", clk,
 		    line_handler[clk].type);
 		return;
 	}
-	if (line_handler[dt].type != FREE) {
+	if (line_handler[dt].type != FREE_) {
 		ERR("Aux %d is already in use: %d.", dt, line_handler[dt].type);
 		return;
 	}
@@ -126,8 +126,8 @@ void setup_gpiod_rotary(int clk, int dt, void (*user_callback))
 		ERR("malloc() failed.");
 		return;
 	}
-	line_handler[clk].type = ROTARY;
-	line_handler[dt].type = AUX;
+	line_handler[clk].type = ROTARY_;
+	line_handler[dt].type = AUX_;
 	line_handler[dt].data = NULL;
 	line_handler[clk].data = d;
 	d->aux = dt;
@@ -138,7 +138,7 @@ void setup_gpiod_rotary(int clk, int dt, void (*user_callback))
 
 void setup_gpiod_switch(int sw, void (*user_callback))
 {
-	if (line_handler[sw].type != FREE) {
+	if (line_handler[sw].type != FREE_) {
 		ERR("Line %d is already in use: %d.", sw,
 		    line_handler[sw].type);
 		return;
@@ -148,7 +148,7 @@ void setup_gpiod_switch(int sw, void (*user_callback))
 		ERR("malloc() failed.");
 		return;
 	}
-	line_handler[sw].type = SWITCH;
+	line_handler[sw].type = SWITCH_;
 	line_handler[sw].data = d;
 
 	d->aux = NOAUX;
@@ -163,7 +163,7 @@ void shutdown_gpiod()
 					  consumer, FOREVER, NULL,
 					  &null_callback, NULL);
 	for (int i = 0; i < MAXGPIO; i++) {
-		line_handler[i].type == FREE;
+		line_handler[i].type == FREE_;
 		if (line_handler[i].data != NULL) {
 			free(line_handler[i].data);
 			line_handler[i].data == NULL;
@@ -177,7 +177,7 @@ void setup_gpiod_handler(char *dev, char *cons)
 	int num_lines = 0;
 	int err = 0;
 	for (int i = 0; i < MAXGPIO; i++) {
-		if (line_handler[i].type > FREE) {
+		if (line_handler[i].type > FREE_) {
 			DBG("Added Pin %d in position %d.", i, num_lines);
 			offsets[num_lines++] = i;
 		}
