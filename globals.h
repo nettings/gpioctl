@@ -29,6 +29,7 @@
 #define MIDI_CC 0xb
 #define MSG_SIZE 3
 #define MAXNAME 64
+#define ALSA_CARD "default"
 
 #include <stdio.h>
 #include "build/config.h"
