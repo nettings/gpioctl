@@ -265,6 +265,7 @@ int parse_cmdline(int argc, char *argv[])
 					ERR("Too many arguments.");
 					goto error;
 				}					
+				use_alsa = 1;
 			} else
 #endif			 
 			if (match(config[2], "stdout")) {	

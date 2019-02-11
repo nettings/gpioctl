@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 		exit(rval);
 	}
 #ifdef HAVE_ALSA
-	setup_ALSA();
+	if (use_alsa) setup_ALSA();
 #endif
 	for (int i = 0; i < MAXGPIO; i++) {
 		if (controller[i] == NULL) continue;
@@ -174,7 +174,6 @@ int main(int argc, char *argv[])
 		switch (c->target) {
 #ifdef HAVE_JACK
 		case JACK:
-			use_jack = 1;
 			break;
 #endif
 #ifdef HAVE_ALSA
