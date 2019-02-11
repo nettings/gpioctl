@@ -22,7 +22,7 @@
 
 void setup_ALSA_mixer();
 void shutdown_ALSA_mixer();
-snd_mixer_elem_t* setup_ALSA_mixer_elem(char* mixer_scontrol);
+snd_mixer_elem_t *setup_ALSA_mixer_elem(char *mixer_scontrol);
 int set_ALSA_volume(snd_mixer_elem_t * elem, int val);
 int set_ALSA_mute(snd_mixer_elem_t * elem, int val);
 

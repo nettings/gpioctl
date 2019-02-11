@@ -33,7 +33,7 @@
 #define GPI_DEBOUNCE_SWITCH 100
 #define GPI_DEBOUNCE_ROTARY 20
 
-typedef enum  {
+typedef enum {
 	GPI_NOTSET,
 	GPI_ROTARY,
 	GPI_SWITCH,
@@ -48,8 +48,8 @@ typedef struct {
 	int (*handler) ();
 } line_t;
 
+static line_t *gpi[MAXGPIO] = { 0 };
 
-static line_t* gpi[MAXGPIO] = { 0 };
 static unsigned int offsets[MAXGPIO];
 static int num_lines = 0;
 static int shutdown = 0;
@@ -67,17 +67,20 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 {
 	int clk, dt, sw;
 	unsigned long now;
-	
-	if (shutdown) return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
-	
+
+	if (shutdown)
+		return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
+
 	now = msec_stamp(*timestamp);
 	if ((now - gpi[line]->ts_last) > gpi[line]->ts_delta) {
 		// we're not bouncing:
 		switch (gpi[line]->type) {
 		case GPI_ROTARY:
-			clk = (event == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
-			dt = gpiod_ctxless_get_value(
-				device, gpi[line]->aux, ACTIVE_HIGH, consumer);
+			clk =
+			    (event ==
+			     GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
+			dt = gpiod_ctxless_get_value(device, gpi[line]->aux,
+						     ACTIVE_HIGH, consumer);
 			if (clk != dt) {
 				gpi[line]->handler(line, 1);
 			} else {
@@ -85,7 +88,8 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 			}
 			break;
 		case GPI_SWITCH:
-			sw = (event == GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0;
+			sw = (event ==
+			      GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0;
 			gpi[line]->handler(line, sw);
 			break;
 		default:
@@ -99,23 +103,25 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
 
-int null_poll_callback(unsigned int nlines, struct gpiod_ctxless_event_poll_fd* fd, const struct timespec* timeout, void* data) {
+int null_poll_callback(unsigned int nlines,
+		       struct gpiod_ctxless_event_poll_fd *fd,
+		       const struct timespec *timeout, void *data)
+{
 	return GPIOD_CTXLESS_EVENT_POLL_RET_STOP;
 }
 
-int null_event_callback(int event, unsigned int line, const struct timespec *timeout, void *data)
+int null_event_callback(int event, unsigned int line,
+			const struct timespec *timeout, void *data)
 {
 	return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
 }
-
 
 void setup_gpiod_rotary(int line, int aux, void (*user_callback))
 {
 	DBG("int line=%d, int aux=%d, void (*user_callback)=%p", line, aux,
 	    user_callback);
 	if (gpi[line] != NULL) {
-		ERR("Line %d is already in use: %d.", line,
-		    gpi[line]->type);
+		ERR("Line %d is already in use: %d.", line, gpi[line]->type);
 		return;
 	}
 	if (gpi[aux] != NULL) {
@@ -147,8 +153,7 @@ void setup_gpiod_rotary(int line, int aux, void (*user_callback))
 void setup_gpiod_switch(int line, void (*user_callback))
 {
 	if (gpi[line] != NULL) {
-		ERR("Line %d is already in use: %d.", line,
-		    gpi[line]->type);
+		ERR("Line %d is already in use: %d.", line, gpi[line]->type);
 		return;
 	}
 	gpi[line] = calloc(sizeof(line_t), 1);

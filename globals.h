@@ -38,7 +38,7 @@
 #define DBG(fmt, args...) fprintf(stdout, "%s:%d %s(): " fmt "\n", __FILE__, __LINE__, __func__,  ## args)
 #define ERR(fmt, args...) fprintf(stderr, "%s:%d %s(): \x1b[01;31m" fmt "\x1b[0m\n", __FILE__, __LINE__, __func__, ## args)
 #else
-#define DBG(fmt, args...) 
+#define DBG(fmt, args...)
 #define ERR(fmt, args...) fprintf(stderr, "\x1b[31m"fmt"\x1b[0m\n", ## args)
 #endif
 
@@ -48,11 +48,11 @@ int verbose;
 int use_jack;
 int use_alsa;
 
-typedef enum { 
+typedef enum {
 	NOCTL,
 	AUX,
-        ROTARY, 
-        SWITCH 
+	ROTARY,
+	SWITCH
 } control_type_t;
 
 typedef enum {
@@ -78,6 +78,6 @@ typedef struct {
 	int value;
 } control_t;
 
-extern control_t* controller[];
+extern control_t *controller[];
 
 #endif

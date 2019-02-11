@@ -37,7 +37,7 @@
 #include "alsa_process.h"
 #endif
 
-control_t* controller[MAXGPIO] = { 0 };
+control_t *controller[MAXGPIO] = { 0 };
 
 int verbose = 0;
 int use_jack = 0;
@@ -60,12 +60,14 @@ static void signal_handler(int sig)
 	exit(0);
 }
 
-static void update_stdout(control_t* c) {
+static void update_stdout(control_t * c)
+{
 	NFO("STDOUT:\t<%02d|%02d>", c->pin1, c->value);
 }
 
 #ifdef HAVE_JACK
-static void update_jack(control_t* c) {
+static void update_jack(control_t * c)
+{
 	unsigned char msg[MSG_SIZE];
 	msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
 	msg[1] = c->midi_cc;
@@ -77,7 +79,8 @@ static void update_jack(control_t* c) {
 #endif
 
 #ifdef HAVE_ALSA
-static void update_alsa(control_t* c, int val) {
+static void update_alsa(control_t * c, int val)
+{
 	switch (c->type) {
 	case ROTARY:
 		set_ALSA_volume(c->param1, val * c->step * 100);
@@ -86,12 +89,13 @@ static void update_alsa(control_t* c, int val) {
 		set_ALSA_mute(c->param1, val);
 		break;
 	}
-	NFO("ALSA:\t<%02d|% 2d>", c->pin1 , c->value);
+	NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
 }
 #endif
 
-void handle_gpi(int line, int val) {
-	control_t* c = controller[line];
+void handle_gpi(int line, int val)
+{
+	control_t *c = controller[line];
 	switch (c->type) {
 	case ROTARY:
 		if ((val < 0 && c->value > c->min)) {
@@ -106,19 +110,21 @@ void handle_gpi(int line, int val) {
 			} else {
 				c->value = c->max;
 			}
-		} else return;
+		} else
+			return;
 		break;
 	case SWITCH:
 		if (c->toggle) {
-			if (val == 0) return;
+			if (val == 0)
+				return;
 			if (c->value > c->min) {
 				c->value = c->min;
 			} else {
 				c->value = c->max;
 			}
 		} else {
-			 if (val == 0) {
-			 	c->value = c->min;
+			if (val == 0) {
+				c->value = c->min;
 			} else {
 				c->value = c->max;
 			}
@@ -126,8 +132,8 @@ void handle_gpi(int line, int val) {
 		break;
 	default:
 		ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
-		break;	
-	} 
+		break;
+	}
 	switch (c->target) {
 	case STDOUT:
 		update_stdout(c);
@@ -139,20 +145,19 @@ void handle_gpi(int line, int val) {
 #endif
 #ifdef HAVE_ALSA
 	case ALSA:
-		update_alsa(c,val);
+		update_alsa(c, val);
 		break;
 #endif
 	default:
-		ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.", c->target);
+		ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
+		    c->target);
 	}
 }
-
-
 
 int main(int argc, char *argv[])
 {
 	control_t *c;
-	void* p;
+	void *p;
 
 	int rval = parse_cmdline(argc, argv);
 	if (rval != EXIT_CLEAN) {
@@ -165,7 +170,8 @@ int main(int argc, char *argv[])
 	}
 #endif
 	for (int i = 0; i < MAXGPIO; i++) {
-		if (controller[i] == NULL) continue;
+		if (controller[i] == NULL)
+			continue;
 		c = controller[i];
 		switch (c->type) {
 		case ROTARY:
@@ -204,4 +210,3 @@ int main(int argc, char *argv[])
 
 	sleep(-1);
 }
-

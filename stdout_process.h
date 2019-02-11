@@ -3,6 +3,6 @@
 
 #include "globals.h"
 
-char* setup_STDOUT_format(char* c);
+char *setup_STDOUT_format(char *c);
 
 #endif

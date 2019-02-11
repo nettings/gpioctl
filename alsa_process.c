@@ -21,7 +21,7 @@
 #include <alsa/mixer.h>
 #include "globals.h"
 
-static snd_mixer_t* mixer_handle = NULL;
+static snd_mixer_t *mixer_handle = NULL;
 char alsa_card[MAXNAME] = ALSA_CARD;
 
 void setup_ALSA_mixer()
@@ -42,7 +42,7 @@ void shutdown_ALSA_mixer()
 	snd_mixer_close(mixer_handle);
 }
 
-snd_mixer_elem_t* setup_ALSA_mixer_elem(char* mixer_scontrol)
+snd_mixer_elem_t *setup_ALSA_mixer_elem(char *mixer_scontrol)
 {
 	snd_mixer_selem_id_t *sid;
 	snd_mixer_elem_t *elem;
@@ -52,7 +52,8 @@ snd_mixer_elem_t* setup_ALSA_mixer_elem(char* mixer_scontrol)
 	snd_mixer_selem_id_set_name(sid, mixer_scontrol);
 	elem = snd_mixer_find_selem(mixer_handle, sid);
 	if (elem == NULL) {
-		ERR("ALSA error: could not find mixer simple element %s.", mixer_scontrol);
+		ERR("ALSA error: could not find mixer simple element %s.",
+		    mixer_scontrol);
 	}
 	return elem;
 }
@@ -61,20 +62,26 @@ int set_ALSA_volume(snd_mixer_elem_t * elem, int val)
 {
 	int err;
 	long cval;
-	
+
 	snd_mixer_handle_events(mixer_handle);	// make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
-	err = snd_mixer_selem_get_playback_dB(elem, SND_MIXER_SCHN_UNKNOWN, &cval);
+	err =
+	    snd_mixer_selem_get_playback_dB(elem, SND_MIXER_SCHN_UNKNOWN,
+					    &cval);
 	if (err) {
-		ERR("ALSA error getting value for %s: %s.", snd_mixer_selem_get_name(elem), snd_strerror(err));
+		ERR("ALSA error getting value for %s: %s.",
+		    snd_mixer_selem_get_name(elem), snd_strerror(err));
 	} else {
-		DBG("ALSA reports current setting for %s as %d milliBel.", snd_mixer_selem_get_name(elem), cval);
+		DBG("ALSA reports current setting for %s as %d milliBel.",
+		    snd_mixer_selem_get_name(elem), cval);
 	}
 	val += cval;
 	err = snd_mixer_selem_set_playback_dB_all(elem, val, 1);
-        if (err) {
-		ERR("ALSA error: %s while setting %s to %d milliBel.", snd_strerror(err), snd_mixer_selem_get_name(elem), val);
+	if (err) {
+		ERR("ALSA error: %s while setting %s to %d milliBel.",
+		    snd_strerror(err), snd_mixer_selem_get_name(elem), val);
 	} else {
-		DBG("ALSA reports %s while setting %s to %d milliBel.", snd_strerror(err), snd_mixer_selem_get_name(elem), val);
+		DBG("ALSA reports %s while setting %s to %d milliBel.",
+		    snd_strerror(err), snd_mixer_selem_get_name(elem), val);
 	}
 	return 0;
 }
@@ -83,19 +90,25 @@ int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
 {
 	int err;
 	int cval;
-	
+
 	snd_mixer_handle_events(mixer_handle);	// make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
-	err = snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_UNKNOWN, &cval);
+	err =
+	    snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_UNKNOWN,
+						&cval);
 	if (err) {
-		ERR("ALSA error getting value for %s: %s.", snd_mixer_selem_get_name(elem), snd_strerror(err));
+		ERR("ALSA error getting value for %s: %s.",
+		    snd_mixer_selem_get_name(elem), snd_strerror(err));
 	} else {
-		DBG("ALSA reports current setting for %s as %d.", snd_mixer_selem_get_name(elem), cval);
+		DBG("ALSA reports current setting for %s as %d.",
+		    snd_mixer_selem_get_name(elem), cval);
 	}
 	val = 1 - cval;
 	err = snd_mixer_selem_set_playback_switch_all(elem, val);
 	if (err) {
-		ERR("ALSA error: %s while setting %s to %d.", snd_strerror(err), snd_mixer_selem_get_name(elem), val);
+		ERR("ALSA error: %s while setting %s to %d.", snd_strerror(err),
+		    snd_mixer_selem_get_name(elem), val);
 	} else {
-		DBG("ALSA reports %s while setting %s to %d.", snd_strerror(err), snd_mixer_selem_get_name(elem), val);
+		DBG("ALSA reports %s while setting %s to %d.",
+		    snd_strerror(err), snd_mixer_selem_get_name(elem), val);
 	}
 }
