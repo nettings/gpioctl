@@ -151,6 +151,8 @@ int parse_cmdline(int argc, char *argv[])
 		case 'v':
 			verbose = 1;
 			break;
+
+
 		case 'r':
 			i = tokenize(optarg, config);
 			c = (control_t*) calloc(sizeof(control_t), 1);
@@ -305,6 +307,8 @@ int parse_cmdline(int argc, char *argv[])
 			}
 			ncontrols++;			
 			break;
+
+
 		case 's':
 			i = tokenize(optarg, config);
 			c = (control_t*) calloc(sizeof(control_t), 1);
@@ -338,7 +342,7 @@ int parse_cmdline(int argc, char *argv[])
 				if (config[3] == NULL) {
 					c->midi_ch = 0;
 				} else {
-					c->midi_ch = atoi(config[4]) - 1;
+					c->midi_ch = atoi(config[3]) - 1;
 					if (c->midi_ch < 0 || c->midi_ch > MAXMIDICH) {
 						ERR("MIDI channel value out of range.");
 						goto error;
@@ -347,7 +351,7 @@ int parse_cmdline(int argc, char *argv[])
 				if (config[4] == NULL) {
 					c->toggle = 0;
 				} else {
-					c->toggle = atoi(config[5]);
+					c->toggle = atoi(config[4]);
 					if (c->toggle != 0 && c->toggle != 1) {
 						ERR("toggle must be 0 or 1.");
 						goto error;
@@ -443,6 +447,8 @@ int parse_cmdline(int argc, char *argv[])
 			}
 			ncontrols++;			
 			break;
+
+
 		default:
 			ERR("Unknown option.");
 			return EXIT_ERR;
