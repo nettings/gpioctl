@@ -73,6 +73,6 @@ typedef struct {
 	int value;
 } control_t;
 
-extern control_t* controllers[];
+extern control_t* controller[];
 
 #endif
