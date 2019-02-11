@@ -50,6 +50,9 @@ typedef struct {
 
 
 static line_t* gpi[MAXGPIO] = { 0 };
+static unsigned int offsets[MAXGPIO];
+static int num_lines = 0;
+static int shutdown = 0;
 
 static char consumer[MAXNAME];
 static char device[MAXNAME];
@@ -64,6 +67,9 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 {
 	int clk, dt, sw;
 	unsigned long now;
+	
+	if (shutdown) return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
+	
 	now = msec_stamp(*timestamp);
 	if ((now - gpi[line]->ts_last) > gpi[line]->ts_delta) {
 		// we're not bouncing:
@@ -93,12 +99,15 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
 
-int null_callback(int event, unsigned int line, const struct timespec *timeout,
-		  void *data)
-{
-	ERR("This should never be called.");
-	return GPIOD_CTXLESS_EVENT_CB_RET_ERR;
+int null_poll_callback(unsigned int nlines, struct gpiod_ctxless_event_poll_fd* fd, const struct timespec* timeout, void* data) {
+	return GPIOD_CTXLESS_EVENT_POLL_RET_STOP;
 }
+
+int null_event_callback(int event, unsigned int line, const struct timespec *timeout, void *data)
+{
+	return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
+}
+
 
 void setup_gpiod_rotary(int line, int aux, void (*user_callback))
 {
@@ -156,20 +165,27 @@ void setup_gpiod_switch(int line, void (*user_callback))
 
 void shutdown_gpiod()
 {
-	gpiod_ctxless_event_loop_multiple(device, NULL, 0, ACTIVE_HIGH,
-					  consumer, FOREVER, NULL,
-					  &null_callback, NULL);
-	for (int line = 0; line < MAXGPIO; line++) {
+/*	int err = 0;
+        
+        shutdown = 1;
+        
+        errno = 0;
+        err = gpiod_ctxless_event_loop_multiple(device, offsets, num_lines,
+                                                ACTIVE_HIGH, consumer, FOREVER,
+                                                null_poll_callback, null_event_callback, NULL);
+        ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d.", err,
+            errno);
+
+        for (int line = 0; line < MAXGPIO; line++) {
 		if (gpi[line] != NULL) {
 			free(gpi[line]);
 		}
 	}
+*/
 }
 
 void setup_gpiod_handler(char *dev, char *cons)
 {
-	unsigned int offsets[MAXGPIO];
-	int num_lines = 0;
 	int err = 0;
 	for (int line = 0; line < MAXGPIO; line++) {
 		if (gpi[line] != NULL && gpi[line]->type != GPI_AUX) {
