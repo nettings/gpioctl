@@ -167,7 +167,7 @@ int parse_cmdline(int argc, char *argv[])
 				ERR("clk value out of range.");
 				goto error;
 			}
-			if (controllers[data->pin1] != NULL) {
+			if (controller[data->pin1] != NULL) {
 				ERR("clk pin already assigned.");
 				goto error;
 			}
@@ -176,12 +176,12 @@ int parse_cmdline(int argc, char *argv[])
 				ERR("dt value of of range.");
 				goto error;
 			}
-			if (controllers[data->pin2] != NULL) {
+			if (controller[data->pin2] != NULL) {
 				ERR("dt pin already assigned.");
 				goto error;
 			}
-			controllers[data->pin1] = data;
-			controllers[data->pin2] = data;
+			controller[data->pin1] = data;
+			controller[data->pin2] = data;
 			data->type = ROTARY;
 #ifdef HAVE_JACK
 			if (match(config[2], "jack")) {
