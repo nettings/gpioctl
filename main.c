@@ -46,7 +46,9 @@ static void signal_handler(int sig)
 {
 	NFO("Received signal, terminating.");
 #ifdef HAVE_ALSA
-	shutdown_ALSA();
+	if (use_alsa) {
+		shutdown_ALSA_mixer();
+	}
 #endif
 #ifdef HAVE_JACK
 	if (use_jack) {
@@ -55,6 +57,7 @@ static void signal_handler(int sig)
 	}
 #endif
 	shutdown_gpiod();
+	exit(0);
 }
 
 static void update_stdout(control_t* c) {
@@ -74,24 +77,27 @@ static void update_jack(control_t* c) {
 #endif
 
 #ifdef HAVE_ALSA
-static void update_alsa(control_t* c) {
+static void update_alsa(control_t* c, int val) {
 	switch (c->type) {
 	case ROTARY:
-		set_ALSA_volume(c->param1, c->step, val);
+		set_ALSA_volume(c->param1, val * c->step * 100);
 		break;
 	case SWITCH:
-		if (val == 0)
-			return;
-		c->value = 1 - c->value;
-		set_ALSA_mute(c->param1, c->value);
+		set_ALSA_mute(c->param1, val);
 		break;
 	}
-	NFO("ALSA:\t<%02d|% 2d>", line, val);
+	NFO("ALSA:\t<%02d|% 2d>", c->pin1 , c->value);
 }
 #endif
 
 void handle_gpi(int line, int val) {
 	control_t* c = controller[line];
+#ifdef HAVE_ALSA
+	if (c->target == ALSA) {
+		update_alsa(c, val);
+		return;
+	}
+#endif
 	switch (c->type) {
 	case ROTARY:
 		if ((val < 0 && c->value > c->min)) {
@@ -139,9 +145,10 @@ void handle_gpi(int line, int val) {
 #endif
 #ifdef HAVE_ALSA
 	case ALSA:
-		update_alsa(c);
 		break;
-#endif
+#endif;
+	default:
+		ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.", c->target);
 	}
 }
 
@@ -150,7 +157,7 @@ void handle_gpi(int line, int val) {
 int main(int argc, char *argv[])
 {
 	control_t *c;
-	
+	void* p;
 
 	int rval = parse_cmdline(argc, argv);
 	if (rval != EXIT_CLEAN) {
@@ -158,7 +165,9 @@ int main(int argc, char *argv[])
 		exit(rval);
 	}
 #ifdef HAVE_ALSA
-	if (use_alsa) setup_ALSA();
+	if (use_alsa) {
+		setup_ALSA_mixer();
+	}
 #endif
 	for (int i = 0; i < MAXGPIO; i++) {
 		if (controller[i] == NULL) continue;
@@ -178,11 +187,11 @@ int main(int argc, char *argv[])
 #endif
 #ifdef HAVE_ALSA
 		case ALSA:
-			setup_ALSA_mixer_handle(c->param1);
+			p = setup_ALSA_mixer_elem(c->param1);
+			c->param1 = p;
 			break;
 #endif
 		case STDOUT:
-			setup_STDOUT_format(c);
 			break;
 		}
 	}
@@ -193,10 +202,11 @@ int main(int argc, char *argv[])
 		setup_JACK();
 	}
 #endif
-
-	setup_gpiod_handler(GPIOD_DEVICE, JACK_CLIENT_NAME);
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
 
+	setup_gpiod_handler(GPIOD_DEVICE, JACK_CLIENT_NAME);
+
 	sleep(-1);
 }
+
