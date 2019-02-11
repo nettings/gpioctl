@@ -253,11 +253,13 @@ int parse_cmdline(int argc, char *argv[])
 				} else {
 					c->step = atoi(config[4]);
 				}
-				c->param2 = calloc(sizeof(char), MAXNAME);
 				if (config[5] != NULL) {
 					ERR("Too many arguments.");
 					goto error;
 				}					
+				c->min = -200;
+				c->max = 0;
+				c->value = 0;
 				use_alsa = 1;
 			} else
 #endif			 
