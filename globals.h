@@ -44,6 +44,7 @@
 #define NFO(fmt, args...) if (verbose) fprintf(stdout, fmt "\n", ## args);
 
 int verbose;
+int use_jack;
 
 typedef enum { 
         ROTARY, 
@@ -64,12 +65,12 @@ typedef struct {
 	int min;
 	int max;
 	int step;
-	int def;
 	int toggle;
 	unsigned char midi_ch;
 	unsigned char midi_cc;
-	char *param1;
-	char *param2;
+	void *param1;
+	void *param2;
+	int value;
 } control_t;
 
 extern control_t* controllers[];
