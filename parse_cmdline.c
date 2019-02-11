@@ -54,10 +54,9 @@ void usage()
 	printf("               default: the initial value, default is 'min'\n\n"); 
 #endif
 #ifdef HAVE_ALSA
-	printf("      ...,alsa,control[,step],card]\n");
+	printf("      ...,alsa,control[,step]\n");
 	printf("               control: the name of a simple controller in ALSA mixer\n");
 	printf("               step: the step size in dB per click, default 3\n\n");
-	printf("               card:    the name of a sound interface (defaults to hw:0)\n");
 #endif
 	printf("      ...,stdout,format[,min[,max[,step[,default]]]]].\n");
 	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
@@ -80,10 +79,9 @@ void usage()
 	printf("               default: the initial value, default is 'min'\n\n"); 
 #endif
 #ifdef HAVE_ALSA
-	printf("      ...,alsa,control[,card]\n");
+	printf("      ...,alsa,control\n");
 	printf("               control: the name of a simple controller in ALSA mixer\n");
 	printf("                        (switch will operate the MUTE function)\n");
-	printf("               card:    the name of a sound interface (defaults to hw:0)\n\n");
 #endif
 	printf("      ...,stdout,format[,latch[,min[,max[,default]]]]\n");
 	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
@@ -256,12 +254,7 @@ int parse_cmdline(int argc, char *argv[])
 					c->step = atoi(config[4]);
 				}
 				c->param2 = calloc(sizeof(char), MAXNAME);
-				if (config[5] == NULL) {
-					c->param2 = "hw:0";
-				} else {
-					c->param2 = strncpy(c->param2, config[4], MAXNAME);
-				}
-				if (config[6] != NULL) {
+				if (config[5] != NULL) {
 					ERR("Too many arguments.");
 					goto error;
 				}					
