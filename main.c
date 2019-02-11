@@ -26,6 +26,7 @@
 #include "parse_cmdline.h"
 #include "gpiod_process.h"
 #include "build/config.h"
+#include "stdout_process.h"
 
 #ifdef HAVE_JACK
 #include "ringbuffer.h"
@@ -36,7 +37,7 @@
 #include "alsa_process.h"
 #endif
 
-controller_t controllers[] = { 0 };
+control_t *controller[MAXGPIO] = { 0 };
 
 int verbose = 0;
 int use_jack = 0;
@@ -45,7 +46,9 @@ static void signal_handler(int sig)
 {
 	NFO("Received signal, terminating.");
 #ifdef HAVE_ALSA
-	shutdown_ALSA();
+	if (use_alsa) {
+		shutdown_ALSA_mixer();
+	}
 #endif
 #ifdef HAVE_JACK
 	if (use_jack) {
@@ -54,89 +57,107 @@ static void signal_handler(int sig)
 	}
 #endif
 	shutdown_gpiod();
+	exit(0);
+}
+
+static void update_stdout(control_t * c)
+{
+	NFO("STDOUT:\t<%02d|%02d>", c->pin1, c->value);
 }
 
 #ifdef HAVE_JACK
-void jackrot_callback(int line, int val)
+static void update_jack(control_t * c)
 {
-	jack_rotary_t *d = (jack_rotary_t *) controllers[line].data;
 	unsigned char msg[MSG_SIZE];
-
-	if ((val < 0 && d->counter > 0)) {
-		if (d->counter > d->step) {
-			d->counter -= d->step;
-		} else {
-			d->counter = 0;
-		}
-	} else if ((val > 0 && d->counter < MIDI_MAX)) {
-		if (d->counter + d->step < MIDI_MAX) {
-			d->counter += d->step;
-		} else {
-			d->counter = MIDI_MAX;
-		}
-	} else {
-		return;
-	}
-	msg[0] = (MIDI_CC << 4) + (d->midi_ch - 1);
-	msg[1] = d->midi_cc;
-	msg[2] = d->counter;
+	msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
+	msg[1] = c->midi_cc;
+	msg[2] = c->value;
 	ringbuffer_write(msg, MSG_SIZE);
-	NFO("Jack Rotary\t<%02d|% 2d>\t0x%02x%02x%02x", line, val, msg[0],
+	NFO("JACK:\t<%02d|%02d>\t0x%02x%02x%02x", c->pin1, c->value, msg[0],
 	    msg[1], msg[2]);
-}
-
-void jacksw_callback(int line, int val)
-{
-	jack_switch_t *d = (jack_switch_t *) controllers[line].data;
-	unsigned char msg[MSG_SIZE];
-
-	if (d->toggled) {
-		if (val == 0)
-			return;
-		d->value = MIDI_MAX - d->value;
-	} else {
-		d->value = val * MIDI_MAX;
-	}
-	msg[0] = (MIDI_CC << 4) + (d->midi_ch - 1);
-	msg[1] = d->midi_cc;
-	msg[2] = d->value;
-	ringbuffer_write(msg, MSG_SIZE);
-	NFO("Jack Switch\t<%02d|% 2d>\t0x%02x%02x%02x", line, val, msg[0],
-	    msg[1], msg[2]);
-
 }
 #endif
 
 #ifdef HAVE_ALSA
-void alsarot_callback(int line, int val)
+static void update_alsa(control_t * c, int val)
 {
-	amixer_rotary_t *ardata = (amixer_rotary_t *) controllers[line].data;
-	NFO("ALSA Rotary\t<%02d|% 2d>", line, val);
-	set_ALSA_volume(ardata->elem, ardata->step, val);
-}
-
-void alsasw_callback(int line, int val)
-{
-	if (val == 0)
-		return;
-	amixer_mute_t *d = (amixer_mute_t *) controllers[line].data;
-	d->value = 1 - d->value;
-	NFO("ALSA Switch\t<%02d|% 2d>", line, d->value);
-	set_ALSA_mute(d->elem, d->value);
+	switch (c->type) {
+	case ROTARY:
+		set_ALSA_volume(c->param1, val * c->step * 100);
+		break;
+	case SWITCH:
+		set_ALSA_mute(c->param1, val);
+		break;
+	}
+	NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
 }
 #endif
+
+void handle_gpi(int line, int val)
+{
+	control_t *c = controller[line];
+	switch (c->type) {
+	case ROTARY:
+		if ((val < 0 && c->value > c->min)) {
+			if (c->value - c->step > c->min) {
+				c->value -= c->step;
+			} else {
+				c->value = c->min;
+			}
+		} else if ((val > 0 && c->value < c->max)) {
+			if (c->value + c->step < c->max) {
+				c->value += c->step;
+			} else {
+				c->value = c->max;
+			}
+		} else
+			return;
+		break;
+	case SWITCH:
+		if (c->toggle) {
+			if (val == 0)
+				return;
+			if (c->value > c->min) {
+				c->value = c->min;
+			} else {
+				c->value = c->max;
+			}
+		} else {
+			if (val == 0) {
+				c->value = c->min;
+			} else {
+				c->value = c->max;
+			}
+		}
+		break;
+	default:
+		ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
+		break;
+	}
+	switch (c->target) {
+	case STDOUT:
+		update_stdout(c);
+		break;
+#ifdef HAVE_JACK
+	case JACK:
+		update_jack(c);
+		break;
+#endif
+#ifdef HAVE_ALSA
+	case ALSA:
+		update_alsa(c, val);
+		break;
+#endif
+	default:
+		ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
+		    c->target);
+	}
+}
 
 int main(int argc, char *argv[])
 {
-#ifdef HAVE_JACK
-	jack_rotary_t *jrdata;
-	jack_switch_t *jsdata;
-#endif
-
-#ifdef HAVE_ALSA
-	amixer_rotary_t *ardata;
-	amixer_mute_t *amdata;
-#endif
+	control_t *c;
+	void *p;
 
 	int rval = parse_cmdline(argc, argv);
 	if (rval != EXIT_CLEAN) {
@@ -144,53 +165,48 @@ int main(int argc, char *argv[])
 		exit(rval);
 	}
 #ifdef HAVE_ALSA
-	setup_ALSA();
+	if (use_alsa) {
+		setup_ALSA_mixer();
+	}
 #endif
 	for (int i = 0; i < MAXGPIO; i++) {
-		DBG("controllers[%d].type = %d", i, controllers[i].type);
-		switch (controllers[i].type) {
-#ifdef HAVE_JACK
-		case JACKROT:
-			jrdata = (jack_rotary_t *) controllers[i].data;
-			setup_gpiod_rotary(jrdata->clk, jrdata->dt,
-					   &jackrot_callback);
-			use_jack = 1;
+		if (controller[i] == NULL)
+			continue;
+		c = controller[i];
+		switch (c->type) {
+		case ROTARY:
+			setup_gpiod_rotary(c->pin1, c->pin2, &handle_gpi);
 			break;
-		case JACKSW:
-			jsdata = (jack_switch_t *) controllers[i].data;
-			setup_gpiod_switch(jsdata->sw, &jacksw_callback);
-			use_jack = 1;
+		case SWITCH:
+			setup_gpiod_switch(c->pin1, &handle_gpi);
+			break;
+		}
+		switch (c->target) {
+#ifdef HAVE_JACK
+		case JACK:
 			break;
 #endif
 #ifdef HAVE_ALSA
-		case ALSAROT:
-			ardata = (amixer_rotary_t *) controllers[i].data;
-			ardata->elem =
-			    setup_ALSA_mixer_handle(ardata->mixer_scontrol);
-			setup_gpiod_rotary(ardata->clk, ardata->dt,
-					   &alsarot_callback);
-			break;
-		case ALSASW:
-			amdata = (amixer_mute_t *) controllers[i].data;
-			amdata->elem =
-			    setup_ALSA_mixer_handle(amdata->mixer_scontrol);
-			amdata->value = 1;	//default to on
-			setup_gpiod_switch(amdata->sw, &alsasw_callback);
+		case ALSA:
+			p = setup_ALSA_mixer_elem(c->param1);
+			c->param1 = p;
 			break;
 #endif
+		case STDOUT:
+			break;
 		}
 	}
 
 #ifdef HAVE_JACK
 	if (use_jack) {
-		setup_JACK();
 		setup_ringbuffer();
+		setup_JACK();
 	}
 #endif
-
-	setup_gpiod_handler(GPIOD_DEVICE, JACK_CLIENT_NAME);
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
+
+	setup_gpiod_handler(GPIOD_DEVICE, JACK_CLIENT_NAME);
 
 	sleep(-1);
 }

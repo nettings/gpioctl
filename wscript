@@ -21,7 +21,7 @@ def options(opt):
 
 def configure(cnf):
 	cnf.env.libs = ['GPIOD', 'PTHREAD']
-        cnf.env.objs = ['parse_cmdline', 'gpiod_process']
+        cnf.env.objs = ['parse_cmdline', 'gpiod_process', 'stdout_process']
 	cnf.load('compiler_c',
 		cache = True)
 	cnf.check(
@@ -71,21 +71,24 @@ def configure(cnf):
 def build(bld):
 	if 'JACK' in bld.env.libs:
 		bld.objects(
-			source='jack_process.c',
-			target='jack_process')
+			source = 'jack_process.c',
+			target = 'jack_process')
 		bld.objects(
-			source='ringbuffer.c',
-			target='ringbuffer')
+			source = 'ringbuffer.c',
+			target = 'ringbuffer')
 	if 'ASOUND' in bld.env.libs:
 		bld.objects(
-			source='alsa_process.c',
-			target='alsa_process')
+			source = 'alsa_process.c',
+			target = 'alsa_process')
 	bld.objects(
-		source='parse_cmdline.c',
-		target='parse_cmdline')
+		source = 'parse_cmdline.c',
+		target = 'parse_cmdline')
 	bld.objects(
 		source = 'gpiod_process.c',
-		target='gpiod_process')
+		target = 'gpiod_process')
+	bld.objects(
+		source = 'stdout_process.c',
+		target = 'stdout_process')
 	bld.program(
 		source = 'main.c', 
 		target = 'gpioctl',

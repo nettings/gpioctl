@@ -22,11 +22,14 @@
 #define JACK_CLIENT_NAME "gpioctl"
 #define JACK_PORT_NAME "midi_out"
 #define GPIOD_DEVICE "pinctrl-bcm2835"
-#define MAXGPIO 32
-#define MIDI_MAX 0x7f
+#define MAXGPIO 64
+#define MAXMIDICH 15
+#define MAXCCVAL 0x7f
+#define MAXCC 119
 #define MIDI_CC 0xb
 #define MSG_SIZE 3
 #define MAXNAME 64
+#define ALSA_CARD "default"
 
 #include <stdio.h>
 #include "build/config.h"
@@ -35,64 +38,46 @@
 #define DBG(fmt, args...) fprintf(stdout, "%s:%d %s(): " fmt "\n", __FILE__, __LINE__, __func__,  ## args)
 #define ERR(fmt, args...) fprintf(stderr, "%s:%d %s(): \x1b[01;31m" fmt "\x1b[0m\n", __FILE__, __LINE__, __func__, ## args)
 #else
-#define DBG(fmt, args...) 
+#define DBG(fmt, args...)
 #define ERR(fmt, args...) fprintf(stderr, "\x1b[31m"fmt"\x1b[0m\n", ## args)
 #endif
 
 #define NFO(fmt, args...) if (verbose) fprintf(stdout, fmt "\n", ## args);
 
 int verbose;
+int use_jack;
+int use_alsa;
 
-enum ctl_types {
-        UNUSED,
-        JACKROT,
-        JACKSW,
-        ALSAROT,
-        ALSASW
-};
+typedef enum {
+	NOCTL,
+	AUX,
+	ROTARY,
+	SWITCH
+} control_type_t;
 
-typedef struct {
-        enum ctl_types type;
-        void *data;
-} controller_t;
-
-controller_t controllers[MAXGPIO];
-
-#ifdef HAVE_JACK
-typedef struct {
-        int clk;
-        int dt;
-        int step;
-        unsigned char midi_ch;
-        unsigned char midi_cc;
-        unsigned char counter;
-} jack_rotary_t;
+typedef enum {
+	NOTGT,
+	STDOUT,
+	JACK,
+	ALSA
+} control_target_t;
 
 typedef struct {
-        int sw;
-        unsigned char midi_ch;
-        unsigned char midi_cc;
-        unsigned char value;
-        int toggled;
-} jack_switch_t;
-#endif
+	unsigned char pin1;
+	unsigned char pin2;
+	control_type_t type;
+	control_target_t target;
+	int min;
+	int max;
+	int step;
+	int toggle;
+	unsigned char midi_ch;
+	unsigned char midi_cc;
+	void *param1;
+	void *param2;
+	int value;
+} control_t;
 
-#ifdef HAVE_ALSA
-typedef struct {
-        int clk;
-        int dt;
-        int step;
-        char mixer_scontrol[MAXNAME];
-        void* elem;
-} amixer_rotary_t;
-
-typedef struct {
-        int sw;
-        char mixer_scontrol[MAXNAME];
-        void* elem;
-        int value;
-} amixer_mute_t;
-
-#endif
+extern control_t *controller[];
 
 #endif

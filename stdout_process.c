@@ -16,14 +16,25 @@
 
 */
 
-#ifndef ALSA_PROCESS_H
-#define ALSA_PROCESS_H
-#include <alsa/asoundlib.h>
+#include "stdout_process.h"
+#include <stdio.h>
+#include <string.h>
+#include "globals.h"
 
-void setup_ALSA_mixer();
-void shutdown_ALSA_mixer();
-snd_mixer_elem_t *setup_ALSA_mixer_elem(char *mixer_scontrol);
-int set_ALSA_volume(snd_mixer_elem_t * elem, int val);
-int set_ALSA_mute(snd_mixer_elem_t * elem, int val);
+char *setup_STDOUT_format(char *c)
+{
+	char *tok_gpi;
+	char *tok_val;
 
-#endif
+	tok_gpi = strstr(c, "%gpi%");
+	tok_val = strstr(c, "%val%");
+	if (tok_gpi == NULL) {
+		ERR("No %%gpi%% token found.");
+	}
+	if (tok_val == NULL) {
+		ERR("No %%val%% token found.");
+	}
+
+	return NULL;
+
+}
