@@ -89,6 +89,10 @@ static void update_alsa(control_t * c, int val)
 	case SWITCH:
 		set_ALSA_mute(c->param1, val);
 		break;
+	default:
+		ERR("Found c->type %d in ALSA handler. THIS SHOULD NEVER HAPPEN.",
+                    c->type);
+                break;
 	}
 	NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
 }
@@ -188,6 +192,8 @@ int main(int argc, char *argv[])
 		case SWITCH:
 			setup_gpiod_switch(c->pin1, &handle_gpi);
 			break;
+		default:
+			 ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
 		}
 		switch (c->target) {
 #ifdef HAVE_JACK
@@ -202,6 +208,8 @@ int main(int argc, char *argv[])
 #endif
 		case STDOUT:
 			break;
+		default:
+			 ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.", c->target);
 		}
 	}
 
