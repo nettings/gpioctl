@@ -35,8 +35,8 @@ void usage()
 	     JACK_CLIENT_NAME);
 	printf
 	    ("portable libgpiod kernel interface, to create JACK MIDI CC messages at\n");
-	printf("%s:%s or directly interact with an ALSA mixer control.\n",
-	       JACK_CLIENT_NAME, JACK_PORT_NAME);
+	printf("%s:%s, directly interact with an ALSA mixer control, or print formatted\n", JACK_CLIENT_NAME, JACK_PORT_NAME);
+	printf("values to stdout.\n");
 	printf
 	    ("We assume GPI pins have a pull-up, so the return should be connected to ground.\n");
 	printf("-h|--help      This help.\n");
