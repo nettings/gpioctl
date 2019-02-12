@@ -65,7 +65,7 @@ int set_ALSA_volume(snd_mixer_elem_t * elem, int val)
 
 	snd_mixer_handle_events(mixer_handle);	// make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
 	err =
-	    snd_mixer_selem_get_playback_dB(elem, SND_MIXER_SCHN_UNKNOWN,
+	    snd_mixer_selem_get_playback_dB(elem, 0,
 					    &cval);
 	if (err) {
 		ERR("ALSA error getting value for %s: %s.",
@@ -93,7 +93,7 @@ int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
 
 	snd_mixer_handle_events(mixer_handle);	// make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
 	err =
-	    snd_mixer_selem_get_playback_switch(elem, SND_MIXER_SCHN_UNKNOWN,
+	    snd_mixer_selem_get_playback_switch(elem, 0,
 						&cval);
 	if (err) {
 		ERR("ALSA error getting value for %s: %s.",
