@@ -65,6 +65,8 @@ def configure(cnf):
 	cnf.cc_add_flags()
 	cnf.link_add_flags()
 	cnf.cxx_add_flags()
+	cnf.add_os_flags('DESTDIR');
+	cnf.add_os_flags('PREFIX');
 	cnf.write_config_header('config.h');
 	
 
@@ -93,5 +95,6 @@ def build(bld):
 		source = 'main.c', 
 		target = 'gpioctl',
 		use = bld.env.objs,
-		uselib = bld.env.libs)
+		uselib = bld.env.libs,
+		install_path = '${DESTDIR}/${PREFIX}/bin')
 	
