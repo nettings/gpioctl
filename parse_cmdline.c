@@ -34,7 +34,7 @@ void usage()
 	    ("\n%s handles switches and rotary encoders connected to GPIOs, using the\n",
 	     JACK_CLIENT_NAME);
 	printf
-	    ("portable libgpiod kernel interface, to create JACK MIDI CC messages at\n");
+	    ("portable libgpiod kernel interface, to send JACK MIDI CC messages via \n");
 	printf("%s:%s, directly interact with an ALSA mixer control, or print formatted\n", JACK_CLIENT_NAME, JACK_PORT_NAME);
 	printf("values to stdout.\n");
 	printf
@@ -43,7 +43,7 @@ void usage()
 	printf("-v|--verbose   Print current controller values.\n\n");
 	printf
 	    ("The following options may be specified multiple times. All parameters must be\n");
-	printf("separated by commas, no spaces.\n\n");
+	printf("separated by commas, no spaces. Parameters in brackets are optional.\n\n");
 	printf("-r|--rotary clk,dt,type,...\n");
 	printf("               Set up a rotary encoder.\n");
 	printf
@@ -53,7 +53,7 @@ void usage()
 	    ("               dt:      the GPI number of the second encoder contact (0-%d)\n",
 	     MAXGPIO);
 	printf
-	    ("               Depending on 'type', other options must follow:\n\n");
+	    ("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
 	printf("      ...,jack,cc,[ch[,min[,max[,step[,default]]]]]\n");
 	printf
@@ -79,14 +79,14 @@ void usage()
 	printf
 	    ("               step: the step size in dB per click, default 3\n\n");
 #endif
-	printf("      ...,stdout,format[,min[,max[,step[,default]]]]].\n");
+	printf("     ...,stdout,format[,min[,max[,step[,default]]]]].\n");
 	printf
 	    ("               format:  a string that can contain the special tokens '%%gpi%%'\n");
 	printf
 	    ("                        (the pin number) and '%%val%%' (the value)\n");
-	printf("               min:     minimum value (%d-%d), default 0\n",
+	printf("               min:     minimum value (%d - %d), default 0\n",
 	       INT_MIN, INT_MAX);
-	printf("               max:     maximum value (%d-%d), default 100\n",
+	printf("               max:     maximum value (%d - %d), default 100\n",
 	       INT_MIN, INT_MAX);
 	printf("               step:    the step size per click, default 1\n");
 	printf
@@ -97,9 +97,9 @@ void usage()
 	    ("               sw:      the GPI pin number of the switch contact (0-%d)\n",
 	     MAXGPIO);
 	printf
-	    ("               Depending on 'type', other options must follow:\n\n");
+	    ("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
-	printf("      ...,jack,cc,[ch[,toggle[,min[,max[,default]]]]]]\n");
+	printf("      ...,jack,cc,[ch[,toggle[,min[,max[,default]]]]]\n");
 	printf
 	    ("               cc:      MIDI continous controller number (0-120)\n");
 	printf("               ch:      MIDI channel (1-16), default 1\n");
