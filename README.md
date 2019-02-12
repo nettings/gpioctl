@@ -117,8 +117,8 @@ in the middle tied to the return of the switch on the right.")
 ## Enabling the pull-up resistors
 
 libgpiod will set the pin direction to "input" automatically, but it is not
-currently able to set other pin features. So you will have to use a hardware-
-specific tool to enable pull-ups, or connect your controller board to
+currently able to set other pin features. So you will have to use a 
+hardware-specific tool to enable pull-ups, or connect your controller board to
 an appropriate voltage source and add physical pull-ups.
 
 On the Raspberry Pi, you can use the `gpio` command that comes with
@@ -170,11 +170,13 @@ Start a JACK server. Then open another terminal and run
 ```
 $ jack_midi_dump
 ```
+which will dump all incoming JACK MIDI messages to the screen.
+
 In a third terminal, run
 ```
 $ gpioctl -v -r 17,27,jack,1,15 -s 6,jack,1,16,1
 ```
-If all goes well, you should see a two new jack clients, which you connect: 
+If all goes well, you should see two new jack clients, which you connect: 
 ```
 $ jack_lsp
 system:playback_1
@@ -191,7 +193,7 @@ The most simple way of using gpioctl is to have it spit out controller
 values to standard output. The formatting option is currently not
 implemented and will be ignored.
 ```
-$ gpioctl -r 17,27,stdout -s 6,stdout,1
+$ gpioctl -r 17,27,stdout,FOOBAR -s 6,stdout,FOOBAR,1
 ```
 
 
