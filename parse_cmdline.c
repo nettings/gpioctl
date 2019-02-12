@@ -313,8 +313,10 @@ int parse_cmdline(int argc, char *argv[])
 					ERR("Too many arguments.");
 					goto error;
 				}
-				c->min = -200;
-				c->max = 0;
+				// FIXME: this is a dirty hack to avoid running into limits
+				// while the ALSA and counter logic don't talk to each other.
+				c->min = -10000;
+				c->max = 10000;
 				c->value = 0;
 				use_alsa = 1;
 			} else
