@@ -19,7 +19,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define JACK_CLIENT_NAME "gpioctl"
+#define PROGRAM_NAME "gpioctl"
 #define JACK_PORT_NAME "midi_out"
 #define GPIOD_DEVICE "pinctrl-bcm2835"
 #define MAXGPIO 64

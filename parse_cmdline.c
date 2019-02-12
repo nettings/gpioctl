@@ -30,9 +30,9 @@
 
 void usage()
 {
-	printf("\n%s handles switches and rotary encoders connected to GPIOs, using the\n", JACK_CLIENT_NAME);
+	printf("\n%s handles switches and rotary encoders connected to GPIOs, using the\n", PROGRAM_NAME);
 	printf("portable libgpiod kernel interface, to send JACK MIDI CC messages via \n");
-	printf("%s:%s, directly interact with an ALSA mixer control, or print formatted\n", JACK_CLIENT_NAME, JACK_PORT_NAME);
+	printf("%s:%s, directly interact with an ALSA mixer control, or print formatted\n", PROGRAM_NAME, JACK_PORT_NAME);
 	printf("values to stdout.\n");
 	printf("We assume GPI pins have a pull-up, so the return should be connected to ground.\n");
 	printf("-h|--help      This help.\n");
@@ -96,7 +96,7 @@ void usage()
 	printf("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
 	printf("GPIO pins. Use a hardware-specific external tool to enable them, or add\n");
 	printf("physical pull-ups.\n\n");
-	printf("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n", JACK_CLIENT_NAME);
+	printf("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n", PROGRAM_NAME);
 }
 
 static int tokenize(char *argument, char *config[])

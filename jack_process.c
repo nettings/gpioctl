@@ -44,7 +44,7 @@ static int process(jack_nframes_t nframes, void *arg)
 int setup_JACK()
 {
 	if ((client =
-	     jack_client_open(JACK_CLIENT_NAME, JackNoStartServer,
+	     jack_client_open(PROGRAM_NAME, JackNoStartServer,
 			      NULL)) == 0) {
 		ERR("Failed to create client. Is the JACK server running?");
 		return -1;
