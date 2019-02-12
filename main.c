@@ -62,7 +62,8 @@ static void signal_handler(int sig)
 
 static void update_stdout(control_t * c)
 {
-	NFO("STDOUT:\t<%02d|%02d>", c->pin1, c->value);
+	fprintf(stdout,"%03d\t%05d\n", c->pin1, c->value);
+	fflush(stdout);
 }
 
 #ifdef HAVE_JACK
@@ -203,6 +204,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
 
