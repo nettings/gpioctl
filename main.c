@@ -192,6 +192,9 @@ int main(int argc, char *argv[])
 		case SWITCH:
 			setup_gpiod_switch(c->pin1, &handle_gpi);
 			break;
+		case AUX:
+			// this line is a dt pin for a rotary, without its own handler
+			continue;
 		default:
 			 ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
 		}
