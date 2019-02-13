@@ -41,8 +41,8 @@ void usage()
 	printf("separated by commas, no spaces. Parameters in brackets are optional.\n\n");
 	printf("-r|--rotary clk,dt,type,...\n");
 	printf("               Set up a rotary encoder.\n");
-	printf("               clk:     the GPI number of the first encoder contact (0-%d)\n", MAXGPIO);
-	printf("               dt:      the GPI number of the second encoder contact (0-%d)\n", MAXGPIO);
+	printf("               clk:     the GPI number of the first encoder contact (0-%d)\n", MAXGPIO - 1);
+	printf("               dt:      the GPI number of the second encoder contact (0-%d)\n", MAXGPIO - 1);
 	printf("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
 	printf("      ...,jack,cc,[ch[,min[,max[,step[,default]]]]]\n");
@@ -67,7 +67,7 @@ void usage()
 	printf("               default:	the initial value, default is 'min'\n\n");
 	printf("-s|--switch sw,type...\n");
 	printf("               Set up a switch.\n");
-	printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO);
+	printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO - 1);
 	printf("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
 	printf("      ...,jack,cc,[ch[,toggle[,min[,max[,default]]]]]\n");
@@ -166,7 +166,7 @@ int parse_cmdline(int argc, char *argv[])
 				goto error;
 			}
 			c->pin1 = atoi(config[0]);
-			if (c->pin1 < 0 || c->pin1 > MAXGPIO) {
+			if (c->pin1 < 0 || c->pin1 >= MAXGPIO) {
 				ERR("clk value out of range.");
 				goto error;
 			}
@@ -175,7 +175,7 @@ int parse_cmdline(int argc, char *argv[])
 				goto error;
 			}
 			c->pin2 = atoi(config[1]);
-			if (c->pin2 < 0 || c->pin2 > MAXGPIO) {
+			if (c->pin2 < 0 || c->pin2 >= MAXGPIO) {
 				ERR("dt value of of range.");
 				goto error;
 			}
@@ -326,7 +326,7 @@ int parse_cmdline(int argc, char *argv[])
 				goto error;
 			}
 			c->pin1 = atoi(config[0]);
-			if (c->pin1 < 0 || c->pin1 > MAXGPIO) {
+			if (c->pin1 < 0 || c->pin1 >= MAXGPIO) {
 				ERR("sw value out of range.");
 				goto error;
 			}
