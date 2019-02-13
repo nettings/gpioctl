@@ -26,8 +26,8 @@ separated by commas, no spaces. Parameters in brackets are optional.
 
 -r|--rotary clk,dt,type,...
                Set up a rotary encoder.
-               clk:     the GPI number of the first encoder contact (0-64)
-               dt:      the GPI number of the second encoder contact (0-64)
+               clk:     the GPI number of the first encoder contact (0-63)
+               dt:      the GPI number of the second encoder contact (0-63)
                Depending on 'type', the remaining parameters are:
 
       ...,jack,cc,[ch[,min[,max[,step[,default]]]]]
@@ -52,7 +52,7 @@ separated by commas, no spaces. Parameters in brackets are optional.
 
 -s|--switch sw,type...
                Set up a switch.
-               sw:      the GPI pin number of the switch contact (0-64)
+               sw:      the GPI pin number of the switch contact (0-63)
                Depending on 'type', the remaining parameters are:
 
       ...,jack,cc,[ch[,toggle[,min[,max[,default]]]]]
@@ -98,9 +98,9 @@ open or closed), you know you just went one click clockwise.
 If the switches are in opposite states, you went one click
 counter-clockwise.
 
-Here's a Raspberry Pi 3B+ with a HifiBerry AMP2 and an ALPS rotary encoder with
-switch connected to the GPIOs. I'm using GPIOs 17 (white), 27 (grey), 6
-(purple) in this example, the ground is black. Check out the pins at
+Here's a Raspberry Pi 3B+ with a HifiBerry AMP2 the ALPS rotary
+encoder/switch connected to the GPIOs. I'm using GPIOs 17 (white), 27 (grey), 
+6 (purple) in this example, the ground is black. Check out the pins at
 https://pinout.xyz/#.
 
 ![Figure 1](doc/RaspberryPi3B+_HifiBerryAMP2_ALPSRotaryEnc.jpg "A Raspberry Pi 3B+ and
