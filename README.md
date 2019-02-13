@@ -118,7 +118,7 @@ In case you were wondering: you can use as many encoders as you have GPIs
 (tested to up to four):
 
 ![Figure 3](doc/Board_with_four_Encoders.jpg "A board with four ALPS
-pushbutton encoders wired to a cannibalized ribbon cable."
+pushbutton encoders wired to a cannibalized ribbon cable.")
 
 ## Enabling the pull-up resistors
 
