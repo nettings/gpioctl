@@ -128,10 +128,10 @@ hardware-specific tool to enable pull-ups, or connect your controller board to
 an appropriate voltage source and add physical pull-ups.
 
 On the Raspberry Pi, you can use the `gpio` command that comes with
-wiringPi:
+wiringpi:
 
 ```
-$ sudo apt-get install wiringPi         # if you don't have it yet
+$ sudo apt-get install wiringpi         # if you don't have it yet
 $ gpio -g mode 17 up
 $ gpio -g mode 27 up
 $ gpio -g mode 6 up
@@ -191,7 +191,9 @@ midi-monitor:input
 gpioctl:midi_out
 $ jack_connect gpioctl:midi_out midi-monitor:input
 ```
-Now use the controls and watch the JACK MIDI evens coming in.
+Now use the controls and watch the JACK MIDI events coming in.
+Of course the point is to use another JACK client that does useful things
+with those controller inputs. Ardour or mod-host are examples.
 
 ## Using the stdout frontend
 
@@ -209,7 +211,7 @@ In addition to the usual system header files and libraries, gpioctl requires
 `libgpiod-dev`. If you want to use JACK MIDI, you need `libjack-jackd2-dev` 
 or `libjack-dev` (untested). If you want to access the ALSA mixer, you need
 `libasound2-dev`.
-I recommend installing `wiringPi` on the Pi or another hardware-specific GPIO 
+I recommend installing `wiringpi` on the Pi or another hardware-specific GPIO 
 controller tool for your platform. (Package names are for Raspbian, they may
 differ on your system.)
 
