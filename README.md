@@ -8,6 +8,12 @@ Since it uses a generic GPIO interface via libgpiod, it might also be useful on
 other hardware platforms. I cannot test this personally, but your feedback
 is welcome. 
 
+gpioctl is written in C because it turned out that I couldn't get
+Python-based solutions to perform well enough to work with JACK at low
+latencies. If you don't need JACK, you might find Python friendlier to work
+with. A good example is this one:
+https://gist.github.com/savetheclocktower/9b5f67c20f6c04e65ed88f2e594d43c1
+ 
 ## Usage
 
 ```
