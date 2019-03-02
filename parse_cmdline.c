@@ -58,6 +58,15 @@ void usage()
 	printf("               control: the name of a simple controller in ALSA mixer\n");
 	printf("               step: the step size in dB per click, default 3\n\n");
 #endif
+#ifdef HAVE_OSC
+	printf("       ...,osc,url,osctype,min,max,step,default\n");
+	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level\n");
+	printf("               osctype: The OSC type of the parameter, any of [ifhdc]\n");
+	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
+	printf("               step:    the step size per click, default 1\n");
+	printf("               default:	the initial value, default is 'min'\n\n");
+#endif
 	printf("    ...,stdout,format[,min[,max[,step[,default]]]]].\n");
 	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
 	printf("                        (the pin number) and '%%val%%' (the value)\n");
@@ -272,6 +281,49 @@ int parse_cmdline(int argc, char *argv[])
 				use_alsa = 1;
 			} else
 #endif
+#ifdef HAVE_OSC
+			if (match(config[2], "osc")) {
+				c->target = OSC;
+				c->param1 = calloc(sizeof(char), MAXNAME);
+				c->param1 = strncpy(c->param1, config[3], MAXNAME);
+				if (strlen(c->param1) < 1) {
+					ERR("url cannot be empty");
+					goto error;
+				}
+				if (config[4] == NULL) {
+					ERR("osctype cannot be empty");
+					goto error;
+				} else {
+					c->param2 = calloc(sizeof(char), MAXNAME);
+					c->param2 = strncpy(c->param1, config[4], MAXNAME);
+				}
+				if (config[5] == NULL) {
+					c->min = 0;
+				} else {
+					c->min = atoi(config[5]);
+				}
+				if (config[6] == NULL) {
+					c->max = 100;
+				} else {
+					c->max = atoi(config[6]);
+				}
+				if (config[7] == NULL) {
+					c->step = 1;
+				} else {
+					c->step = atoi(config[7]);
+				}
+				if (config[8] == NULL) {
+					c->value = c->min;
+				} else {
+					c->value = atoi(config[8]);
+				}
+				if (config[9] != NULL) {
+					ERR("Too many arguments.");
+					goto error;
+				}
+				use_osc = 1;
+			} else
+#endif
 			if (match(config[2], "stdout")) {
 				c->target = STDOUT;
 				c->param1 = calloc(sizeof(char), MAXNAME);
@@ -413,6 +465,58 @@ int parse_cmdline(int argc, char *argv[])
 				c->value = 0;
 				c->toggle = 1;
 				use_alsa = 1;
+			} else
+#endif
+#ifdef HAVE_OSC
+			if (match(config[2], "osc")) {
+				c->target = OSC;
+				c->param1 = calloc(sizeof(char), MAXNAME);
+				c->param1 = strncpy(c->param1, config[3], MAXNAME);
+				if (strlen(c->param1) < 1) {
+					ERR("url cannot be empty");
+					goto error;
+				}
+				if (config[4] == NULL) {
+					ERR("osctype cannot be empty");
+					goto error;
+				} else {
+					c->param2 = calloc(sizeof(char), MAXNAME);
+					c->param2 = strncpy(c->param1, config[4], MAXNAME);
+				}
+				if (config[5] == NULL) {
+					c->toggle = 0;
+				} else {
+					c->toggle = atoi(config[5]);
+					if (c->toggle != 0 && c->toggle != 1) {
+						ERR("toggle must be 0 or 1.");
+						goto error;
+					}
+				}
+				if (config[6] == NULL) {
+					c->min = 0;
+				} else {
+					c->min = atoi(config[6]);
+				}
+				if (config[7] == NULL) {
+					c->max = 100;
+				} else {
+					c->max = atoi(config[6]);
+				}
+				if (config[7] == NULL) {
+					c->value = c->min;
+				} else {
+					c->value = atoi(config[7]);
+					if (c->value < c->min
+					    || c->value > c->max) {
+						ERR("default value out of range.");
+						goto error;
+					}
+				}
+				if (config[8] != NULL) {
+					ERR("Too many arguments.");
+					goto error;
+				}
+				use_osc = 1;
 			} else
 #endif
 			if (match(config[1], "stdout")) {
