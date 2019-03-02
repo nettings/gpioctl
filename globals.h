@@ -47,6 +47,7 @@
 int verbose;
 int use_jack;
 int use_alsa;
+int use_osc;
 
 typedef enum {
 	NOCTL,
@@ -59,7 +60,8 @@ typedef enum {
 	NOTGT,
 	STDOUT,
 	JACK,
-	ALSA
+	ALSA,
+	OSC
 } control_target_t;
 
 typedef struct {

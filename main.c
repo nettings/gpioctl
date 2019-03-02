@@ -37,6 +37,10 @@
 #include "alsa_process.h"
 #endif
 
+#ifdef HAVE_OSC
+#include "osc_process.h"
+#endif
+
 control_t *controller[MAXGPIO] = { 0 };
 
 int verbose = 0;
@@ -98,6 +102,13 @@ static void update_alsa(control_t * c, int val)
 }
 #endif
 
+#ifdef HAVE_OSC
+static void update_osc(control_t * c, int val)
+{
+	DBG("OSC handler called with c=%f, val=%d.", c, val);
+}
+#endif
+
 void handle_gpi(int line, int val)
 {
 	control_t *c = controller[line];
@@ -151,6 +162,11 @@ void handle_gpi(int line, int val)
 #ifdef HAVE_ALSA
 	case ALSA:
 		update_alsa(c, val);
+		break;
+#endif
+#ifdef HAVE_OSC
+	case OSC:
+		update_osc(c, val);
 		break;
 #endif
 	default:
@@ -207,6 +223,11 @@ int main(int argc, char *argv[])
 		case ALSA:
 			p = setup_ALSA_mixer_elem(c->param1);
 			c->param1 = p;
+			break;
+#endif
+#ifdef HAVE_OSC
+		case OSC:
+			DBG("OSC controller required, but not yet implemented.");
 			break;
 #endif
 		case STDOUT:
