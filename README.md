@@ -150,7 +150,7 @@ switch. The value ("V") column should change.
 
 If your pin requirements do not change at runtime, you can also  preconfigure
 your pin states via
-`[/boot/config.txt](https://www.raspberrypi.org/forums/viewtopic.php?f=117&t=208748)`.
+[/boot/config.txt](https://www.raspberrypi.org/forums/viewtopic.php?f=117&t=208748).
 
 ## Controlling the ALSA mixer
 
