@@ -17,7 +17,7 @@
 */
 
 #ifndef JACK_PROCESS_H
-#define JACK_PROCESS_h
+#define JACK_PROCESS_H
 
 int setup_JACK();
 int shutdown_JACK();
