@@ -18,6 +18,12 @@ def options(opt):
 		action = 'store_true',
 		dest = 'noalsa',
 		help = 'Do not use ALSA even if library is present.')
+	opt.add_option(
+		'--disable-osc',
+		default = False,
+		action = 'store_true',
+		dest = 'noosc',
+		help = 'Do not use OSC even if liblo is present.')
 
 def configure(cnf):
 	cnf.env.libs = ['GPIOD', 'PTHREAD']
@@ -62,6 +68,17 @@ def configure(cnf):
 		if lib and header:
 			cnf.env.libs += ['ASOUND']
 			cnf.env.objs += ['alsa_process']
+	if not cnf.options.noosc:
+		lib = cnf.check(
+			features = 'c cshlib',
+			lib = 'lo',
+			uselib_store = 'LO',
+			define_name = 'HAVE_OSC')
+		header = cnf.check(
+			header_name = 'lo/lo.h')
+		if lib and header:
+			cnf.env.libs += ['LO']
+			cnf.env.objs += ['osc_process']
 	cnf.cc_add_flags()
 	cnf.link_add_flags()
 	cnf.cxx_add_flags()
@@ -82,6 +99,10 @@ def build(bld):
 		bld.objects(
 			source = 'alsa_process.c',
 			target = 'alsa_process')
+	if 'LO' in bld.env.libs:
+		bld.objects(
+			source = 'osc_process.c',
+			target = 'osc_process')
 	bld.objects(
 		source = 'parse_cmdline.c',
 		target = 'parse_cmdline')
