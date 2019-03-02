@@ -148,6 +148,10 @@ but you can verify the correct setting by running `gpio readall` and then
 run it again after moving the rotary by one click or while holding down the
 switch. The value ("V") column should change.
 
+If your pin requirements do not change at runtime, you can also  preconfigure
+your pin states via
+`[/boot/config.txt](https://www.raspberrypi.org/forums/viewtopic.php?f=117&t=208748)`.
+
 ## Controlling the ALSA mixer
 
 In order to find the right mixer control, play some music and look at 
