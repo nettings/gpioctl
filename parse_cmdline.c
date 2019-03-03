@@ -66,10 +66,10 @@ static int match(char *string1, char *string2)
 void usage()
 {
         printf("\n%s handles switches and rotary encoders connected to GPIOs, using the\n", PROGRAM_NAME);
-        printf("portable libgpiod kernel interface, to send JACK MIDI CC messages via \n");
-        printf("%s:%s, directly interact with an ALSA mixer control, or print formatted\n", PROGRAM_NAME, JACK_PORT_NAME);
-        printf("values to stdout.\n");
-        printf("We assume GPI pins have a pull-up, so the return should be connected to ground.\n");
+        printf("portable libgpiod kernel interface, to send text messages to /dev/stdout.\n");
+        printf("If enabled at build time, you can also send JACK MIDI CC messages,\n");
+        printf("OSC messages, or directly interact with an ALSA mixer control.\n");
+        printf("We assume GPI pins have a pull-up, so the return should be connected to ground.\n\n");
         printf("-h|--help      This help.\n");
         printf("-v|--verbose   Print current controller values.\n\n");
         printf("The following options may be specified multiple times. All parameters must be\n");
