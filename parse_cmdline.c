@@ -92,7 +92,7 @@ void usage()
 	printf("                        (switch will operate the MUTE function)\n");
 #endif
 #ifdef HAVE_OSC
-	printf("       ...,osc,url,path,min,max,step,default\n");
+	printf("       ...,osc,url,path,toggle,min,max,default\n");
 	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level\n");
 	printf("               path:    An OSC path, such as /mixer/level\n");
 	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
@@ -480,36 +480,36 @@ int parse_cmdline(int argc, char *argv[])
 			} else
 #endif
 #ifdef HAVE_OSC
-			if (match(config[2], "osc")) {
+			if (match(config[1], "osc")) {
 				c->target = OSC;
 				c->param1 = calloc(sizeof(char), MAXNAME);
-				c->param1 = strncpy(c->param1, config[3], MAXNAME);
+				c->param1 = strncpy(c->param1, config[2], MAXNAME);
 				if (strlen(c->param1) < 1) {
 					ERR("url cannot be empty");
 					goto error;
 				}
-				if (config[4] == NULL) {
+				if (config[3] == NULL) {
 					ERR("path cannot be empty");
 					goto error;
 				} else {
 					c->param2 = calloc(sizeof(char), MAXNAME);
-					c->param2 = strncpy(c->param1, config[4], MAXNAME);
+					c->param2 = strncpy(c->param2, config[3], MAXNAME);
 				}
-				if (config[5] == NULL) {
+				if (config[4] == NULL) {
 					c->toggle = 0;
 				} else {
-					c->toggle = atoi(config[5]);
+					c->toggle = atoi(config[4]);
 					if (c->toggle != 0 && c->toggle != 1) {
 						ERR("toggle must be 0 or 1.");
 						goto error;
 					}
 				}
-				if (config[6] == NULL) {
+				if (config[5] == NULL) {
 					c->min = 0;
 				} else {
-					c->min = atoi(config[6]);
+					c->min = atoi(config[5]);
 				}
-				if (config[7] == NULL) {
+				if (config[6] == NULL) {
 					c->max = 100;
 				} else {
 					c->max = atoi(config[6]);
@@ -518,8 +518,7 @@ int parse_cmdline(int argc, char *argv[])
 					c->value = c->min;
 				} else {
 					c->value = atoi(config[7]);
-					if (c->value < c->min
-					    || c->value > c->max) {
+					if (c->value < c->min || c->value > c->max) {
 						ERR("default value out of range.");
 						goto error;
 					}
