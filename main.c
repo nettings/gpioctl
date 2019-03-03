@@ -40,7 +40,9 @@
 control_t *controller[MAXGPIO] = { 0 };
 
 int verbose = 0;
+int use_alsa = 0;
 int use_jack = 0;
+int use_osc = 0;
 
 static void signal_handler(int sig)
 {
