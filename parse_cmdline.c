@@ -112,6 +112,14 @@ void usage()
         printf("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n", PROGRAM_NAME);
 }
 
+static void debugmsg(control_t* c) {
+	DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", 
+	                    c->pin1,c->pin2,c->type,c->target,c->min,c->max,c->step,c->toggle,c->midi_ch,c->midi_cc,
+	                    c->param1 == NULL ? "''" : (char*)c->param1,
+	                    c->param2 == NULL ? "''" : (char*)c->param2,
+	                    c->value);
+}
+
 int parse_cmdline(int argc, char *argv[])
 {
 	int o;
@@ -186,47 +194,35 @@ int parse_cmdline(int argc, char *argv[])
 			d->type = AUX;
 #ifdef HAVE_JACK
 			if (match(config[2], "jack")) {
-				if (parse_cmdline_rotary_JACK(c, config)) {
+				if (parse_cmdline_rotary_JACK(c, config))
 					goto error;
-				} else {
-					use_jack = 1;
-				}
+				use_jack = 1;
 			} else
 #endif
 #ifdef HAVE_ALSA
 			if (match(config[2], "alsa")) {
-				if (parse_cmdline_rotary_ALSA(c, config)) {
+				if (parse_cmdline_rotary_ALSA(c, config))
 					goto error;
-				} else {
-					use_alsa = 1;
-				}
+				use_alsa = 1;
 			} else
 #endif
 #ifdef HAVE_OSC
 			if (match(config[2], "osc")) {
-				if (parse_cmdline_rotary_OSC(c, config)) {
+				if (parse_cmdline_rotary_OSC(c, config))
 					goto error;
-				} else {
-					use_osc = 1;
-				}
+				use_osc = 1;
 			} else
 #endif
 			if (match(config[2], "stdout")) {
-				if (parse_cmdline_rotary_STDOUT(c, config)) {
+				if (parse_cmdline_rotary_STDOUT(c, config))
 					goto error;
-				} else {
-					use_stdout = 1;
-				}
+				use_stdout = 1;
 			} else {
 				ERR("Unknown type '%s'.", config[2]);
 				goto error;
 			}
 			ncontrols++;
-			DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", 
-			                    c->pin1,c->pin2,c->type,c->target,c->min,c->max,c->step,c->toggle,c->midi_ch,c->midi_cc,
-			                    c->param1 == NULL ? "''" : (char*)c->param1,
-			                    c->param2 == NULL ? "''" : (char*)c->param2,
-			                    c->value);
+			debugmsg(c);
 			break;
 
 		case 's':
@@ -255,47 +251,35 @@ int parse_cmdline(int argc, char *argv[])
 			c->param2 = calloc(sizeof(char), MAXNAME);
 #ifdef HAVE_JACK
 			if (match(config[1], "jack")) {
-				if (parse_cmdline_switch_JACK(c, config)) {
+				if (parse_cmdline_switch_JACK(c, config))
 					goto error;
-				} else {
-					use_jack = 1;
-				}
+				use_jack = 1;
 			} else
 #endif
 #ifdef HAVE_ALSA
 			if (match(config[1], "alsa")) {
-				if (parse_cmdline_switch_ALSA(c, config)) {
+				if (parse_cmdline_switch_ALSA(c, config))
 					goto error;
-				} else {
-					use_alsa = 1;
-				}
+				use_alsa = 1;
 			} else
 #endif
 #ifdef HAVE_OSC
 			if (match(config[1], "osc")) {
-				if (parse_cmdline_switch_OSC(c, config)) {
+				if (parse_cmdline_switch_OSC(c, config))
 					goto error;
-				} else {
-					use_osc = 1;
-				}
+				use_osc = 1;
 			} else
 #endif
 			if (match(config[1], "stdout")) {
-				if (parse_cmdline_switch_STDOUT(c, config)) {
+				if (parse_cmdline_switch_STDOUT(c, config))
 					goto error;
-				} else {
-					use_stdout = 1;
-				}
+				use_stdout = 1;
 			} else {
 				ERR("Unknown type '%s'.", config[2]);
 				goto error;
 			}
 			ncontrols++;
-			DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", 
-			                    c->pin1,c->pin2,c->type,c->target,c->min,c->max,c->step,c->toggle,c->midi_ch,c->midi_cc,
-			                    c->param1 == NULL ? "''" : (char*)c->param1,
-			                    c->param2 == NULL ? "''" : (char*)c->param2,
-			                    c->value);
+			debugmsg(c);
 			break;
 
 		default:
