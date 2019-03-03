@@ -20,3 +20,7 @@
 #include <lo/lo.h>
 #include "globals.h"
 
+void update_osc(control_t * c, int val)
+{
+        NFO("OSC handler called with c=%f, val=%d.", c, val);
+}

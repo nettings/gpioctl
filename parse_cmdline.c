@@ -60,8 +60,7 @@ void usage()
 #endif
 #ifdef HAVE_OSC
 	printf("       ...,osc,url,osctype,min,max,step,default\n");
-	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level\n");
-	printf("               osctype: The OSC type of the parameter, any of [ifhdc]\n");
+	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl\n");
 	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
 	printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
 	printf("               step:    the step size per click, default 1\n");
@@ -95,7 +94,7 @@ void usage()
 #ifdef HAVE_OSC
 	printf("       ...,osc,url,osctype,min,max,step,default\n");
 	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level\n");
-	printf("               osctype: The OSC type of the parameter, any of [ifhdc]\n");
+	printf("               path:    An OSC path, such as /mixer/level\n");
 	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
 	printf("               min:     value when open (%d - %d), default 0\n", INT_MIN, INT_MAX);
 	printf("               max:     value when closed (%d - %d), default 100\n", INT_MIN, INT_MAX);
@@ -300,7 +299,7 @@ int parse_cmdline(int argc, char *argv[])
 					goto error;
 				}
 				if (config[4] == NULL) {
-					ERR("osctype cannot be empty");
+					ERR("path cannot be empty");
 					goto error;
 				} else {
 					c->param2 = calloc(sizeof(char), MAXNAME);
@@ -486,7 +485,7 @@ int parse_cmdline(int argc, char *argv[])
 					goto error;
 				}
 				if (config[4] == NULL) {
-					ERR("osctype cannot be empty");
+					ERR("path cannot be empty");
 					goto error;
 				} else {
 					c->param2 = calloc(sizeof(char), MAXNAME);

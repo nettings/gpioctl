@@ -102,13 +102,6 @@ static void update_alsa(control_t * c, int val)
 }
 #endif
 
-#ifdef HAVE_OSC
-static void update_osc(control_t * c, int val)
-{
-	DBG("OSC handler called with c=%f, val=%d.", c, val);
-}
-#endif
-
 void handle_gpi(int line, int val)
 {
 	control_t *c = controller[line];
@@ -195,6 +188,10 @@ int main(int argc, char *argv[])
 #ifdef HAVE_ALSA
 	if (use_alsa) {
 		setup_ALSA_mixer();
+	}
+#endif
+#ifdef HAVE_OSC
+	if (use_osc) {
 	}
 #endif
 	for (int i = 0; i < MAXGPIO; i++) {
