@@ -127,7 +127,7 @@ int parse_cmdline(int argc, char *argv[])
 	int i;
 	char *config[MAXARG];
 
-	int ncontrols;
+	int ncontrols = 0;
 
 	control_t *c = NULL;
 	control_t *d = NULL;
