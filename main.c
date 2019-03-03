@@ -142,7 +142,6 @@ void handle_gpi(int line, int val)
 int main(int argc, char *argv[])
 {
 	control_t *c;
-	void *p;
 
 	int rval = parse_cmdline(argc, argv);
 	if (rval != EXIT_CLEAN) {
@@ -184,21 +183,14 @@ int main(int argc, char *argv[])
 			 ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
 		}
 		switch (c->target) {
-#ifdef HAVE_JACK
-		case JACK:
-			break;
-#endif
 #ifdef HAVE_ALSA
 		case ALSA:
-			p = setup_ALSA_mixer_elem(c->param1);
+			void *p = setup_ALSA_mixer_elem(c->param1);
 			c->param1 = p;
 			break;
 #endif
-#ifdef HAVE_OSC
+		case JACK:
 		case OSC:
-			DBG("OSC controller required, but not yet implemented.");
-			break;
-#endif
 		case STDOUT:
 			break;
 		default:
