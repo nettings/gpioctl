@@ -22,8 +22,8 @@
 #include "globals.h"
 
 void help_rotary_OSC();
-int parse_cmdline_rotary_OSC(control_t* c, char *config[]);
+int parse_cmdline_rotary_OSC(control_t * c, char *config[]);
 void help_switch_OSC();
-int parse_cmdline_switch_OSC(control_t* c, char *config[]);
+int parse_cmdline_switch_OSC(control_t * c, char *config[]);
 
 #endif

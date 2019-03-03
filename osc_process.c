@@ -21,22 +21,25 @@
 #include <lo/lo.h>
 #include "globals.h"
 
-void setup_OSC() {
+void setup_OSC()
+{
 }
 
-void shutdown_OSC() {
+void shutdown_OSC()
+{
 }
 
 void update_OSC(control_t * c, int val)
 {
-        NFO("OSC handler called with c=%d, val=%d.", c->value, val);
-        lo_address addr = lo_address_new_from_url((char*)c->param1);
-        if (addr == NULL) {
-                ERR("Could not create OSC address from URL '%s'.", (char*)c->param1);
-        } else {
-                DBG("Sending OSC message '%s %d' to %s.", (char *)c->param2, c->value, (char *)c->param1);
-                lo_send(addr, (char *)c->param2, "i", (char *)c->value);
-                lo_address_free(addr);
-        }
+	NFO("OSC handler called with c=%d, val=%d.", c->value, val);
+	lo_address addr = lo_address_new_from_url((char *)c->param1);
+	if (addr == NULL) {
+		ERR("Could not create OSC address from URL '%s'.",
+		    (char *)c->param1);
+	} else {
+		DBG("Sending OSC message '%s %d' to %s.", (char *)c->param2,
+		    c->value, (char *)c->param1);
+		lo_send(addr, (char *)c->param2, "i", (char *)c->value);
+		lo_address_free(addr);
+	}
 }
-

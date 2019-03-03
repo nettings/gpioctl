@@ -16,31 +16,14 @@
 
 */
 
-#include "stdout_process.h"
-#include <stdio.h>
-#include <string.h>
+#ifndef STDOUT_CMDLINE_H
+#define STDOUT_CMDLINE_H
+
 #include "globals.h"
 
-void update_stdout(control_t * c)
-{
-	fprintf(stdout, "%03d\t%05d\n", c->pin1, c->value);
-	fflush(stdout);
-}
+void help_rotary_STDOUT();
+int parse_cmdline_rotary_STDOUT(control_t * c, char *config[]);
+void help_switch_STDOUT();
+int parse_cmdline_switch_STDOUT(control_t * c, char *config[]);
 
-char *setup_STDOUT_format(char *c)
-{
-	char *tok_gpi;
-	char *tok_val;
-
-	tok_gpi = strstr(c, "%gpi%");
-	tok_val = strstr(c, "%val%");
-	if (tok_gpi == NULL) {
-		ERR("No %%gpi%% token found.");
-	}
-	if (tok_val == NULL) {
-		ERR("No %%val%% token found.");
-	}
-
-	return NULL;
-
-}
+#endif

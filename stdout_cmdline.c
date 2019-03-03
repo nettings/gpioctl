@@ -23,92 +23,106 @@
 #include <limits.h>
 #include "globals.h"
 
-void help_rotary_STDOUT() {
-        printf("    ...,stdout,format[,min[,max[,step[,default]]]]].\n");
-        printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
-        printf("                        (the pin number) and '%%val%%' (the value)\n");
-        printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
-        printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
-        printf("               step:    the step size per click, default 1\n");
-        printf("               default: the initial value, default is 'min'\n\n");
+void help_rotary_STDOUT()
+{
+	printf("    ...,stdout,format[,min[,max[,step[,default]]]]].\n");
+	printf
+	    ("               format:  a string that can contain the special tokens '%%gpi%%'\n");
+	printf
+	    ("                        (the pin number) and '%%val%%' (the value)\n");
+	printf("               min:     minimum value (%d - %d), default 0\n",
+	       INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d - %d), default 100\n",
+	       INT_MIN, INT_MAX);
+	printf("               step:    the step size per click, default 1\n");
+	printf
+	    ("               default: the initial value, default is 'min'\n\n");
 }
 
-int parse_cmdline_rotary_STDOUT(control_t* c, char *config[]) {
-        c->target = STDOUT;
-        c->param1 = strncpy(c->param1, config[3], MAXNAME);
-        // TODO: check for presence of %% tokens instead!
-        if (strlen(c->param1) < 1) {
-                ERR("format cannot be empty.");
-                return -1;
-        }
-        if (config[4] == NULL) {
-                c->min = 0;
-        } else {
-                c->min = atoi(config[4]);
-        }
-        if (config[5] == NULL) {
-                c->max = 100;
-        } else {
-                c->max = atoi(config[5]);
-        }
-        if (config[6] == NULL) {
-                c->step = 1;
-        } else {
-                c->step = atoi(config[6]);
-        }
-        if (config[7] == NULL) {
-                c->value = c->min;
-        } else {
-                c->value = atoi(config[7]);
-        }
-        if (config[8] != NULL) {
-                ERR("Too many arguments.");
-                return -1;
-        }
-        return 0;
+int parse_cmdline_rotary_STDOUT(control_t * c, char *config[])
+{
+	c->target = STDOUT;
+	c->param1 = strncpy(c->param1, config[3], MAXNAME);
+	// TODO: check for presence of %% tokens instead!
+	if (strlen(c->param1) < 1) {
+		ERR("format cannot be empty.");
+		return -1;
+	}
+	if (config[4] == NULL) {
+		c->min = 0;
+	} else {
+		c->min = atoi(config[4]);
+	}
+	if (config[5] == NULL) {
+		c->max = 100;
+	} else {
+		c->max = atoi(config[5]);
+	}
+	if (config[6] == NULL) {
+		c->step = 1;
+	} else {
+		c->step = atoi(config[6]);
+	}
+	if (config[7] == NULL) {
+		c->value = c->min;
+	} else {
+		c->value = atoi(config[7]);
+	}
+	if (config[8] != NULL) {
+		ERR("Too many arguments.");
+		return -1;
+	}
+	return 0;
 }
 
-void help_switch_STDOUT() {
-        printf("    ...,stdout,format[,toggle[,min[,max[,default]]]]\n");
-        printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
-        printf("                        (the pin number) and '%%val%%' (the value)\n");
-        printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
-        printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
-        printf("               max:     maximum value (%d - %d), default 1\n", INT_MIN, INT_MAX);
-        printf("               default: the start value, default is 'min'\n\n");
+void help_switch_STDOUT()
+{
+	printf("    ...,stdout,format[,toggle[,min[,max[,default]]]]\n");
+	printf
+	    ("               format:  a string that can contain the special tokens '%%gpi%%'\n");
+	printf
+	    ("                        (the pin number) and '%%val%%' (the value)\n");
+	printf
+	    ("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               min:     minimum value (%d - %d), default 0\n",
+	       INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d - %d), default 1\n",
+	       INT_MIN, INT_MAX);
+	printf("               default: the start value, default is 'min'\n\n");
 }
 
-int parse_cmdline_switch_STDOUT(control_t* c, char *config[]) {
-        c->target = STDOUT;
-        c->param1 = strncpy(c->param1, config[2], MAXNAME);
-        // TODO: check for presence of %% tokens instead!
-        if (strlen(c->param1) < 1) {
-                ERR("format cannot be empty.");
-                return -1;
-        }
-        if (config[3] == NULL) {
-                c->toggle = 0;
-        } else {
-                c->toggle = atoi(config[3]);
-        }
-        if (config[4] == NULL) {
-                c->min = 0;
-        } else {
-                c->min = atoi(config[4]);
-        }
-        if (config[5] == NULL) {
-                c->max = 1;
-        } else {
-                c->max = atoi(config[5]);
-        }
-        if (config[6] == NULL) {
-                c->value = c->min;
-        } else {
-                c->value = atoi(config[6]);
-        }
-        if (config[7] != NULL) {
-                ERR("Too many arguments.");
-                return -1;
-        }
-        return 0;
+int parse_cmdline_switch_STDOUT(control_t * c, char *config[])
+{
+	c->target = STDOUT;
+	c->param1 = strncpy(c->param1, config[2], MAXNAME);
+	// TODO: check for presence of %% tokens instead!
+	if (strlen(c->param1) < 1) {
+		ERR("format cannot be empty.");
+		return -1;
+	}
+	if (config[3] == NULL) {
+		c->toggle = 0;
+	} else {
+		c->toggle = atoi(config[3]);
+	}
+	if (config[4] == NULL) {
+		c->min = 0;
+	} else {
+		c->min = atoi(config[4]);
+	}
+	if (config[5] == NULL) {
+		c->max = 1;
+	} else {
+		c->max = atoi(config[5]);
+	}
+	if (config[6] == NULL) {
+		c->value = c->min;
+	} else {
+		c->value = atoi(config[6]);
+	}
+	if (config[7] != NULL) {
+		ERR("Too many arguments.");
+		return -1;
+	}
+	return 0;
 }

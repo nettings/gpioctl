@@ -44,8 +44,7 @@ static int process(jack_nframes_t nframes, void *arg)
 int setup_JACK()
 {
 	if ((client =
-	     jack_client_open(PROGRAM_NAME, JackNoStartServer,
-			      NULL)) == 0) {
+	     jack_client_open(PROGRAM_NAME, JackNoStartServer, NULL)) == 0) {
 		ERR("Failed to create client. Is the JACK server running?");
 		return -1;
 	}
@@ -69,11 +68,11 @@ int shutdown_JACK()
 
 void update_jack(control_t * c)
 {
-        unsigned char msg[MSG_SIZE];
-        msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
-        msg[1] = c->midi_cc;
-        msg[2] = c->value;
-        ringbuffer_write(msg, MSG_SIZE);
-        NFO("JACK:\t<%02d|%02d>\t0x%02x%02x%02x", c->pin1, c->value, msg[0],
-            msg[1], msg[2]);
+	unsigned char msg[MSG_SIZE];
+	msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
+	msg[1] = c->midi_cc;
+	msg[2] = c->value;
+	ringbuffer_write(msg, MSG_SIZE);
+	NFO("JACK:\t<%02d|%02d>\t0x%02x%02x%02x", c->pin1, c->value, msg[0],
+	    msg[1], msg[2]);
 }

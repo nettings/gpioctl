@@ -148,7 +148,6 @@ int main(int argc, char *argv[])
 		usage();
 		exit(rval);
 	}
-
 #ifdef HAVE_JACK
 	if (use_jack) {
 		setup_ringbuffer();
@@ -180,7 +179,8 @@ int main(int argc, char *argv[])
 			// this line is a dt pin for a rotary, without its own handler
 			continue;
 		default:
-			 ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
+			ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.",
+			    c->type);
 		}
 		switch (c->target) {
 #ifdef HAVE_ALSA
@@ -193,7 +193,8 @@ int main(int argc, char *argv[])
 		case STDOUT:
 			break;
 		default:
-			 ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.", c->target);
+			ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
+			    c->target);
 		}
 	}
 
@@ -204,4 +205,3 @@ int main(int argc, char *argv[])
 
 	sleep(-1);
 }
-

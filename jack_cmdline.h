@@ -22,8 +22,8 @@
 #include "globals.h"
 
 void help_rotary_JACK();
-int parse_cmdline_rotary_JACK(control_t* c, char *config[]);
+int parse_cmdline_rotary_JACK(control_t * c, char *config[]);
 void help_switch_JACK();
-int parse_cmdline_switch_JACK(control_t* c, char *config[]);
+int parse_cmdline_switch_JACK(control_t * c, char *config[]);
 
 #endif

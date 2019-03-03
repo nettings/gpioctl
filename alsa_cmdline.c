@@ -22,49 +22,57 @@
 #include <string.h>
 #include "globals.h"
 
-void help_rotary_ALSA() {
-        printf("      ...,alsa,control[,step]\n");
-        printf("               control: the name of a simple controller in ALSA mixer\n");
-        printf("               step: the step size in dB per click, default 3\n\n");
+void help_rotary_ALSA()
+{
+	printf("      ...,alsa,control[,step]\n");
+	printf
+	    ("               control: the name of a simple controller in ALSA mixer\n");
+	printf
+	    ("               step: the step size in dB per click, default 3\n\n");
 }
 
-int parse_cmdline_rotary_ALSA(control_t* c, char *config[]) {
-        c->target = ALSA;
-        c->param1 = strncpy(c->param1, config[3], MAXNAME);
-        if (config[4] == NULL) {
-                c->step = 3;
-        } else {
-                c->step = atoi(config[4]);
-        }
-        if (config[5] != NULL) {
-                ERR("Too many arguments.");
-                return -1;
-        }
-        // FIXME: this is a dirty hack to avoid running into limits
-        // while the ALSA and counter logic don't talk to each other.
-        c->min = -10000;
-        c->max = 10000;
-        c->value = 0;
- 
-        return 0;
+int parse_cmdline_rotary_ALSA(control_t * c, char *config[])
+{
+	c->target = ALSA;
+	c->param1 = strncpy(c->param1, config[3], MAXNAME);
+	if (config[4] == NULL) {
+		c->step = 3;
+	} else {
+		c->step = atoi(config[4]);
+	}
+	if (config[5] != NULL) {
+		ERR("Too many arguments.");
+		return -1;
+	}
+	// FIXME: this is a dirty hack to avoid running into limits
+	// while the ALSA and counter logic don't talk to each other.
+	c->min = -10000;
+	c->max = 10000;
+	c->value = 0;
+
+	return 0;
 }
 
-void help_switch_ALSA() {
-        printf("      ...,alsa,control\n");
-        printf("               control: the name of a simple controller in ALSA mixer\n");
-        printf("                        (switch will operate the MUTE function)\n");
+void help_switch_ALSA()
+{
+	printf("      ...,alsa,control\n");
+	printf
+	    ("               control: the name of a simple controller in ALSA mixer\n");
+	printf
+	    ("                        (switch will operate the MUTE function)\n");
 }
 
-int parse_cmdline_switch_ALSA(control_t* c, char *config[]) {
-        c->target = ALSA;
-        c->param1 = strncpy(c->param1, config[2], MAXNAME);
-        if (config[3] != NULL) {
-                ERR("Too many arguments.");
-                return -1;
-        }
-        c->min = 0;
-        c->max = 1;
-        c->value = 0;
-        c->toggle = 1;
-        return 0;   
+int parse_cmdline_switch_ALSA(control_t * c, char *config[])
+{
+	c->target = ALSA;
+	c->param1 = strncpy(c->param1, config[2], MAXNAME);
+	if (config[3] != NULL) {
+		ERR("Too many arguments.");
+		return -1;
+	}
+	c->min = 0;
+	c->max = 1;
+	c->value = 0;
+	c->toggle = 1;
+	return 0;
 }

@@ -62,9 +62,7 @@ static int set_ALSA_volume(snd_mixer_elem_t * elem, int val)
 	long cval;
 
 	snd_mixer_handle_events(mixer_handle);	// make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
-	err =
-	    snd_mixer_selem_get_playback_dB(elem, 0,
-					    &cval);
+	err = snd_mixer_selem_get_playback_dB(elem, 0, &cval);
 	if (err) {
 		ERR("ALSA error getting value for %s: %s.",
 		    snd_mixer_selem_get_name(elem), snd_strerror(err));
@@ -90,9 +88,7 @@ static int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
 	int cval;
 
 	snd_mixer_handle_events(mixer_handle);	// make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
-	err =
-	    snd_mixer_selem_get_playback_switch(elem, 0,
-						&cval);
+	err = snd_mixer_selem_get_playback_switch(elem, 0, &cval);
 	if (err) {
 		ERR("ALSA error getting value for %s: %s.",
 		    snd_mixer_selem_get_name(elem), snd_strerror(err));
@@ -114,17 +110,16 @@ static int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
 
 void update_alsa(control_t * c, int val)
 {
-        switch (c->type) {
-        case ROTARY:
-                set_ALSA_volume(c->param1, val * c->step * 100);
-                break;
-        case SWITCH:
-                set_ALSA_mute(c->param1, val);
-                break;
-        default:
-                ERR("Found c->type %d in ALSA handler. THIS SHOULD NEVER HAPPEN.",
-                    c->type);
-                break;
-        }
-        NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
+	switch (c->type) {
+	case ROTARY:
+		set_ALSA_volume(c->param1, val * c->step * 100);
+		break;
+	case SWITCH:
+		set_ALSA_mute(c->param1, val);
+		break;
+	default:
+		ERR("Found c->type %d in ALSA handler. THIS SHOULD NEVER HAPPEN.", c->type);
+		break;
+	}
+	NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
 }

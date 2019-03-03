@@ -65,59 +65,78 @@ static int match(char *string1, char *string2)
 
 void usage()
 {
-        printf("\n%s handles switches and rotary encoders connected to GPIOs, using the\n", PROGRAM_NAME);
-        printf("portable libgpiod kernel interface, to send text messages to /dev/stdout.\n");
-        printf("If enabled at build time, you can also send JACK MIDI CC messages,\n");
-        printf("OSC messages, or directly interact with an ALSA mixer control.\n");
-        printf("We assume GPI pins have a pull-up, so the return should be connected to ground.\n\n");
-        printf("-h|--help      This help.\n");
-        printf("-v|--verbose   Print current controller values.\n\n");
-        printf("The following options may be specified multiple times. All parameters must be\n");
-        printf("separated by commas, no spaces. Parameters in brackets are optional.\n\n");
-        printf("-r|--rotary clk,dt,type,...\n");
-        printf("               Set up a rotary encoder.\n");
-        printf("               clk:     the GPI number of the first encoder contact (0-%d)\n", MAXGPIO - 1);
-        printf("               dt:      the GPI number of the second encoder contact (0-%d)\n", MAXGPIO - 1);
-        printf("               Depending on 'type', the remaining parameters are:\n\n");
+	printf
+	    ("\n%s handles switches and rotary encoders connected to GPIOs, using the\n",
+	     PROGRAM_NAME);
+	printf
+	    ("portable libgpiod kernel interface, to send text messages to /dev/stdout.\n");
+	printf
+	    ("If enabled at build time, you can also send JACK MIDI CC messages,\n");
+	printf
+	    ("OSC messages, or directly interact with an ALSA mixer control.\n");
+	printf
+	    ("We assume GPI pins have a pull-up, so the return should be connected to ground.\n\n");
+	printf("-h|--help      This help.\n");
+	printf("-v|--verbose   Print current controller values.\n\n");
+	printf
+	    ("The following options may be specified multiple times. All parameters must be\n");
+	printf
+	    ("separated by commas, no spaces. Parameters in brackets are optional.\n\n");
+	printf("-r|--rotary clk,dt,type,...\n");
+	printf("               Set up a rotary encoder.\n");
+	printf
+	    ("               clk:     the GPI number of the first encoder contact (0-%d)\n",
+	     MAXGPIO - 1);
+	printf
+	    ("               dt:      the GPI number of the second encoder contact (0-%d)\n",
+	     MAXGPIO - 1);
+	printf
+	    ("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
-        help_rotary_JACK();
+	help_rotary_JACK();
 #endif
 #ifdef HAVE_ALSA
-        help_rotary_ALSA();
+	help_rotary_ALSA();
 #endif
 #ifdef HAVE_OSC
-        help_rotary_OSC();
+	help_rotary_OSC();
 #endif
 	help_rotary_STDOUT();
-        printf("-s|--switch sw,type...\n");
-        printf("               Set up a switch.\n");
-        printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO - 1);
-        printf("               Depending on 'type', the remaining parameters are:\n\n");
+	printf("-s|--switch sw,type...\n");
+	printf("               Set up a switch.\n");
+	printf
+	    ("               sw:      the GPI pin number of the switch contact (0-%d)\n",
+	     MAXGPIO - 1);
+	printf
+	    ("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
-        help_switch_JACK();
+	help_switch_JACK();
 #endif
 #ifdef HAVE_ALSA
-        help_switch_ALSA();
+	help_switch_ALSA();
 #endif
 #ifdef HAVE_OSC
-        help_switch_OSC();
+	help_switch_OSC();
 #endif
 	help_switch_STDOUT();
-        printf("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
-        printf("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
-        printf("for the Broadcom ('BCM') numbers.\n");
-        printf("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
-        printf("GPIO pins. Use a hardware-specific external tool to enable them, or add\n");
-        printf("physical pull-ups.\n\n");
-        printf("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n", PROGRAM_NAME);
+	printf
+	    ("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
+	printf
+	    ("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
+	printf("for the Broadcom ('BCM') numbers.\n");
+	printf
+	    ("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
+	printf
+	    ("GPIO pins. Use a hardware-specific external tool to enable them, or add\n");
+	printf("physical pull-ups.\n\n");
+	printf
+	    ("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n",
+	     PROGRAM_NAME);
 }
 
-static void debugmsg(control_t* c) {
-	DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", 
-	                    c->pin1,c->pin2,c->type,c->target,c->min,c->max,c->step,c->toggle,c->midi_ch,c->midi_cc,
-	                    c->param1 == NULL ? "''" : (char*)c->param1,
-	                    c->param2 == NULL ? "''" : (char*)c->param2,
-	                    c->value);
+static void debugmsg(control_t * c)
+{
+	DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", c->pin1, c->pin2, c->type, c->target, c->min, c->max, c->step, c->toggle, c->midi_ch, c->midi_cc, c->param1 == NULL ? "''" : (char *)c->param1, c->param2 == NULL ? "''" : (char *)c->param2, c->value);
 }
 
 int parse_cmdline(int argc, char *argv[])
@@ -294,11 +313,14 @@ int parse_cmdline(int argc, char *argv[])
 	return EXIT_CLEAN;
  error:{
 		if (c != NULL) {
-			if (c->param1 != NULL) free(c->param1);
-			if (c->param2 != NULL) free(c->param2);
+			if (c->param1 != NULL)
+				free(c->param1);
+			if (c->param2 != NULL)
+				free(c->param2);
 			free(c);
 		}
-		if (d != NULL) free(d);
+		if (d != NULL)
+			free(d);
 		return EXIT_ERR;
 	}
 }
