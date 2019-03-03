@@ -32,7 +32,7 @@ void update_OSC(control_t * c, int val)
         lo_address addr = lo_address_new_from_url((char*)c->param1);
         if (addr == NULL) {
                 ERR("Could not create OSC address from URL '%s'.", (char*)c->param1);
-        } else
+        } else {
                 DBG("Sending OSC message '%s %d' to %s.", (char *)c->param2, c->value, (char *)c->param1);
                 lo_send(addr, (char *)c->param2, "i", (char *)c->value);
                 lo_address_free(addr);
