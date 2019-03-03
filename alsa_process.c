@@ -56,7 +56,7 @@ snd_mixer_elem_t *setup_ALSA_mixer_elem(char *mixer_scontrol)
 	return elem;
 }
 
-int set_ALSA_volume(snd_mixer_elem_t * elem, int val)
+static int set_ALSA_volume(snd_mixer_elem_t * elem, int val)
 {
 	int err;
 	long cval;
@@ -84,7 +84,7 @@ int set_ALSA_volume(snd_mixer_elem_t * elem, int val)
 	return 0;
 }
 
-int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
+static int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
 {
 	int err;
 	int cval;
@@ -110,4 +110,21 @@ int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
 		    snd_strerror(err), snd_mixer_selem_get_name(elem), val);
 	}
 	return 0;
+}
+
+void update_alsa(control_t * c, int val)
+{
+        switch (c->type) {
+        case ROTARY:
+                set_ALSA_volume(c->param1, val * c->step * 100);
+                break;
+        case SWITCH:
+                set_ALSA_mute(c->param1, val);
+                break;
+        default:
+                ERR("Found c->type %d in ALSA handler. THIS SHOULD NEVER HAPPEN.",
+                    c->type);
+                break;
+        }
+        NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
 }

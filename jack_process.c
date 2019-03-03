@@ -66,3 +66,14 @@ int shutdown_JACK()
 	jack_client_close(client);
 	return 0;
 }
+
+void update_jack(control_t * c)
+{
+        unsigned char msg[MSG_SIZE];
+        msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
+        msg[1] = c->midi_cc;
+        msg[2] = c->value;
+        ringbuffer_write(msg, MSG_SIZE);
+        NFO("JACK:\t<%02d|%02d>\t0x%02x%02x%02x", c->pin1, c->value, msg[0],
+            msg[1], msg[2]);
+}
