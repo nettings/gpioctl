@@ -301,14 +301,16 @@ int parse_cmdline(int argc, char *argv[])
 	}
 	if (ncontrols == 0) {
 		ERR("You need to set at least one control.");
-		return EXIT_ERR;
+		goto error;
 	}
 	return EXIT_CLEAN;
  error:{
-		if (c != NULL)
+		if (c != NULL) {
+			if (c->param1 != NULL) free(c->param1);
+			if (c->param2 != NULL) free(c->param2);
 			free(c);
-		if (d != NULL)
-			free(d);
+		}
+		if (d != NULL) free(d);
 		return EXIT_ERR;
 	}
 }
