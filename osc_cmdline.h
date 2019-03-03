@@ -16,13 +16,14 @@
 
 */
 
-#ifndef PARSE_CMDLINE_H
-#define PARSE_CMDLINE_H
+#ifndef OSC_CMDLINE_H
+#define OSC_CMDLINE_H
 
-#define EXIT_USAGE -1
-#define EXIT_CLEAN 0
-#define EXIT_ERR -2
+#include "globals.h"
 
-int parse_cmdline(int argc, char *argv[]);
+void help_rotary_OSC();
+int parse_cmdline_rotary_OSC(control_t* c, char *config[]);
+void help_switch_OSC();
+int parse_cmdline_switch_OSC(control_t* c, char *config[]);
 
 #endif

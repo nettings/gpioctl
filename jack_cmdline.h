@@ -16,13 +16,14 @@
 
 */
 
-#ifndef PARSE_CMDLINE_H
-#define PARSE_CMDLINE_H
+#ifndef JACK_CMDLINE_H
+#define JACK_CMDLINE_H
 
-#define EXIT_USAGE -1
-#define EXIT_CLEAN 0
-#define EXIT_ERR -2
+#include "globals.h"
 
-int parse_cmdline(int argc, char *argv[]);
+void help_rotary_JACK();
+int parse_cmdline_rotary_JACK(control_t* c, char *config[]);
+void help_switch_JACK();
+int parse_cmdline_switch_JACK(control_t* c, char *config[]);
 
 #endif

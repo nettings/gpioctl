@@ -56,7 +56,7 @@ def configure(cnf):
 			header_name = 'jack/jack.h')
 		if lib and header:
 			cnf.env.libs += ['JACK']
-			cnf.env.objs += ['jack_process', 'ringbuffer']
+			cnf.env.objs += ['jack_process', 'ringbuffer', 'jack_cmdline']
 	if not cnf.options.noalsa:
 		lib = cnf.check(
 			features = 'c cshlib',
@@ -67,7 +67,7 @@ def configure(cnf):
 			header_name = 'alsa/asoundlib.h')
 		if lib and header:
 			cnf.env.libs += ['ASOUND']
-			cnf.env.objs += ['alsa_process']
+			cnf.env.objs += ['alsa_process', 'alsa_cmdline']
 	if not cnf.options.noosc:
 		lib = cnf.check(
 			features = 'c cshlib',
@@ -78,7 +78,7 @@ def configure(cnf):
 			header_name = 'lo/lo.h')
 		if lib and header:
 			cnf.env.libs += ['LO']
-			cnf.env.objs += ['osc_process']
+			cnf.env.objs += ['osc_process', 'osc_cmdline']
 	cnf.cc_add_flags()
 	cnf.link_add_flags()
 	cnf.cxx_add_flags()
@@ -95,14 +95,23 @@ def build(bld):
 		bld.objects(
 			source = 'ringbuffer.c',
 			target = 'ringbuffer')
+		bld.objects(
+			source = 'jack_cmdline.c',
+			target = 'jack_cmdline')
 	if 'ASOUND' in bld.env.libs:
 		bld.objects(
 			source = 'alsa_process.c',
 			target = 'alsa_process')
+		bld.objects(
+			source = 'alsa_cmdline.c',
+			target = 'alsa_cmdline')
 	if 'LO' in bld.env.libs:
 		bld.objects(
 			source = 'osc_process.c',
 			target = 'osc_process')
+		bld.objects(
+			source = 'osc_cmdline.c',
+			target = 'osc_cmdline')
 	bld.objects(
 		source = 'parse_cmdline.c',
 		target = 'parse_cmdline')

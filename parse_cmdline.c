@@ -25,96 +25,21 @@
 #include "globals.h"
 #include "build/config.h"
 
+#ifdef HAVE_JACK
+#include "jack_cmdline.h"
+#endif
+
+#ifdef HAVE_ALSA
+#include "alsa_cmdline.h"
+#endif
+
+#ifdef HAVE_OSC
+#include "osc_cmdline.h"
+#endif
+
+
 // one more than real max, so we can check for excess arguments:
 #define MAXARG 10
-
-void usage()
-{
-	printf("\n%s handles switches and rotary encoders connected to GPIOs, using the\n", PROGRAM_NAME);
-	printf("portable libgpiod kernel interface, to send JACK MIDI CC messages via \n");
-	printf("%s:%s, directly interact with an ALSA mixer control, or print formatted\n", PROGRAM_NAME, JACK_PORT_NAME);
-	printf("values to stdout.\n");
-	printf("We assume GPI pins have a pull-up, so the return should be connected to ground.\n");
-	printf("-h|--help      This help.\n");
-	printf("-v|--verbose   Print current controller values.\n\n");
-	printf("The following options may be specified multiple times. All parameters must be\n");
-	printf("separated by commas, no spaces. Parameters in brackets are optional.\n\n");
-	printf("-r|--rotary clk,dt,type,...\n");
-	printf("               Set up a rotary encoder.\n");
-	printf("               clk:     the GPI number of the first encoder contact (0-%d)\n", MAXGPIO - 1);
-	printf("               dt:      the GPI number of the second encoder contact (0-%d)\n", MAXGPIO - 1);
-	printf("               Depending on 'type', the remaining parameters are:\n\n");
-#ifdef HAVE_JACK
-	printf("      ...,jack,cc,[ch[,min[,max[,step[,default]]]]]\n");
-	printf("               cc:      MIDI continous controller number (0-%d)\n", MAXCC);
-	printf("               ch:      MIDI channel (1-16), default 1\n");
-	printf("               min:     minimum controller value (0-%d), default 0\n", MAXCCVAL);
-	printf("               max:     maximum controller value (0-%d), default %d\n", MAXCCVAL, MAXCCVAL);
-	printf("               step:    the step size per 'click'(1-%d), default 1\n", MAXCCVAL);
-	printf("               default: the initial value, default is 'min'\n\n");
-#endif
-#ifdef HAVE_ALSA
-	printf("      ...,alsa,control[,step]\n");
-	printf("               control: the name of a simple controller in ALSA mixer\n");
-	printf("               step: the step size in dB per click, default 3\n\n");
-#endif
-#ifdef HAVE_OSC
-	printf("       ...,osc,url,path,min,max,step,default\n");
-	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl\n");
-	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
-	printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
-	printf("               step:    the step size per click, default 1\n");
-	printf("               default:	the initial value, default is 'min'\n\n");
-#endif
-	printf("    ...,stdout,format[,min[,max[,step[,default]]]]].\n");
-	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
-	printf("                        (the pin number) and '%%val%%' (the value)\n");
-	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
-	printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
-	printf("               step:    the step size per click, default 1\n");
-	printf("               default:	the initial value, default is 'min'\n\n");
-	printf("-s|--switch sw,type...\n");
-	printf("               Set up a switch.\n");
-	printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO - 1);
-	printf("               Depending on 'type', the remaining parameters are:\n\n");
-#ifdef HAVE_JACK
-	printf("      ...,jack,cc,[ch[,toggle[,min[,max[,default]]]]]\n");
-	printf("               cc:      MIDI continous controller number (0-120)\n");
-	printf("               ch:      MIDI channel (1-16), default 1\n");
-	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
-	printf("               min:     controller value when open (0-%d), default 0\n", MAXCCVAL);
-	printf("               max:     controller value when closed (0-%d), default %d\n", MAXCCVAL, MAXCCVAL);
-	printf("               default: the initial value, default is 'min'\n\n");
-#endif
-#ifdef HAVE_ALSA
-	printf("      ...,alsa,control\n");
-	printf("               control: the name of a simple controller in ALSA mixer\n");
-	printf("                        (switch will operate the MUTE function)\n");
-#endif
-#ifdef HAVE_OSC
-	printf("       ...,osc,url,path,toggle,min,max,default\n");
-	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level\n");
-	printf("               path:    An OSC path, such as /mixer/level\n");
-	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
-	printf("               min:     value when open (%d - %d), default 0\n", INT_MIN, INT_MAX);
-	printf("               max:     value when closed (%d - %d), default 100\n", INT_MIN, INT_MAX);
-	printf("               default:	the initial value, default is 'min'\n\n");
-#endif
-	printf("     ...,stdout,format[,toggle[,min[,max[,default]]]]\n");
-	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
-	printf("                        (the pin number) and '%%val%%' (the value)\n");
-	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
-	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
-	printf("               max:     maximum value (%d - %d), default 1\n", INT_MIN, INT_MAX);
-	printf("               default:	the start value, default is 'min'\n\n");
-	printf("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
-	printf("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
-	printf("for the Broadcom ('BCM') numbers.\n");
-	printf("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
-	printf("GPIO pins. Use a hardware-specific external tool to enable them, or add\n");
-	printf("physical pull-ups.\n\n");
-	printf("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n", PROGRAM_NAME);
-}
 
 static int tokenize(char *argument, char *config[])
 {
@@ -136,6 +61,67 @@ static int match(char *string1, char *string2)
 	} else {
 		return 0;
 	}
+}
+
+void usage()
+{
+        printf("\n%s handles switches and rotary encoders connected to GPIOs, using the\n", PROGRAM_NAME);
+        printf("portable libgpiod kernel interface, to send JACK MIDI CC messages via \n");
+        printf("%s:%s, directly interact with an ALSA mixer control, or print formatted\n", PROGRAM_NAME, JACK_PORT_NAME);
+        printf("values to stdout.\n");
+        printf("We assume GPI pins have a pull-up, so the return should be connected to ground.\n");
+        printf("-h|--help      This help.\n");
+        printf("-v|--verbose   Print current controller values.\n\n");
+        printf("The following options may be specified multiple times. All parameters must be\n");
+        printf("separated by commas, no spaces. Parameters in brackets are optional.\n\n");
+        printf("-r|--rotary clk,dt,type,...\n");
+        printf("               Set up a rotary encoder.\n");
+        printf("               clk:     the GPI number of the first encoder contact (0-%d)\n", MAXGPIO - 1);
+        printf("               dt:      the GPI number of the second encoder contact (0-%d)\n", MAXGPIO - 1);
+        printf("               Depending on 'type', the remaining parameters are:\n\n");
+#ifdef HAVE_JACK
+        help_rotary_JACK();
+#endif
+#ifdef HAVE_ALSA
+        help_rotary_ALSA();
+#endif
+#ifdef HAVE_OSC
+        help_rotary_OSC();
+#endif
+        printf("    ...,stdout,format[,min[,max[,step[,default]]]]].\n");
+        printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
+        printf("                        (the pin number) and '%%val%%' (the value)\n");
+        printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
+        printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
+        printf("               step:    the step size per click, default 1\n");
+        printf("               default: the initial value, default is 'min'\n\n");
+        printf("-s|--switch sw,type...\n");
+        printf("               Set up a switch.\n");
+        printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO - 1);
+        printf("               Depending on 'type', the remaining parameters are:\n\n");
+#ifdef HAVE_JACK
+        help_switch_JACK();
+#endif
+#ifdef HAVE_ALSA
+        help_switch_ALSA();
+#endif
+#ifdef HAVE_OSC
+        help_switch_OSC();
+#endif
+        printf("     ...,stdout,format[,toggle[,min[,max[,default]]]]\n");
+        printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
+        printf("                        (the pin number) and '%%val%%' (the value)\n");
+        printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
+        printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
+        printf("               max:     maximum value (%d - %d), default 1\n", INT_MIN, INT_MAX);
+        printf("               default: the start value, default is 'min'\n\n");
+        printf("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
+        printf("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
+        printf("for the Broadcom ('BCM') numbers.\n");
+        printf("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
+        printf("GPIO pins. Use a hardware-specific external tool to enable them, or add\n");
+        printf("physical pull-ups.\n\n");
+        printf("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n", PROGRAM_NAME);
 }
 
 int parse_cmdline(int argc, char *argv[])
@@ -202,134 +188,35 @@ int parse_cmdline(int argc, char *argv[])
 			}
 			controller[c->pin1] = c;
 			c->type = ROTARY;
+			c->param1 = calloc(sizeof(char), MAXNAME);
+			c->param2 = calloc(sizeof(char), MAXNAME);
 			controller[c->pin2] = d;
 			d->type = AUX;
 #ifdef HAVE_JACK
 			if (match(config[2], "jack")) {
-				c->target = JACK;
-				c->midi_cc = atoi(config[3]);
-				if (c->midi_cc < 0 || c->midi_cc > MAXCC) {
-					ERR("MIDI CC value out of range.");
+				if (parse_cmdline_rotary_JACK(c, config)) {
 					goto error;
-				}
-				if (config[4] == NULL) {
-					c->midi_ch = 0;
 				} else {
-					c->midi_ch = atoi(config[4]) - 1;
-					if (c->midi_ch < 0
-					    || c->midi_ch > MAXMIDICH) {
-						ERR("MIDI channel value out of range.");
-						goto error;
-					}
+					use_jack = 1;
 				}
-				if (config[5] == NULL) {
-					c->min = 0;
-				} else {
-					c->min = atoi(config[5]);
-					if (c->min < 0 || c->min > MAXCCVAL) {
-						ERR("min value out of range.");
-						goto error;
-					}
-				}
-				if (config[6] == NULL) {
-					c->max = MAXCCVAL;
-				} else {
-					c->max = atoi(config[6]);
-					if (c->max < 0 || c->min > MAXCCVAL) {
-						ERR("max value out of range.");
-						goto error;
-					}
-				}
-				if (config[7] == NULL) {
-					c->step = 1;
-				} else {
-					c->step = atoi(config[7]);
-					if (c->step < 1 || c->step > MAXCCVAL) {
-						ERR("step value out of range.");
-						goto error;
-					}
-				}
-				if (config[8] == NULL) {
-					c->value = c->min;
-				} else {
-					c->value = atoi(config[8]);
-					if (c->value < c->min
-					    || c->value > c->max) {
-						ERR("default value out of range.");
-						goto error;
-					}
-				}
-				if (config[9] != NULL) {
-					ERR("Too many arguments.");
-					goto error;
-				}
-				use_jack = 1;
 			} else
 #endif
 #ifdef HAVE_ALSA
 			if (match(config[2], "alsa")) {
-				c->target = ALSA;
-				c->param1 = calloc(sizeof(char), MAXNAME);
-				c->param1 =
-				    strncpy(c->param1, config[3], MAXNAME);
-				if (config[4] == NULL) {
-					c->step = 3;
-				} else {
-					c->step = atoi(config[4]);
-				}
-				if (config[5] != NULL) {
-					ERR("Too many arguments.");
+				if (parse_cmdline_rotary_ALSA(c, config)) {
 					goto error;
+				} else {
+					use_alsa = 1;
 				}
-				// FIXME: this is a dirty hack to avoid running into limits
-				// while the ALSA and counter logic don't talk to each other.
-				c->min = -10000;
-				c->max = 10000;
-				c->value = 0;
-				use_alsa = 1;
 			} else
 #endif
 #ifdef HAVE_OSC
 			if (match(config[2], "osc")) {
-				c->target = OSC;
-				c->param1 = calloc(sizeof(char), MAXNAME);
-				c->param1 = strncpy(c->param1, config[3], MAXNAME);
-				if (strlen(c->param1) < 1) {
-					ERR("url cannot be empty");
-					goto error;
-				}
-				if (config[4] == NULL) {
-					ERR("path cannot be empty");
+				if (parse_cmdline_rotary_OSC(c, config)) {
 					goto error;
 				} else {
-					c->param2 = calloc(sizeof(char), MAXNAME);
-					c->param2 = strncpy(c->param2, config[4], MAXNAME);
+					use_osc = 1;
 				}
-				if (config[5] == NULL) {
-					c->min = 0;
-				} else {
-					c->min = atoi(config[5]);
-				}
-				if (config[6] == NULL) {
-					c->max = 100;
-				} else {
-					c->max = atoi(config[6]);
-				}
-				if (config[7] == NULL) {
-					c->step = 1;
-				} else {
-					c->step = atoi(config[7]);
-				}
-				if (config[8] == NULL) {
-					c->value = c->min;
-				} else {
-					c->value = atoi(config[8]);
-				}
-				if (config[9] != NULL) {
-					ERR("Too many arguments.");
-					goto error;
-				}
-				use_osc = 1;
 			} else
 #endif
 			if (match(config[2], "stdout")) {
@@ -400,134 +287,33 @@ int parse_cmdline(int argc, char *argv[])
 			}
 			controller[c->pin1] = c;
 			c->type = SWITCH;
+			c->param1 = calloc(sizeof(char), MAXNAME);
+			c->param2 = calloc(sizeof(char), MAXNAME);
 #ifdef HAVE_JACK
 			if (match(config[1], "jack")) {
-				c->target = JACK;
-				c->midi_cc = atoi(config[2]);
-				if (c->midi_cc < 0 || c->midi_cc > MAXCC) {
-					ERR("MIDI CC value out of range.");
+				if (parse_cmdline_switch_JACK(c, config)) {
 					goto error;
-				}
-				if (config[3] == NULL) {
-					c->midi_ch = 0;
 				} else {
-					c->midi_ch = atoi(config[3]) - 1;
-					if (c->midi_ch < 0
-					    || c->midi_ch > MAXMIDICH) {
-						ERR("MIDI channel value out of range.");
-						goto error;
-					}
+					use_jack = 1;
 				}
-				if (config[4] == NULL) {
-					c->toggle = 0;
-				} else {
-					c->toggle = atoi(config[4]);
-					if (c->toggle != 0 && c->toggle != 1) {
-						ERR("toggle must be 0 or 1.");
-						goto error;
-					}
-				}
-				if (config[5] == NULL) {
-					c->min = 0;
-				} else {
-					c->min = atoi(config[5]);
-					if (c->min < 0 || c->min > MAXCCVAL) {
-						ERR("min value out of range.");
-						goto error;
-					}
-				}
-				if (config[6] == NULL) {
-					c->max = MAXCCVAL;
-				} else {
-					c->max = atoi(config[6]);
-					if (c->max < 0 || c->max > MAXCCVAL) {
-						ERR("max value out of range.");
-						goto error;
-					}
-				}
-				if (config[7] == NULL) {
-					c->value = c->min;
-				} else {
-					c->value = atoi(config[7]);
-					if (c->value < c->min
-					    || c->value > c->max) {
-						ERR("default value out of range.");
-						goto error;
-					}
-				}
-				if (config[8] != NULL) {
-					ERR("Too many arguments.");
-					goto error;
-				}
-				use_jack = 1;
 			} else
 #endif
 #ifdef HAVE_ALSA
 			if (match(config[1], "alsa")) {
-				c->target = ALSA;
-				c->param1 = calloc(sizeof(char), MAXNAME);
-				c->param1 =
-				    strncpy(c->param1, config[2], MAXNAME);
-				if (config[3] != NULL) {
-					ERR("Too many arguments.");
+				if (parse_cmdline_switch_ALSA(c, config)) {
 					goto error;
+				} else {
+					use_alsa = 1;
 				}
-				c->min = 0;
-				c->max = 1;
-				c->value = 0;
-				c->toggle = 1;
-				use_alsa = 1;
 			} else
 #endif
 #ifdef HAVE_OSC
 			if (match(config[1], "osc")) {
-				c->target = OSC;
-				c->param1 = calloc(sizeof(char), MAXNAME);
-				c->param1 = strncpy(c->param1, config[2], MAXNAME);
-				if (strlen(c->param1) < 1) {
-					ERR("url cannot be empty");
-					goto error;
-				}
-				if (config[3] == NULL) {
-					ERR("path cannot be empty");
+				if (parse_cmdline_switch_OSC(c, config)) {
 					goto error;
 				} else {
-					c->param2 = calloc(sizeof(char), MAXNAME);
-					c->param2 = strncpy(c->param2, config[3], MAXNAME);
+					use_osc = 1;
 				}
-				if (config[4] == NULL) {
-					c->toggle = 0;
-				} else {
-					c->toggle = atoi(config[4]);
-					if (c->toggle != 0 && c->toggle != 1) {
-						ERR("toggle must be 0 or 1.");
-						goto error;
-					}
-				}
-				if (config[5] == NULL) {
-					c->min = 0;
-				} else {
-					c->min = atoi(config[5]);
-				}
-				if (config[6] == NULL) {
-					c->max = 100;
-				} else {
-					c->max = atoi(config[6]);
-				}
-				if (config[7] == NULL) {
-					c->value = c->min;
-				} else {
-					c->value = atoi(config[7]);
-					if (c->value < c->min || c->value > c->max) {
-						ERR("default value out of range.");
-						goto error;
-					}
-				}
-				if (config[8] != NULL) {
-					ERR("Too many arguments.");
-					goto error;
-				}
-				use_osc = 1;
 			} else
 #endif
 			if (match(config[1], "stdout")) {

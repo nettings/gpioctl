@@ -17,6 +17,7 @@
 */
 
 #include "osc_process.h"
+#include <string.h>
 #include <lo/lo.h>
 #include "globals.h"
 
@@ -38,3 +39,4 @@ void update_OSC(control_t * c, int val)
                 lo_address_free(addr);
         }
 }
+

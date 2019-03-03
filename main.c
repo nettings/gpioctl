@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <errno.h>
+#include <limits.h>
 #include <pthread.h>
 
 #include "globals.h"
@@ -211,3 +212,4 @@ int main(int argc, char *argv[])
 
 	sleep(-1);
 }
+
