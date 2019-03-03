@@ -62,6 +62,11 @@ static void signal_handler(int sig)
 		shutdown_ringbuffer();
 	}
 #endif
+#ifdef HAVE_OSS
+	if (use_oss) {
+		shutdown_OSS();
+	}
+#endif
 	shutdown_gpiod();
 	exit(0);
 }
@@ -123,7 +128,7 @@ void handle_gpi(int line, int val)
 #endif
 #ifdef HAVE_OSC
 	case OSC:
-		update_osc(c, val);
+		update_OSC(c, val);
 		break;
 #endif
 	default:
@@ -156,6 +161,7 @@ int main(int argc, char *argv[])
 #endif
 #ifdef HAVE_OSC
 	if (use_osc) {
+		setup_OSC();
 	}
 #endif
 	for (int i = 0; i < MAXGPIO; i++) {
