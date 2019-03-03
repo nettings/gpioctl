@@ -185,8 +185,7 @@ int main(int argc, char *argv[])
 		switch (c->target) {
 #ifdef HAVE_ALSA
 		case ALSA:
-			void *p = setup_ALSA_mixer_elem(c->param1);
-			c->param1 = p;
+			c->param1 = setup_ALSA_mixer_elem(c->param1);
 			break;
 #endif
 		case JACK:
