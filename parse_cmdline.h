@@ -24,5 +24,6 @@
 #define EXIT_ERR -2
 
 int parse_cmdline(int argc, char *argv[]);
+void usage();
 
 #endif

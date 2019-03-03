@@ -27,7 +27,7 @@ def options(opt):
 
 def configure(cnf):
 	cnf.env.libs = ['GPIOD', 'PTHREAD']
-        cnf.env.objs = ['parse_cmdline', 'gpiod_process', 'stdout_process']
+        cnf.env.objs = ['parse_cmdline', 'gpiod_process', 'stdout_process', 'stdout_cmdline']
 	cnf.load('compiler_c',
 		cache = True)
 	cnf.check(
@@ -121,6 +121,9 @@ def build(bld):
 	bld.objects(
 		source = 'stdout_process.c',
 		target = 'stdout_process')
+	bld.objects(
+		source = 'stdout_cmdline.c',
+		target = 'stdout_cmdline')
 	bld.program(
 		source = 'main.c', 
 		target = 'gpioctl',

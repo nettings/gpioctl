@@ -24,6 +24,7 @@
 #include <limits.h>
 #include "globals.h"
 #include "build/config.h"
+#include "stdout_cmdline.h"
 
 #ifdef HAVE_JACK
 #include "jack_cmdline.h"
@@ -36,7 +37,6 @@
 #ifdef HAVE_OSC
 #include "osc_cmdline.h"
 #endif
-
 
 // one more than real max, so we can check for excess arguments:
 #define MAXARG 10
@@ -88,13 +88,7 @@ void usage()
 #ifdef HAVE_OSC
         help_rotary_OSC();
 #endif
-        printf("    ...,stdout,format[,min[,max[,step[,default]]]]].\n");
-        printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
-        printf("                        (the pin number) and '%%val%%' (the value)\n");
-        printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
-        printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
-        printf("               step:    the step size per click, default 1\n");
-        printf("               default: the initial value, default is 'min'\n\n");
+	help_rotary_STDOUT();
         printf("-s|--switch sw,type...\n");
         printf("               Set up a switch.\n");
         printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO - 1);
@@ -108,13 +102,7 @@ void usage()
 #ifdef HAVE_OSC
         help_switch_OSC();
 #endif
-        printf("     ...,stdout,format[,toggle[,min[,max[,default]]]]\n");
-        printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
-        printf("                        (the pin number) and '%%val%%' (the value)\n");
-        printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
-        printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
-        printf("               max:     maximum value (%d - %d), default 1\n", INT_MIN, INT_MAX);
-        printf("               default: the start value, default is 'min'\n\n");
+	help_switch_STDOUT();
         printf("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
         printf("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
         printf("for the Broadcom ('BCM') numbers.\n");
@@ -220,38 +208,10 @@ int parse_cmdline(int argc, char *argv[])
 			} else
 #endif
 			if (match(config[2], "stdout")) {
-				c->target = STDOUT;
-				c->param1 = calloc(sizeof(char), MAXNAME);
-				c->param1 =
-				    strncpy(c->param1, config[3], MAXNAME);
-				// TODO: check for presence of %% tokens instead!
-				if (strlen(c->param1) < 1) {
-					ERR("format cannot be empty.");
+				if (parse_cmdline_rotary_STDOUT(c, config)) {
 					goto error;
-				}
-				if (config[4] == NULL) {
-					c->min = 0;
 				} else {
-					c->min = atoi(config[4]);
-				}
-				if (config[5] == NULL) {
-					c->max = 100;
-				} else {
-					c->max = atoi(config[5]);
-				}
-				if (config[6] == NULL) {
-					c->step = 1;
-				} else {
-					c->step = atoi(config[6]);
-				}
-				if (config[7] == NULL) {
-					c->value = c->min;
-				} else {
-					c->value = atoi(config[7]);
-				}
-				if (config[8] != NULL) {
-					ERR("Too many arguments.");
-					goto error;
+					use_stdout = 1;
 				}
 			} else {
 				ERR("Unknown type '%s'.", config[2]);
@@ -317,38 +277,10 @@ int parse_cmdline(int argc, char *argv[])
 			} else
 #endif
 			if (match(config[1], "stdout")) {
-				c->target = STDOUT;
-				c->param1 = calloc(sizeof(char), MAXNAME);
-				c->param1 =
-				    strncpy(c->param1, config[2], MAXNAME);
-				// TODO: check for presence of %% tokens instead!
-				if (strlen(c->param1) < 1) {
-					ERR("format cannot be empty.");
+				if (parse_cmdline_switch_STDOUT(c, config)) {
 					goto error;
-				}
-				if (config[3] == NULL) {
-					c->toggle = 0;
 				} else {
-					c->toggle = atoi(config[3]);
-				}
-				if (config[4] == NULL) {
-					c->min = 0;
-				} else {
-					c->min = atoi(config[4]);
-				}
-				if (config[5] == NULL) {
-					c->max = 1;
-				} else {
-					c->max = atoi(config[5]);
-				}
-				if (config[6] == NULL) {
-					c->value = c->min;
-				} else {
-					c->value = atoi(config[6]);
-				}
-				if (config[7] != NULL) {
-					ERR("Too many arguments.");
-					goto error;
+					use_stdout = 1;
 				}
 			} else {
 				ERR("Unknown type '%s'.", config[2]);

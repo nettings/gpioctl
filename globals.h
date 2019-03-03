@@ -48,6 +48,7 @@ int verbose;
 int use_jack;
 int use_alsa;
 int use_osc;
+int use_stdout;
 
 typedef enum {
 	NOCTL,
