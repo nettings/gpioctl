@@ -178,6 +178,10 @@ int parse_cmdline(int argc, char *argv[])
 			c->type = ROTARY;
 			c->param1 = calloc(sizeof(char), MAXNAME);
 			c->param2 = calloc(sizeof(char), MAXNAME);
+			if (c->param1 == NULL || c->param2 == NULL) {
+				ERR("calloc() failed.");
+				goto error;
+			}
 			controller[c->pin2] = d;
 			d->type = AUX;
 #ifdef HAVE_JACK
