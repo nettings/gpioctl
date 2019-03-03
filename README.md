@@ -48,13 +48,20 @@ separated by commas, no spaces. Parameters in brackets are optional.
                control: the name of a simple controller in ALSA mixer
                step: the step size in dB per click, default 3
 
-     ...,stdout,format[,min[,max[,step[,default]]]]].
+       ...,osc,url,path,min,max,step,default
+               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl
+               min:     minimum value (-2147483648 - 2147483647), default 0
+               max:     maximum value (-2147483648 - 2147483647), default 100
+               step:    the step size per click, default 1
+               default: the initial value, default is 'min'
+
+    ...,stdout,format[,min[,max[,step[,default]]]]].
                format:  a string that can contain the special tokens '%gpi%'
                         (the pin number) and '%val%' (the value)
                min:     minimum value (-2147483648 - 2147483647), default 0
                max:     maximum value (-2147483648 - 2147483647), default 100
                step:    the step size per click, default 1
-               default:	the initial value, default is 'min'
+               default: the initial value, default is 'min'
 
 -s|--switch sw,type...
                Set up a switch.
@@ -72,13 +79,21 @@ separated by commas, no spaces. Parameters in brackets are optional.
       ...,alsa,control
                control: the name of a simple controller in ALSA mixer
                         (switch will operate the MUTE function)
-      ...,stdout,format[,toggle[,min[,max[,default]]]]
+       ...,osc,url,path,toggle,min,max,default
+               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level
+               path:    An OSC path, such as /mixer/level
+               toggle:  can be 0 (momentary on) or 1 (toggled on/off)
+               min:     value when open (-2147483648 - 2147483647), default 0
+               max:     value when closed (-2147483648 - 2147483647), default 100
+               default: the initial value, default is 'min'
+
+     ...,stdout,format[,toggle[,min[,max[,default]]]]
                format:  a string that can contain the special tokens '%gpi%'
                         (the pin number) and '%val%' (the value)
                toggle:  can be 0 (momentary on) or 1 (toggled on/off)
                min:     minimum value (-2147483648 - 2147483647), default 0
                max:     maximum value (-2147483648 - 2147483647), default 1
-               default:	the start value, default is 'min'
+               default: the start value, default is 'min'
 
 Pin numbers above are hardware GPIO numbers. They do not usually correspond
 to physical pin numbers. For the RPi, check https://pinout.xyz/# and look
@@ -88,7 +103,6 @@ GPIO pins. Use a hardware-specific external tool to enable them, or add
 physical pull-ups.
 
 gpioctl is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.
-
 ```
 
 ## Connecting rotary encoders
@@ -205,6 +219,23 @@ Now use the controls and watch the JACK MIDI events coming in.
 Of course the point is to use another JACK client that does useful things
 with those controller inputs. Ardour or mod-host are examples.
 
+## Sending OSC
+
+There is now experimental support for sending OSC messages. To try it out,
+make sure your firewall is not blocking the respective port and IP. Here is
+a multicast example, it's extra fun if you run the following on several
+other hosts in the local network:
+```
+$ oscdump osc.udp://239.0.0.254:3000
+```
+Then, on the machine that has the rotary connected, try this:
+```
+$ gpioctl -r 17,27,osc,osc.udp://239.0.0.254:3000,/some/path/maybelevel,0,100,1,0 -s 6,osc,osc.udp://239.0.0.254:3000,/some/path/maybemute,1,0,1,0
+```
+This example will send the commands to a multicast IP, so that it can be
+received by multiple hosts. Of course you can also use normal IPs. IPv6 is
+currently unsupported by liblo.
+
 ## Using the stdout frontend
 
 The most simple way of using gpioctl is to have it spit out controller
@@ -214,13 +245,13 @@ implemented and will be ignored.
 $ gpioctl -r 17,27,stdout,FOOBAR -s 6,stdout,FOOBAR,1
 ```
 
-
 ## Building gpioctl
 
 In addition to the usual system header files and libraries, gpioctl requires
 `libgpiod-dev`. If you want to use JACK MIDI, you need `libjack-jackd2-dev` 
 or `libjack-dev` (untested). If you want to access the ALSA mixer, you need
-`libasound2-dev`.
+`libasound2-dev`. If you want to send OSC messages, you need `liblo-dev` and 
+`liblo-tools`.
 I recommend installing `wiringpi` on the Pi or another hardware-specific GPIO 
 controller tool for your platform. (Package names are for Raspbian, they may
 differ on your system.)
