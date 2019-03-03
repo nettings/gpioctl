@@ -19,4 +19,10 @@
 #ifndef OSC_PROCESS_H
 #define OSC_PROCESS_H
 
+#include "globals.h"
+
+void setup_OSC();
+void shutdown_OSC();
+void update_OSC(control_t * c, int val);
+
 #endif
