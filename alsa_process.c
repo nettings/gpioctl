@@ -26,8 +26,6 @@ char alsa_card[MAXNAME] = ALSA_CARD;
 
 void setup_ALSA_mixer()
 {
-	char name[64] = { 0 };
-
 	int err;
 	err = snd_mixer_open(&mixer_handle, 0);
 	if (err)
@@ -71,7 +69,7 @@ int set_ALSA_volume(snd_mixer_elem_t * elem, int val)
 		ERR("ALSA error getting value for %s: %s.",
 		    snd_mixer_selem_get_name(elem), snd_strerror(err));
 	} else {
-		DBG("ALSA reports current setting for %s as %d milliBel.",
+		DBG("ALSA reports current setting for %s as %ld milliBel.",
 		    snd_mixer_selem_get_name(elem), cval);
 	}
 	val += cval;
@@ -111,4 +109,5 @@ int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
 		DBG("ALSA reports %s while setting %s to %d.",
 		    snd_strerror(err), snd_mixer_selem_get_name(elem), val);
 	}
+	return 0;
 }
