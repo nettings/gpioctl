@@ -44,7 +44,9 @@
 control_t *controller[MAXGPIO] = { 0 };
 
 int verbose = 0;
+int use_alsa = 0;
 int use_jack = 0;
+int use_osc = 0;
 
 static void signal_handler(int sig)
 {
@@ -63,44 +65,6 @@ static void signal_handler(int sig)
 	shutdown_gpiod();
 	exit(0);
 }
-
-static void update_stdout(control_t * c)
-{
-	fprintf(stdout,"%03d\t%05d\n", c->pin1, c->value);
-	fflush(stdout);
-}
-
-#ifdef HAVE_JACK
-static void update_jack(control_t * c)
-{
-	unsigned char msg[MSG_SIZE];
-	msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
-	msg[1] = c->midi_cc;
-	msg[2] = c->value;
-	ringbuffer_write(msg, MSG_SIZE);
-	NFO("JACK:\t<%02d|%02d>\t0x%02x%02x%02x", c->pin1, c->value, msg[0],
-	    msg[1], msg[2]);
-}
-#endif
-
-#ifdef HAVE_ALSA
-static void update_alsa(control_t * c, int val)
-{
-	switch (c->type) {
-	case ROTARY:
-		set_ALSA_volume(c->param1, val * c->step * 100);
-		break;
-	case SWITCH:
-		set_ALSA_mute(c->param1, val);
-		break;
-	default:
-		ERR("Found c->type %d in ALSA handler. THIS SHOULD NEVER HAPPEN.",
-                    c->type);
-                break;
-	}
-	NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
-}
-#endif
 
 void handle_gpi(int line, int val)
 {

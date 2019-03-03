@@ -21,6 +21,13 @@
 #include <string.h>
 #include "globals.h"
 
+void update_stdout(control_t * c)
+{
+        fprintf(stdout,"%03d\t%05d\n", c->pin1, c->value);
+        fflush(stdout);
+}
+
+
 char *setup_STDOUT_format(char *c)
 {
 	char *tok_gpi;

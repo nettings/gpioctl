@@ -19,7 +19,10 @@
 #ifndef JACK_PROCESS_H
 #define JACK_PROCESS_H
 
+#include "globals.h"
+
 int setup_JACK();
 int shutdown_JACK();
+void update_jack(control_t * c);
 
 #endif

@@ -204,6 +204,6 @@ void setup_gpiod_handler(char *dev, char *cons)
 	err = gpiod_ctxless_event_loop_multiple(device, offsets, num_lines,
 						ACTIVE_HIGH, consumer, FOREVER,
 						NULL, callback, NULL);
-	ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d.", err,
-	    errno);
+	ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d (%s).", err,
+	    errno, strerror(errno));
 }
