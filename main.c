@@ -37,6 +37,10 @@
 #include "alsa_process.h"
 #endif
 
+#ifdef HAVE_OSC
+#include "osc_process.h"
+#endif
+
 control_t *controller[MAXGPIO] = { 0 };
 
 int verbose = 0;
@@ -56,6 +60,11 @@ static void signal_handler(int sig)
 	if (use_jack) {
 		shutdown_JACK();
 		shutdown_ringbuffer();
+	}
+#endif
+#ifdef HAVE_OSS
+	if (use_oss) {
+		shutdown_OSS();
 	}
 #endif
 	shutdown_gpiod();
@@ -117,6 +126,11 @@ void handle_gpi(int line, int val)
 		update_alsa(c, val);
 		break;
 #endif
+#ifdef HAVE_OSC
+	case OSC:
+		update_OSC(c, val);
+		break;
+#endif
 	default:
 		ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
 		    c->target);
@@ -145,6 +159,11 @@ int main(int argc, char *argv[])
 		setup_ALSA_mixer();
 	}
 #endif
+#ifdef HAVE_OSC
+	if (use_osc) {
+		setup_OSC();
+	}
+#endif
 	for (int i = 0; i < MAXGPIO; i++) {
 		if (controller[i] == NULL)
 			continue;
@@ -171,6 +190,11 @@ int main(int argc, char *argv[])
 		case ALSA:
 			p = setup_ALSA_mixer_elem(c->param1);
 			c->param1 = p;
+			break;
+#endif
+#ifdef HAVE_OSC
+		case OSC:
+			DBG("OSC controller required, but not yet implemented.");
 			break;
 #endif
 		case STDOUT:

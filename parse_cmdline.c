@@ -58,6 +58,14 @@ void usage()
 	printf("               control: the name of a simple controller in ALSA mixer\n");
 	printf("               step: the step size in dB per click, default 3\n\n");
 #endif
+#ifdef HAVE_OSC
+	printf("       ...,osc,url,path,min,max,step,default\n");
+	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl\n");
+	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
+	printf("               step:    the step size per click, default 1\n");
+	printf("               default:	the initial value, default is 'min'\n\n");
+#endif
 	printf("    ...,stdout,format[,min[,max[,step[,default]]]]].\n");
 	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
 	printf("                        (the pin number) and '%%val%%' (the value)\n");
@@ -82,6 +90,15 @@ void usage()
 	printf("      ...,alsa,control\n");
 	printf("               control: the name of a simple controller in ALSA mixer\n");
 	printf("                        (switch will operate the MUTE function)\n");
+#endif
+#ifdef HAVE_OSC
+	printf("       ...,osc,url,path,toggle,min,max,default\n");
+	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level\n");
+	printf("               path:    An OSC path, such as /mixer/level\n");
+	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               min:     value when open (%d - %d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     value when closed (%d - %d), default 100\n", INT_MIN, INT_MAX);
+	printf("               default:	the initial value, default is 'min'\n\n");
 #endif
 	printf("     ...,stdout,format[,toggle[,min[,max[,default]]]]\n");
 	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
@@ -272,6 +289,49 @@ int parse_cmdline(int argc, char *argv[])
 				use_alsa = 1;
 			} else
 #endif
+#ifdef HAVE_OSC
+			if (match(config[2], "osc")) {
+				c->target = OSC;
+				c->param1 = calloc(sizeof(char), MAXNAME);
+				c->param1 = strncpy(c->param1, config[3], MAXNAME);
+				if (strlen(c->param1) < 1) {
+					ERR("url cannot be empty");
+					goto error;
+				}
+				if (config[4] == NULL) {
+					ERR("path cannot be empty");
+					goto error;
+				} else {
+					c->param2 = calloc(sizeof(char), MAXNAME);
+					c->param2 = strncpy(c->param2, config[4], MAXNAME);
+				}
+				if (config[5] == NULL) {
+					c->min = 0;
+				} else {
+					c->min = atoi(config[5]);
+				}
+				if (config[6] == NULL) {
+					c->max = 100;
+				} else {
+					c->max = atoi(config[6]);
+				}
+				if (config[7] == NULL) {
+					c->step = 1;
+				} else {
+					c->step = atoi(config[7]);
+				}
+				if (config[8] == NULL) {
+					c->value = c->min;
+				} else {
+					c->value = atoi(config[8]);
+				}
+				if (config[9] != NULL) {
+					ERR("Too many arguments.");
+					goto error;
+				}
+				use_osc = 1;
+			} else
+#endif
 			if (match(config[2], "stdout")) {
 				c->target = STDOUT;
 				c->param1 = calloc(sizeof(char), MAXNAME);
@@ -306,12 +366,16 @@ int parse_cmdline(int argc, char *argv[])
 					ERR("Too many arguments.");
 					goto error;
 				}
-				DBG("Parsed control type=%d pin1=%d pin2=%d target=%d min=%d max=%d step=%d default=%d.", c->type, c->pin1, c->pin2, c->target, c->min, c->max, c->step, c->value);
 			} else {
 				ERR("Unknown type '%s'.", config[2]);
 				goto error;
 			}
 			ncontrols++;
+			DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", 
+			                    c->pin1,c->pin2,c->type,c->target,c->min,c->max,c->step,c->toggle,c->midi_ch,c->midi_cc,
+			                    c->param1 == NULL ? "''" : (char*)c->param1,
+			                    c->param2 == NULL ? "''" : (char*)c->param2,
+			                    c->value);
 			break;
 
 		case 's':
@@ -415,6 +479,57 @@ int parse_cmdline(int argc, char *argv[])
 				use_alsa = 1;
 			} else
 #endif
+#ifdef HAVE_OSC
+			if (match(config[1], "osc")) {
+				c->target = OSC;
+				c->param1 = calloc(sizeof(char), MAXNAME);
+				c->param1 = strncpy(c->param1, config[2], MAXNAME);
+				if (strlen(c->param1) < 1) {
+					ERR("url cannot be empty");
+					goto error;
+				}
+				if (config[3] == NULL) {
+					ERR("path cannot be empty");
+					goto error;
+				} else {
+					c->param2 = calloc(sizeof(char), MAXNAME);
+					c->param2 = strncpy(c->param2, config[3], MAXNAME);
+				}
+				if (config[4] == NULL) {
+					c->toggle = 0;
+				} else {
+					c->toggle = atoi(config[4]);
+					if (c->toggle != 0 && c->toggle != 1) {
+						ERR("toggle must be 0 or 1.");
+						goto error;
+					}
+				}
+				if (config[5] == NULL) {
+					c->min = 0;
+				} else {
+					c->min = atoi(config[5]);
+				}
+				if (config[6] == NULL) {
+					c->max = 100;
+				} else {
+					c->max = atoi(config[6]);
+				}
+				if (config[7] == NULL) {
+					c->value = c->min;
+				} else {
+					c->value = atoi(config[7]);
+					if (c->value < c->min || c->value > c->max) {
+						ERR("default value out of range.");
+						goto error;
+					}
+				}
+				if (config[8] != NULL) {
+					ERR("Too many arguments.");
+					goto error;
+				}
+				use_osc = 1;
+			} else
+#endif
 			if (match(config[1], "stdout")) {
 				c->target = STDOUT;
 				c->param1 = calloc(sizeof(char), MAXNAME);
@@ -449,12 +564,16 @@ int parse_cmdline(int argc, char *argv[])
 					ERR("Too many arguments.");
 					goto error;
 				}
-				DBG("Parsed control type=%d pin1=%d pin2=%d target=%d min=%d max=%d step=%d default=%d.", c->type, c->pin1, c->pin2, c->target, c->min, c->max, c->step, c->value);
 			} else {
 				ERR("Unknown type '%s'.", config[2]);
 				goto error;
 			}
 			ncontrols++;
+			DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", 
+			                    c->pin1,c->pin2,c->type,c->target,c->min,c->max,c->step,c->toggle,c->midi_ch,c->midi_cc,
+			                    c->param1 == NULL ? "''" : (char*)c->param1,
+			                    c->param2 == NULL ? "''" : (char*)c->param2,
+			                    c->value);
 			break;
 
 		default:

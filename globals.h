@@ -60,7 +60,8 @@ typedef enum {
 	NOTGT,
 	STDOUT,
 	JACK,
-	ALSA
+	ALSA,
+	OSC
 } control_target_t;
 
 typedef struct {
