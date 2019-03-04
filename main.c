@@ -73,18 +73,18 @@ static void signal_handler(int sig)
 	exit(0);
 }
 
-void handle_gpi(int line, int val)
+void handle_gpi(int line, int delta)
 {
 	control_t *c = controller[line];
 	switch (c->type) {
 	case ROTARY:
-		if ((val < 0 && c->value > c->min)) {
+		if ((delta < 0 && c->value > c->min)) {
 			if (c->value - c->step > c->min) {
 				c->value -= c->step;
 			} else {
 				c->value = c->min;
 			}
-		} else if ((val > 0 && c->value < c->max)) {
+		} else if ((delta > 0 && c->value < c->max)) {
 			if (c->value + c->step < c->max) {
 				c->value += c->step;
 			} else {
@@ -95,7 +95,7 @@ void handle_gpi(int line, int val)
 		break;
 	case SWITCH:
 		if (c->toggle) {
-			if (val == 0)
+			if (delta == 0)
 				return;
 			if (c->value > c->min) {
 				c->value = c->min;
@@ -103,7 +103,7 @@ void handle_gpi(int line, int val)
 				c->value = c->max;
 			}
 		} else {
-			if (val == 0) {
+			if (delta == 0) {
 				c->value = c->min;
 			} else {
 				c->value = c->max;
@@ -130,7 +130,7 @@ void handle_gpi(int line, int val)
 #endif
 #ifdef HAVE_OSC
 	case OSC:
-		update_OSC(c, val);
+		update_OSC(c, delta);
 		break;
 #endif
 	default:
