@@ -21,7 +21,7 @@
 
 #include "globals.h"
 
-void update_stdout(control_t * c);
+void update_STDOUT(control_t * c);
 char *setup_STDOUT_format(char *c);
 
 #endif

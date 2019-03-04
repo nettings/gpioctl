@@ -66,7 +66,7 @@ int shutdown_JACK()
 	return 0;
 }
 
-void update_jack(control_t * c)
+void update_JACK(control_t * c)
 {
 	unsigned char msg[MSG_SIZE];
 	msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);

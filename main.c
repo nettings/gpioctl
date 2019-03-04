@@ -75,7 +75,9 @@ static void signal_handler(int sig)
 
 void handle_gpi(int line, int delta)
 {
+	int prev = c->value;
 	control_t *c = controller[line];
+	
 	switch (c->type) {
 	case ROTARY:
 		if ((delta < 0 && c->value > c->min)) {
@@ -116,16 +118,17 @@ void handle_gpi(int line, int delta)
 	}
 	switch (c->target) {
 	case STDOUT:
-		update_stdout(c);
+		update_STDOUT(c);
 		break;
 #ifdef HAVE_JACK
 	case JACK:
-		update_jack(c);
+		update_JACK(c);
 		break;
 #endif
 #ifdef HAVE_ALSA
 	case ALSA:
-		update_alsa(c);
+		
+		update_ALSA(c);
 		break;
 #endif
 #ifdef HAVE_OSC

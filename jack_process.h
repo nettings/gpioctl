@@ -23,6 +23,6 @@
 
 int setup_JACK();
 int shutdown_JACK();
-void update_jack(control_t * c);
+void update_JACK(control_t * c);
 
 #endif

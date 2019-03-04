@@ -56,7 +56,7 @@ snd_mixer_elem_t *setup_ALSA_mixer_elem(char *mixer_scontrol)
 	return elem;
 }
 
-void update_alsa(control_t * c)
+void update_ALSA(control_t * c)
 {
 	int err;
 
