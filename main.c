@@ -125,7 +125,7 @@ void handle_gpi(int line, int val)
 #endif
 #ifdef HAVE_ALSA
 	case ALSA:
-		update_alsa(c, val);
+		update_alsa(c);
 		break;
 #endif
 #ifdef HAVE_OSC

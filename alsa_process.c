@@ -56,70 +56,30 @@ snd_mixer_elem_t *setup_ALSA_mixer_elem(char *mixer_scontrol)
 	return elem;
 }
 
-static int set_ALSA_volume(snd_mixer_elem_t * elem, int val)
+void update_alsa(control_t * c)
 {
 	int err;
-	long cval;
 
-	snd_mixer_handle_events(mixer_handle);	// make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
-	err = snd_mixer_selem_get_playback_dB(elem, 0, &cval);
-	if (err) {
-		ERR("ALSA error getting value for %s: %s.",
-		    snd_mixer_selem_get_name(elem), snd_strerror(err));
-	} else {
-		DBG("ALSA reports current setting for %s as %ld milliBel.",
-		    snd_mixer_selem_get_name(elem), cval);
-	}
-	val += cval;
-	err = snd_mixer_selem_set_playback_dB_all(elem, val, 1);
-	if (err) {
-		ERR("ALSA error: %s while setting %s to %d milliBel.",
-		    snd_strerror(err), snd_mixer_selem_get_name(elem), val);
-	} else {
-		DBG("ALSA reports %s while setting %s to %d milliBel.",
-		    snd_strerror(err), snd_mixer_selem_get_name(elem), val);
-	}
-	return 0;
-}
-
-static int set_ALSA_mute(snd_mixer_elem_t * elem, int val)
-{
-	int err;
-	int cval;
-
-	snd_mixer_handle_events(mixer_handle);	// make sure we're aware of mixer changes from elsewhere (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
-	err = snd_mixer_selem_get_playback_switch(elem, 0, &cval);
-	if (err) {
-		ERR("ALSA error getting value for %s: %s.",
-		    snd_mixer_selem_get_name(elem), snd_strerror(err));
-	} else {
-		DBG("ALSA reports current setting for %s as %d.",
-		    snd_mixer_selem_get_name(elem), cval);
-	}
-	val = 1 - cval;
-	err = snd_mixer_selem_set_playback_switch_all(elem, val);
-	if (err) {
-		ERR("ALSA error: %s while setting %s to %d.", snd_strerror(err),
-		    snd_mixer_selem_get_name(elem), val);
-	} else {
-		DBG("ALSA reports %s while setting %s to %d.",
-		    snd_strerror(err), snd_mixer_selem_get_name(elem), val);
-	}
-	return 0;
-}
-
-void update_alsa(control_t * c, int val)
-{
 	switch (c->type) {
 	case ROTARY:
-		set_ALSA_volume(c->param1, val * c->step * 100);
+		// ALSA handles level in milliBel!
+		err = snd_mixer_selem_set_playback_dB_all(c->param1, c->value * 100, 1);
+		// set_ALSA_volume(c->param1, val * c->step * 100);
 		break;
 	case SWITCH:
-		set_ALSA_mute(c->param1, val);
+		err = snd_mixer_selem_set_playback_switch_all(c->param1, c->value);
+		// set_ALSA_mute(c->param1, val);
 		break;
 	default:
-		ERR("Found c->type %d in ALSA handler. THIS SHOULD NEVER HAPPEN.", c->type);
+		ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
 		break;
+	}
+	if (err) {
+		ERR("ALSA error: %s while setting %s to %d.", snd_strerror(err),
+		    snd_mixer_selem_get_name(c->param1), c->value);
+	} else {
+		DBG("ALSA reports %s while setting %s to %d.",
+		    snd_strerror(err), snd_mixer_selem_get_name(c->param1), c->value);
 	}
 	NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
 }
