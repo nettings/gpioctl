@@ -75,8 +75,8 @@ static void signal_handler(int sig)
 
 void handle_gpi(int line, int delta)
 {
-	int prev = c->value;
 	control_t *c = controller[line];
+	int prev = c->value;
 	
 	switch (c->type) {
 	case ROTARY:
