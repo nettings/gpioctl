@@ -37,12 +37,12 @@
 #ifdef DEBUG
 #define DBG(fmt, args...) fprintf(stdout, "%s:%d %s(): " fmt "\n", __FILE__, __LINE__, __func__,  ## args)
 #define ERR(fmt, args...) fprintf(stderr, "%s:%d %s(): \x1b[01;31m" fmt "\x1b[0m\n", __FILE__, __LINE__, __func__, ## args)
+#define NFO(fmt, args...) fprintf(stdout, fmt "\n", ## args)
 #else
 #define DBG(fmt, args...)
 #define ERR(fmt, args...) fprintf(stderr, "\x1b[31m"fmt"\x1b[0m\n", ## args)
-#endif
-
 #define NFO(fmt, args...) if (verbose) fprintf(stdout, fmt "\n", ## args);
+#endif
 
 int verbose;
 int use_jack;
