@@ -198,8 +198,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	signal(SIGTERM, signal_handler);
-	signal(SIGINT, signal_handler);
+	signal(SIGTERM, &signal_handler);
+	signal(SIGINT, &signal_handler);
 
 	setup_gpiod_handler(GPIOD_DEVICE, PROGRAM_NAME);
 
