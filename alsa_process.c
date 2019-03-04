@@ -83,3 +83,35 @@ void update_ALSA(control_t * c)
 	}
 	NFO("ALSA:\t<%02d|% 2d>", c->pin1, c->value);
 }
+
+int get_ALSA_mixer_value(control_t* c)
+{
+	int err, cur;
+	long i;
+
+	// make sure we're aware of mixer changes from elsewhere
+	// (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
+	snd_mixer_handle_events(mixer_handle);
+        switch (c->type) {
+        case ROTARY:
+                // ALSA handles level in milliBel!
+                err = snd_mixer_selem_get_playback_dB(c->param1, 0, &i);
+                cur = i / 100;
+                break;
+        case SWITCH:
+                err = snd_mixer_selem_get_playback_switch(c->param1, 0, &cur);
+                // set_ALSA_mute(c->param1, val);
+                break;
+        default:
+                ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.", c->type);
+                break;
+        }
+        if (err) {
+                ERR("ALSA error: %s while reading %s.", snd_strerror(err),
+                    snd_mixer_selem_get_name(c->param1));
+        } else {
+                DBG("ALSA reports %s at %d.",
+                    snd_mixer_selem_get_name(c->param1), cur);
+        }
+        return cur;
+}

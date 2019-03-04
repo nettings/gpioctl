@@ -76,8 +76,15 @@ static void signal_handler(int sig)
 void handle_gpi(int line, int delta)
 {
 	control_t *c = controller[line];
-	int prev = c->value;
-	
+
+#ifdef HAVE_ALSA
+	if (c->target == ALSA) {
+		// to avoid loudness jumps, we always re-read the current mixer value
+		// in case it got changed by someone else, and then apply a relative 
+		// change
+		c->value = get_ALSA_mixer_value(c);
+	}
+#endif
 	switch (c->type) {
 	case ROTARY:
 		if ((delta < 0 && c->value > c->min)) {
@@ -127,7 +134,6 @@ void handle_gpi(int line, int delta)
 #endif
 #ifdef HAVE_ALSA
 	case ALSA:
-		
 		update_ALSA(c);
 		break;
 #endif
@@ -189,6 +195,8 @@ int main(int argc, char *argv[])
 #ifdef HAVE_ALSA
 		case ALSA:
 			c->param1 = setup_ALSA_mixer_elem(c->param1);
+			// always start from the actual mixer value to avoid jumps
+			c->value = get_ALSA_mixer_value(c);
 			break;
 #endif
 		case JACK:

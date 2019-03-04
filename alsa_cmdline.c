@@ -44,11 +44,9 @@ int parse_cmdline_rotary_ALSA(control_t * c, char *config[])
 		ERR("Too many arguments.");
 		return -1;
 	}
-	// FIXME: this is a dirty hack to avoid running into limits
-	// while the ALSA and counter logic don't talk to each other.
-	c->min = -10000;
-	c->max = 10000;
-	c->value = 0;
+	c->min = -100;
+	c->max = 0;
+	c->value = c->min;
 
 	return 0;
 }
