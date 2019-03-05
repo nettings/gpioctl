@@ -32,66 +32,30 @@
 
 #ifdef HAVE_ALSA
 #include "alsa_cmdline.h"
+#include "slave_cmdline.h"
 #endif
 
 #ifdef HAVE_OSC
 #include "osc_cmdline.h"
+#include "master_cmdline.h"
 #endif
-
-// one more than real max, so we can check for excess arguments:
-#define MAXARG 10
-
-static int tokenize(char *argument, char *config[])
-{
-	int i = 0;
-	config[0] = strtok(argument, ",");
-	// always go up to MAXARG, to make sure we overwrite all previous hits with NULL
-	for (int k = 1; k <= MAXARG; k++) {
-		if (config[i] != NULL)
-			i++;
-		config[k] = strtok(NULL, ",");
-	}
-	return i;
-}
-
-static int match(char *string1, char *string2)
-{
-	if (strncmp(string1, string2, strlen(string2)) == 0) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
 
 void usage()
 {
-	printf
-	    ("\n%s handles switches and rotary encoders connected to GPIOs, using the\n",
-	     PROGRAM_NAME);
-	printf
-	    ("portable libgpiod kernel interface, to send text messages to /dev/stdout.\n");
-	printf
-	    ("If enabled at build time, you can also send JACK MIDI CC messages,\n");
-	printf
-	    ("OSC messages, or directly interact with an ALSA mixer control.\n");
-	printf
-	    ("We assume GPI pins have a pull-up, so the return should be connected to ground.\n\n");
+	printf("\n%s handles switches and rotary encoders connected to GPIOs, using the\n", PROGRAM_NAME);
+	printf("portable libgpiod kernel interface, to send text messages to /dev/stdout.\n");
+	printf("If enabled at build time, you can also send JACK MIDI CC messages,\n");
+	printf("OSC messages, or directly interact with an ALSA mixer control.\n");
+	printf("We assume GPI pins have a pull-up, so the return should be connected to ground.\n\n");
 	printf("-h|--help      This help.\n");
 	printf("-v|--verbose   Print current controller values.\n\n");
-	printf
-	    ("The following options may be specified multiple times. All parameters must be\n");
-	printf
-	    ("separated by commas, no spaces. Parameters in brackets are optional.\n\n");
+	printf("The following options may be specified multiple times. All parameters must be\n");
+	printf("separated by commas, no spaces. Parameters in brackets are optional.\n\n");
 	printf("-r|--rotary clk,dt,type,...\n");
 	printf("               Set up a rotary encoder.\n");
-	printf
-	    ("               clk:     the GPI number of the first encoder contact (0-%d)\n",
-	     MAXGPIO - 1);
-	printf
-	    ("               dt:      the GPI number of the second encoder contact (0-%d)\n",
-	     MAXGPIO - 1);
-	printf
-	    ("               Depending on 'type', the remaining parameters are:\n\n");
+	printf("               clk:     the GPI number of the first encoder contact (0-%d)\n", MAXGPIO - 1);
+	printf("               dt:      the GPI number of the second encoder contact (0-%d)\n", MAXGPIO - 1);
+	printf("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
 	help_rotary_JACK();
 #endif
@@ -100,6 +64,12 @@ void usage()
 #endif
 #ifdef HAVE_OSC
 	help_rotary_OSC();
+#endif
+#ifdef HAVE_OSC
+	help_rotary_MASTER();
+#endif
+#ifdef HAVE_ALSA
+	help_rotary_SLAVE();
 #endif
 	help_rotary_STDOUT();
 	printf("-s|--switch sw,type...\n");
@@ -117,6 +87,12 @@ void usage()
 #endif
 #ifdef HAVE_OSC
 	help_switch_OSC();
+#endif
+#ifdef HAVE_OSC
+	help_rotary_MASTER();
+#endif
+#ifdef HAVE_ALSA
+	help_rotary_SLAVE();
 #endif
 	help_switch_STDOUT();
 	printf
@@ -137,6 +113,28 @@ void usage()
 static void debugmsg(control_t * c)
 {
 	DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", c->pin1, c->pin2, c->type, c->target, c->min, c->max, c->step, c->toggle, c->midi_ch, c->midi_cc, c->param1 == NULL ? "''" : (char *)c->param1, c->param2 == NULL ? "''" : (char *)c->param2, c->value);
+}
+
+static int tokenize(char *argument, char *config[])
+{
+        int i = 0;
+        config[0] = strtok(argument, ",");
+        // always go up to MAXARG, to make sure we overwrite all previous hits with NULL
+        for (int k = 1; k <= MAXARG; k++) {
+                if (config[i] != NULL)
+                        i++;
+                config[k] = strtok(NULL, ",");
+        }
+        return i;
+}
+
+static int match(char *string1, char *string2)
+{
+        if (strncmp(string1, string2, strlen(string2)) == 0) {
+                return 1;
+        } else {
+                return 0;
+        }
 }
 
 int parse_cmdline(int argc, char *argv[])

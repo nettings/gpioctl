@@ -67,7 +67,7 @@ def configure(cnf):
 			header_name = 'alsa/asoundlib.h')
 		if lib and header:
 			cnf.env.libs += ['ASOUND']
-			cnf.env.objs += ['alsa_process', 'alsa_cmdline']
+			cnf.env.objs += ['alsa_process', 'alsa_cmdline', 'slave_cmdline']
 	if not cnf.options.noosc:
 		lib = cnf.check(
 			features = 'c cshlib',
@@ -78,7 +78,7 @@ def configure(cnf):
 			header_name = 'lo/lo.h')
 		if lib and header:
 			cnf.env.libs += ['LO']
-			cnf.env.objs += ['osc_process', 'osc_cmdline']
+			cnf.env.objs += ['osc_process', 'osc_cmdline', 'master_cmdline']
 	cnf.cc_add_flags()
 	cnf.link_add_flags()
 	cnf.cxx_add_flags()
@@ -105,6 +105,9 @@ def build(bld):
 		bld.objects(
 			source = 'alsa_cmdline.c',
 			target = 'alsa_cmdline')
+		bld.objects(
+			source = 'slave_cmdline.c',
+			target = 'slave_cmdline')
 	if 'LO' in bld.env.libs:
 		bld.objects(
 			source = 'osc_process.c',
@@ -112,8 +115,11 @@ def build(bld):
 		bld.objects(
 			source = 'osc_cmdline.c',
 			target = 'osc_cmdline')
+		bld.objects(
+			source = 'master_cmdline.c',
+			target = 'master_cmdline')
 	bld.objects(
-		source = 'parse_cmdline.c',
+		source = ['parse_cmdline.c'],
 		target = 'parse_cmdline')
 	bld.objects(
 		source = 'gpiod_process.c',

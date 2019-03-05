@@ -31,6 +31,9 @@
 #define MAXNAME 64
 #define ALSA_CARD "default"
 
+// one more than real max, so we can check for excess arguments:
+#define MAXARG 10
+
 #include <stdio.h>
 #include "build/config.h"
 
@@ -62,7 +65,9 @@ typedef enum {
 	STDOUT,
 	JACK,
 	ALSA,
-	OSC
+	OSC,
+	SLAVE,
+	MASTER
 } control_target_t;
 
 typedef struct {
