@@ -24,16 +24,28 @@
 
 void help_rotary_MASTER()
 {
-	printf("    ...,master,url      Set up an ALSA master volume via OSC, where\n");
-        printf("               url:     URL to send to, e.g. osc.udp://239.0.2.149:7000\n");
+        printf("    ...,master,url[,step]\n");
+        printf("               Set up an network master controller for use with -R.\n");
+        printf("               url:     The OSC url of the receiver(s), such as\n");
+        printf("                        osc.udp://239.0.2.149:7000\n");
+        printf("               step:    the step size per click, default 3\n");
 }
 
 int parse_cmdline_rotary_MASTER(control_t * c, char *config[])
 {
 	c->target = MASTER;
+	if (config[3] == NULL) {
+		ERR("url cannot be empty.");
+		return -1;
+	}
 	c->param1 = strncpy(c->param1, config[3], MAXNAME);
 	snprintf(c->param2, MAXNAME, "/%s/level", PROGRAM_NAME);
-	if (config[4] != NULL) {
+	if (config[4] == NULL) {
+		c->step = 3;
+	} else {
+		c->step = atoi(config[4]);
+	}
+	if (config[5] != NULL) {
 		ERR("Too many arguments.");
 		return -1;
 	}
@@ -49,13 +61,19 @@ int parse_cmdline_rotary_MASTER(control_t * c, char *config[])
 
 void help_switch_MASTER()
 {
-	printf("    ...,master,url      Set up an ALSA master mute via OSC, where\n");
-        printf("               url:     URL to send to, e.g. osc.udp://239.0.2.149:7000\n");
+        printf("    ...,master,url\n");
+        printf("               Set up a network master controller for use with -S.\n");
+        printf("               url:     The OSC url of the receiver(s), such as\n");
+        printf("                        osc.udp://239.0.2.149:7000\n");
 }
 
 int parse_cmdline_switch_MASTER(control_t * c, char *config[])
 {
 	c->target = MASTER;
+	if (config[2] == NULL) {
+		ERR("url cannot be empty.");
+		return -1;
+	}
 	c->param1 = strncpy(c->param1, config[2], MAXNAME);
 	snprintf(c->param2, MAXNAME, "/%s/mute", PROGRAM_NAME);
 	if (config[3] != NULL) {

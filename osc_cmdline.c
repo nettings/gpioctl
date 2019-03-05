@@ -37,11 +37,11 @@ void help_rotary_OSC()
 int parse_cmdline_rotary_OSC(control_t * c, char *config[])
 {
 	c->target = OSC;
-	c->param1 = strncpy(c->param1, config[3], MAXNAME);
-	if (strlen(c->param1) < 1) {
+	if (config[3] == NULL) {
 		ERR("url cannot be empty");
 		return -1;
 	}
+	c->param1 = strncpy(c->param1, config[3], MAXNAME);
 	if (config[4] == NULL) {
 		ERR("path cannot be empty");
 		return -1;
@@ -95,11 +95,11 @@ void help_switch_OSC()
 int parse_cmdline_switch_OSC(control_t * c, char *config[])
 {
 	c->target = OSC;
-	c->param1 = strncpy(c->param1, config[2], MAXNAME);
-	if (strlen(c->param1) < 1) {
+	if (config[2] == NULL) {
 		ERR("url cannot be empty");
 		return -1;
 	}
+	c->param1 = strncpy(c->param1, config[2], MAXNAME);
 	if (config[3] == NULL) {
 		ERR("path cannot be empty");
 		return -1;

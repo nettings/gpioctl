@@ -34,6 +34,10 @@ void help_rotary_ALSA()
 int parse_cmdline_rotary_ALSA(control_t * c, char *config[])
 {
 	c->target = ALSA;
+	if (config[3] == NULL) {
+		ERR("control cannot be empty.");
+		return -1;
+	}
 	c->param1 = strncpy(c->param1, config[3], MAXNAME);
 	if (config[4] == NULL) {
 		c->step = 3;
@@ -63,6 +67,10 @@ void help_switch_ALSA()
 int parse_cmdline_switch_ALSA(control_t * c, char *config[])
 {
 	c->target = ALSA;
+	if (config[2] == NULL) {
+		ERR("control cannot be empty.");
+		return -1;
+	}
 	c->param1 = strncpy(c->param1, config[2], MAXNAME);
 	if (config[3] != NULL) {
 		ERR("Too many arguments.");

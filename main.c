@@ -42,7 +42,7 @@
 #include "osc_process.h"
 #endif
 
-control_t *controller[MAXGPIO] = { 0 };
+control_t *controller[NCONTROLLERS] = { 0 };
 
 int verbose = 0;
 int use_alsa = 0;
@@ -158,8 +158,11 @@ int main(int argc, char *argv[])
 	control_t *c;
 
 	int rval = parse_cmdline(argc, argv);
-	if (rval != EXIT_CLEAN) {
+	if (rval == EXIT_USAGE) {
 		usage();
+		exit(0);
+	}
+	if (rval != EXIT_CLEAN) {
 		exit(rval);
 	}
 #ifdef HAVE_JACK
@@ -178,7 +181,7 @@ int main(int argc, char *argv[])
 		setup_OSC();
 	}
 #endif
-	for (int i = 0; i < MAXGPIO; i++) {
+	for (int i = 0; i < NCONTROLLERS; i++) {
 		if (controller[i] == NULL)
 			continue;
 		c = controller[i];

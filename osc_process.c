@@ -21,8 +21,46 @@
 #include <lo/lo.h>
 #include "globals.h"
 
+static void handle_error(int num, const char *m, const char *path) {
+}
+
+static int handle_rotary(const char *path, const char *types, lo_arg ** argv,
+                    int argc, void *data, void *user_data) {
+        return 0;
+}
+
+static int handle_switch(const char *path, const char *types, lo_arg ** argv,
+                    int argc, void *data, void *user_data) {
+        return 0;
+}
+
+static int handle_all(const char *path, const char *types, lo_arg ** argv,
+                int argc, void *data, void *user_data) {
+        return 0;
+}
+
 void setup_OSC()
 {
+}
+
+void setup_OSC_server(char* url) {
+/*
+    lo_server_thread s = lo_server_thread_new_from_url(url, &handle_error);
+    lo_server_thread_add_method(st, "/foo/bar", "fi", foo_handler, NULL);
+    lo_server_thread_add_method(st, "/blobtest", "b", blobtest_handler, NULL);
+    lo_server_thread_add_method(st, "/quit", "", quit_handler, NULL);
+    lo_server_thread_add_method(st, NULL, NULL, generic_handler, NULL);
+
+    lo_server_thread_start(st);
+
+    while (!done) {
+        usleep(1000);
+    }
+
+    lo_server_thread_free(st);
+
+    return 0;
+*/
 }
 
 void shutdown_OSC()

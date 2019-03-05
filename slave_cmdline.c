@@ -22,15 +22,23 @@
 #include <string.h>
 #include "globals.h"
 
+static int slave_index = 0;
+
 void help_rotary_SLAVE()
 {
-        printf("    ...,slave,control   Listen to external OSC volume commands, where\n");
-        printf("              control:  the name of a simple controller in ALSA mixer\n");
+        printf("-R|--rotary-slave url,control\n");
+        printf("               url:     URL to listen to, e.g. osc.udp://239.0.2.149:7000\n");
+        printf("               control: an ALSA mixer simple control\n");
 }
 
 int parse_cmdline_rotary_SLAVE(control_t * c, char *config[])
 {
 	c->target = SLAVE;
+	if (slave_index < MAXSLAVE) {
+		c->pin1 = slave_index++;
+	} else {
+		ERR("Too many slaves. Compile-time limit is %d.", MAXSLAVE);
+	}
 	c->param1 = strncpy(c->param1, config[3], MAXNAME);
 	if (config[4] == NULL) {
 		c->step = 3;
@@ -50,14 +58,19 @@ int parse_cmdline_rotary_SLAVE(control_t * c, char *config[])
 
 void help_switch_SLAVE()
 {
-        printf("    ...,slave,control   Listen to external OSC volume commands, where\n");
-        printf("              control:  the name of a simple controller in ALSA mixer\n");
-        printf("                        (switch will operate the MUTE function)\n");
+        printf("-S|--switch-slave url,control\n");
+        printf("               url:     URL to listen to, e.g. osc.udp://239.0.2.149:7000\n");
+        printf("               control: an ALSA mixer simple control (operates MUTE)\n");
 }
 
 int parse_cmdline_switch_SLAVE(control_t * c, char *config[])
 {
 	c->target = SLAVE;
+	if (slave_index < MAXSLAVE) {
+		c->pin1 = slave_index++;
+	} else {
+		ERR("Too many slaves. Compile-time limit is %d.", MAXSLAVE);
+	}
 	c->param1 = strncpy(c->param1, config[2], MAXNAME);
 	if (config[3] != NULL) {
 		ERR("Too many arguments.");

@@ -23,6 +23,8 @@
 #define JACK_PORT_NAME "midi_out"
 #define GPIOD_DEVICE "pinctrl-bcm2835"
 #define MAXGPIO 64
+#define MAXSLAVE 16
+#define NCONTROLLERS (MAXGPIO + MAXSLAVE)
 #define MAXMIDICH 15
 #define MAXCCVAL 0x7f
 #define MAXCC 119

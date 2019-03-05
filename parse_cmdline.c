@@ -64,21 +64,13 @@ void usage()
 #endif
 #ifdef HAVE_OSC
 	help_rotary_OSC();
-#endif
-#ifdef HAVE_OSC
 	help_rotary_MASTER();
 #endif
-#ifdef HAVE_ALSA
-	help_rotary_SLAVE();
-#endif
 	help_rotary_STDOUT();
-	printf("-s|--switch sw,type...\n");
+	printf("\n-s|--switch sw,type...\n");
 	printf("               Set up a switch.\n");
-	printf
-	    ("               sw:      the GPI pin number of the switch contact (0-%d)\n",
-	     MAXGPIO - 1);
-	printf
-	    ("               Depending on 'type', the remaining parameters are:\n\n");
+	printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO - 1);
+	printf("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
 	help_switch_JACK();
 #endif
@@ -87,32 +79,30 @@ void usage()
 #endif
 #ifdef HAVE_OSC
 	help_switch_OSC();
-#endif
-#ifdef HAVE_OSC
-	help_rotary_MASTER();
-#endif
-#ifdef HAVE_ALSA
-	help_rotary_SLAVE();
+	help_switch_MASTER();
 #endif
 	help_switch_STDOUT();
-	printf
-	    ("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
-	printf
-	    ("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
+#ifdef HAVE_OSC
+#  ifdef HAVE_ALSA
+	help_rotary_SLAVE();
+	help_switch_SLAVE();
+#  endif
+#endif
+	printf("\nPin numbers above are hardware GPIO numbers. They do not usually correspond\n");
+	printf("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
 	printf("for the Broadcom ('BCM') numbers.\n");
-	printf
-	    ("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
-	printf
-	    ("GPIO pins. Use a hardware-specific external tool to enable them, or add\n");
+	printf("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
+	printf("GPIO pins. Use a hardware-specific external tool to enable them, or add\n");
 	printf("physical pull-ups.\n\n");
-	printf
-	    ("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n",
+	printf("%s is meant to run as a daemon. Use CTRL-C or send a SIGTERM to exit.\n\n",
 	     PROGRAM_NAME);
 }
 
 static void debugmsg(control_t * c)
 {
-	DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", c->pin1, c->pin2, c->type, c->target, c->min, c->max, c->step, c->toggle, c->midi_ch, c->midi_cc, c->param1 == NULL ? "''" : (char *)c->param1, c->param2 == NULL ? "''" : (char *)c->param2, c->value);
+	DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", 
+	    c->pin1, c->pin2, c->type, c->target, c->min, c->max, c->step, c->toggle, c->midi_ch, c->midi_cc, 
+	    c->param1 == NULL ? "''" : (char *)c->param1, c->param2 == NULL ? "''" : (char *)c->param2, c->value);
 }
 
 static int tokenize(char *argument, char *config[])
@@ -177,7 +167,7 @@ int parse_cmdline(int argc, char *argv[])
 				ERR("calloc() failed.");
 				goto error;
 			}
-			if (i < 4) {
+			if (i < 3) {
 				ERR("Not enough options for -r.");
 				goto error;
 			}
@@ -222,11 +212,6 @@ int parse_cmdline(int argc, char *argv[])
 					goto error;
 				use_alsa = 1;
 			} else
-			if (match(config[2], "slave")) {
-				if (parse_cmdline_rotary_SLAVE(c, config))
-                                        goto error;
-                                use_alsa = 1;
-                        } else
 #endif
 #ifdef HAVE_OSC
 			if (match(config[2], "osc")) {
@@ -259,7 +244,7 @@ int parse_cmdline(int argc, char *argv[])
 				ERR("calloc() failed.");
 				goto error;
 			}
-			if (i < 3) {
+			if (i < 2) {
 				ERR("Not enough options for -s.");
 				goto error;
 			}
@@ -289,12 +274,7 @@ int parse_cmdline(int argc, char *argv[])
 					goto error;
 				use_alsa = 1;
 			} else
-			if (match(config[1], "slave")) {
-				if (parse_cmdline_switch_SLAVE(c, config))
-					goto error;
-				use_alsa = 1;
-			} else
-#endif
+			#endif
 #ifdef HAVE_OSC
 			if (match(config[1], "osc")) {
 				if (parse_cmdline_switch_OSC(c, config))
@@ -318,10 +298,9 @@ int parse_cmdline(int argc, char *argv[])
 			ncontrols++;
 			debugmsg(c);
 			break;
-
 		default:
 			ERR("Unknown option.");
-			return EXIT_ERR;
+			goto error;
 		}
 	}
 	if (ncontrols == 0) {
@@ -339,6 +318,7 @@ int parse_cmdline(int argc, char *argv[])
 		}
 		if (d != NULL)
 			free(d);
+		printf("Use -h for help.\n");
 		return EXIT_ERR;
 	}
 }

@@ -26,17 +26,12 @@
 void help_rotary_STDOUT()
 {
 	printf("    ...,stdout,format[,min[,max[,step[,default]]]]].\n");
-	printf
-	    ("               format:  a string that can contain the special tokens '%%gpi%%'\n");
-	printf
-	    ("                        (the pin number) and '%%val%%' (the value)\n");
-	printf("               min:     minimum value (%d - %d), default 0\n",
-	       INT_MIN, INT_MAX);
-	printf("               max:     maximum value (%d - %d), default 100\n",
-	       INT_MIN, INT_MAX);
+	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
+	printf("                        (the pin number) and '%%val%%' (the value)\n");
+	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
 	printf("               step:    the step size per click, default 1\n");
-	printf
-	    ("               default: the initial value, default is 'min'\n\n");
+	printf("               default: the initial value, default is 'min'\n");
 }
 
 int parse_cmdline_rotary_STDOUT(control_t * c, char *config[])
@@ -78,17 +73,12 @@ int parse_cmdline_rotary_STDOUT(control_t * c, char *config[])
 void help_switch_STDOUT()
 {
 	printf("    ...,stdout,format[,toggle[,min[,max[,default]]]]\n");
-	printf
-	    ("               format:  a string that can contain the special tokens '%%gpi%%'\n");
-	printf
-	    ("                        (the pin number) and '%%val%%' (the value)\n");
-	printf
-	    ("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
-	printf("               min:     minimum value (%d - %d), default 0\n",
-	       INT_MIN, INT_MAX);
-	printf("               max:     maximum value (%d - %d), default 1\n",
-	       INT_MIN, INT_MAX);
-	printf("               default: the start value, default is 'min'\n\n");
+	printf("               format:  a string that can contain the special tokens '%%gpi%%'\n");
+	printf("                        (the pin number) and '%%val%%' (the value)\n");
+	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d - %d), default 1\n", INT_MIN, INT_MAX);
+	printf("               default: the start value, default is 'min'\n");
 }
 
 int parse_cmdline_switch_STDOUT(control_t * c, char *config[])
