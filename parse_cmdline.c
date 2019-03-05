@@ -222,10 +222,20 @@ int parse_cmdline(int argc, char *argv[])
 					goto error;
 				use_alsa = 1;
 			} else
+			if (match(config[2], "slave")) {
+				if (parse_cmdline_rotary_SLAVE(c, config))
+                                        goto error;
+                                use_alsa = 1;
+                        } else
 #endif
 #ifdef HAVE_OSC
 			if (match(config[2], "osc")) {
 				if (parse_cmdline_rotary_OSC(c, config))
+					goto error;
+				use_osc = 1;
+			} else
+			if (match(config[2], "master")) {
+				if (parse_cmdline_rotary_MASTER(c, config))
 					goto error;
 				use_osc = 1;
 			} else
@@ -279,10 +289,20 @@ int parse_cmdline(int argc, char *argv[])
 					goto error;
 				use_alsa = 1;
 			} else
+			if (match(config[1], "slave")) {
+				if (parse_cmdline_switch_SLAVE(c, config))
+					goto error;
+				use_alsa = 1;
+			} else
 #endif
 #ifdef HAVE_OSC
 			if (match(config[1], "osc")) {
 				if (parse_cmdline_switch_OSC(c, config))
+					goto error;
+				use_osc = 1;
+			} else
+			if (match(config[1], "master")) {
+				if (parse_cmdline_switch_MASTER(c, config))
 					goto error;
 				use_osc = 1;
 			} else

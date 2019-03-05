@@ -136,9 +136,14 @@ void handle_gpi(int line, int delta)
 	case ALSA:
 		update_ALSA(c);
 		break;
+	case SLAVE:
+		update_ALSA(c);
 #endif
 #ifdef HAVE_OSC
 	case OSC:
+		update_OSC(c, delta);
+		break;
+	case MASTER:
 		update_OSC(c, delta);
 		break;
 #endif
@@ -202,6 +207,8 @@ int main(int argc, char *argv[])
 		case JACK:
 		case OSC:
 		case STDOUT:
+		case MASTER:
+		case SLAVE:
 			break;
 		default:
 			ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
