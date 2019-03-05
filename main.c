@@ -64,9 +64,9 @@ static void signal_handler(int sig)
 		shutdown_ringbuffer();
 	}
 #endif
-#ifdef HAVE_OSS
-	if (use_oss) {
-		shutdown_OSS();
+#ifdef HAVE_OSC
+	if (use_osc) {
+		shutdown_OSC();
 	}
 #endif
 	shutdown_gpiod();
