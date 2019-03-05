@@ -26,15 +26,12 @@
 void help_rotary_OSC()
 {
 	printf("       ...,osc,url,path,min,max,step,default\n");
-	printf
-	    ("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl\n");
-	printf("               min:     minimum value (%d - %d), default 0\n",
-	       INT_MIN, INT_MAX);
-	printf("               max:     maximum value (%d - %d), default 100\n",
-	       INT_MIN, INT_MAX);
+	printf("               url:     The OSC url of the receiver(s), such as\n");
+	printf("                        osc.udp://239.0.2.149:7000\n");
+	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
 	printf("               step:    the step size per click, default 1\n");
-	printf
-	    ("               default: the initial value, default is 'min'\n\n");
+	printf("               default: the initial value, default is 'min'\n\n");
 }
 
 int parse_cmdline_rotary_OSC(control_t * c, char *config[])
