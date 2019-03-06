@@ -58,7 +58,7 @@ int setup_SLAVE(char* osc_url, void (*callback))
                 ERR("Could not create OSC server at %s.", osc_url);
                 return -ENOANO;
         }
-//        lo_server_thread_add_method(server, NULL, NULL, handle_all, NULL);
+        lo_server_thread_add_method(server, NULL, NULL, handle_all, NULL);
         return 0;
 }
 
