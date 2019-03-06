@@ -103,87 +103,99 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
 
-void setup_GPIOD_rotary(int line, int aux)
+int setup_GPIOD_rotary(int line, int aux)
 {
+	DBG("Adding rotary on pins %d and %d.", line, aux);
 	if (gpi[line] != NULL) {
 		ERR("Line %d is already in use: %d.", line, gpi[line]->type);
-		return;
+		return -EBUSY;
 	}
 	if (gpi[aux] != NULL) {
 		ERR("Aux %d is already in use: %d.", aux, gpi[aux]->type);
-		return;
+		return -EBUSY;
 	}
 	if (line == aux) {
 		ERR("Line and Aux line cannot both be %d.", line);
-		return;
+		return -EINVAL;
 	}
 	gpi[line] = calloc(sizeof(line_t), 1);
 	if (gpi[line] == NULL) {
 		ERR("calloc() failed.");
-		return;
+		return -ENOMEM;
 	}
 	gpi[aux] = calloc(sizeof(line_t), 1);
 	if (gpi[aux] == NULL) {
 		ERR("calloc() failed.");
-		return;
+		return -ENOMEM;
 	}
 	gpi[line]->type = GPI_ROTARY;
 	gpi[aux]->type = GPI_AUX;
 	gpi[line]->aux = aux;
 	gpi[line]->ts_last = NEVER;
 	gpi[line]->ts_delta = GPI_DEBOUNCE_ROTARY;
+	return 0;
 }
 
-void setup_GPIOD_switch(int line)
+int setup_GPIOD_switch(int line)
 {
+	DBG("Adding switch on pin %d.", line);
 	if (gpi[line] != NULL) {
 		ERR("Line %d is already in use: %d.", line, gpi[line]->type);
-		return;
+		return -EBUSY;
 	}
 	gpi[line] = calloc(sizeof(line_t), 1);
 	if (gpi[line] == NULL) {
 		ERR("calloc() failed.");
-		return;
+		return -ENOMEM;
 	}
 	gpi[line]->type = GPI_SWITCH;
 	gpi[line]->aux = NOAUX;
 	gpi[line]->ts_last = NEVER;
 	gpi[line]->ts_delta = GPI_DEBOUNCE_SWITCH;
+	return 0;
 }
 
-void shutdown_GPIOD()
+int shutdown_GPIOD()
 {
+	DBG("Shutting down GPIOD.");
 	// FIXME: This won't do anything useful unless all lines are being triggered afterwards.
 	// We should provide a poll callback and initiate the shutdown there.
 	// Then again, all lines are realeased when the process terminates.
         shutdown = 1;
+	return 0;
 }
 
-void setup_GPIOD(char *dev, char *cons, void (*callback))
+int setup_GPIOD(char *dev, char *cons, void (*callback))
 {
+	DBG("Setting up GPIOD.");
 	strncpy(consumer, cons, MAXNAME);
 	strncpy(device, dev, MAXNAME);
 	user_callback = callback;
+	return 0;
 }
 
 
-void start_GPIOD()
+int start_GPIOD()
 {
 	int err = 0;
+	DBG("Starting GPIOD handler.");
 	for (int line = 0; line < MAXGPIO; line++) {
 		if (gpi[line] != NULL && gpi[line]->type != GPI_AUX) {
-			DBG("Added Pin %d in position %d.", line, num_lines);
 			offsets[num_lines++] = line;
 		}
 	}
 	errno = 0;
 	if (num_lines == 0) {
 		DBG("No GPIO pins configured, skipping gpiod event handler.");
-		return;
+		return 0;
 	}
 	err = gpiod_ctxless_event_loop_multiple(device, offsets, num_lines,
 						ACTIVE_HIGH, consumer, FOREVER,
 						NULL, &handle_event, NULL);
-	ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d (%s).", err,
-	    errno, strerror(errno));
+	if (err != 0) {
+		ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d (%s).", err,
+		    errno, strerror(errno));
+		return err;
+	}
+	return 0;
 }
