@@ -103,7 +103,7 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
 
-void setup_gpiod_rotary(int line, int aux)
+void setup_GPIOD_rotary(int line, int aux)
 {
 	if (gpi[line] != NULL) {
 		ERR("Line %d is already in use: %d.", line, gpi[line]->type);
@@ -134,7 +134,7 @@ void setup_gpiod_rotary(int line, int aux)
 	gpi[line]->ts_delta = GPI_DEBOUNCE_ROTARY;
 }
 
-void setup_gpiod_switch(int line)
+void setup_GPIOD_switch(int line)
 {
 	if (gpi[line] != NULL) {
 		ERR("Line %d is already in use: %d.", line, gpi[line]->type);
@@ -151,7 +151,7 @@ void setup_gpiod_switch(int line)
 	gpi[line]->ts_delta = GPI_DEBOUNCE_SWITCH;
 }
 
-void shutdown_gpiod()
+void shutdown_GPIOD()
 {
 	// FIXME: This won't do anything useful unless all lines are being triggered afterwards.
 	// We should provide a poll callback and initiate the shutdown there.
@@ -159,18 +159,23 @@ void shutdown_gpiod()
         shutdown = 1;
 }
 
-void setup_gpiod_handler(char *dev, char *cons, void (*callback))
+void setup_GPIOD(char *dev, char *cons, void (*callback))
+{
+	strncpy(consumer, cons, MAXNAME);
+	strncpy(device, dev, MAXNAME);
+	user_callback = callback;
+}
+
+
+void start_GPIOD()
 {
 	int err = 0;
-	user_callback = callback;
 	for (int line = 0; line < MAXGPIO; line++) {
 		if (gpi[line] != NULL && gpi[line]->type != GPI_AUX) {
 			DBG("Added Pin %d in position %d.", line, num_lines);
 			offsets[num_lines++] = line;
 		}
 	}
-	strncpy(consumer, cons, MAXNAME);
-	strncpy(device, dev, MAXNAME);
 	errno = 0;
 	if (num_lines == 0) {
 		DBG("No GPIO pins configured, skipping gpiod event handler.");

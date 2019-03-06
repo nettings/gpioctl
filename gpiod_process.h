@@ -19,9 +19,10 @@
 #ifndef GPIOD_PROCESS_H
 #define GPIOD_PROCESS_H
 
-void setup_gpiod_rotary(int clk, int dt);
-void setup_gpiod_switch(int sw);
-void setup_gpiod_handler(char *dev, char *cons, void (*callback));
-void shutdown_gpiod();
+void setup_GPIOD_rotary(int clk, int dt);
+void setup_GPIOD_switch(int sw);
+void setup_GPIOD(char *dev, char *cons, void (*callback));
+void start_GPIOD();
+void shutdown_GPIOD();
 
 #endif

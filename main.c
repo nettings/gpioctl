@@ -75,7 +75,7 @@ static void signal_handler(int sig)
 		shutdown_SLAVE();
 	}
 #endif
-	shutdown_gpiod();
+	shutdown_GPIOD();
 	exit(0);
 }
 
@@ -176,6 +176,7 @@ int main(int argc, char *argv[])
 	if (rval != EXIT_CLEAN) {
 		exit(rval);
 	}
+	setup_GPIOD(GPIOD_DEVICE, PROGRAM_NAME, &handle_gpi);
 #ifdef HAVE_JACK
 	if (use_jack) {
 		setup_ringbuffer();
@@ -216,10 +217,10 @@ int main(int argc, char *argv[])
 		case MASTER:
 			switch (c->type) {
 			case ROTARY:
-				setup_gpiod_rotary(c->pin1, c->pin2);
+				setup_GPIOD_rotary(c->pin1, c->pin2);
 				break;
 			case SWITCH:
-				setup_gpiod_switch(c->pin1);
+				setup_GPIOD_switch(c->pin1);
 				break;
 			default:
 				ERR("c->type %d can't happen here. BUG?", c->type);
@@ -249,7 +250,7 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, &signal_handler);
 	signal(SIGINT, &signal_handler);
 
-	setup_gpiod_handler(GPIOD_DEVICE, PROGRAM_NAME, &handle_gpi);
+	start_GPIOD();
 #ifdef HAVE_OSC
 	if (use_slave) start_SLAVE();
 #endif
