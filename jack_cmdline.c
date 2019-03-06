@@ -24,21 +24,12 @@
 void help_rotary_JACK()
 {
 	printf("      ...,jack,cc,[ch[,min[,max[,step[,default]]]]]\n");
-	printf
-	    ("               cc:      MIDI continous controller number (0-%d)\n",
-	     MAXCC);
+	printf("               cc:      MIDI continous controller number (0-%d)\n", MAXCC);
 	printf("               ch:      MIDI channel (1-16), default 1\n");
-	printf
-	    ("               min:     minimum controller value (0-%d), default 0\n",
-	     MAXCCVAL);
-	printf
-	    ("               max:     maximum controller value (0-%d), default %d\n",
-	     MAXCCVAL, MAXCCVAL);
-	printf
-	    ("               step:    the step size per 'click'(1-%d), default 1\n",
-	     MAXCCVAL);
-	printf
-	    ("               default: the initial value, default is 'min'\n\n");
+	printf("               min:     minimum controller value (0-%d), default 0\n", MAXCCVAL);
+	printf("               max:     maximum controller value (0-%d), default %d\n", MAXCCVAL, MAXCCVAL);
+	printf("               step:    the step size per 'click'(1-%d), default 1\n", MAXCCVAL);
+	printf("               default: the initial value, default is 'min'\n");
 }
 
 int parse_cmdline_rotary_JACK(control_t * c, char *config[])
@@ -104,19 +95,12 @@ int parse_cmdline_rotary_JACK(control_t * c, char *config[])
 void help_switch_JACK()
 {
 	printf("      ...,jack,cc,[ch[,toggle[,min[,max[,default]]]]]\n");
-	printf
-	    ("               cc:      MIDI continous controller number (0-120)\n");
+	printf("               cc:      MIDI continous controller number (0-120)\n");
 	printf("               ch:      MIDI channel (1-16), default 1\n");
-	printf
-	    ("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
-	printf
-	    ("               min:     controller value when open (0-%d), default 0\n",
-	     MAXCCVAL);
-	printf
-	    ("               max:     controller value when closed (0-%d), default %d\n",
-	     MAXCCVAL, MAXCCVAL);
-	printf
-	    ("               default: the initial value, default is 'min'\n\n");
+	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               min:     controller value when open (0-%d), default 0\n", MAXCCVAL);
+	printf("               max:     controller value when closed (0-%d), default %d\n", MAXCCVAL, MAXCCVAL);
+	printf("               default: the initial value, default is 'min'\n");
 }
 
 int parse_cmdline_switch_JACK(control_t * c, char *config[])

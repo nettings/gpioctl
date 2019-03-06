@@ -25,10 +25,8 @@
 void help_rotary_ALSA()
 {
 	printf("      ...,alsa,control[,step]\n");
-	printf
-	    ("               control: the name of a simple controller in ALSA mixer\n");
-	printf
-	    ("               step: the step size in dB per click, default 3\n\n");
+	printf("               control: the name of a simple controller in ALSA mixer\n");
+	printf("               step: the step size in dB per click, default 3\n");
 }
 
 int parse_cmdline_rotary_ALSA(control_t * c, char *config[])
@@ -58,10 +56,8 @@ int parse_cmdline_rotary_ALSA(control_t * c, char *config[])
 void help_switch_ALSA()
 {
 	printf("      ...,alsa,control\n");
-	printf
-	    ("               control: the name of a simple controller in ALSA mixer\n");
-	printf
-	    ("                        (switch will operate the MUTE function)\n");
+	printf("               control: the name of a simple controller in ALSA mixer\n");
+	printf("                        (switch will operate the MUTE function)\n");
 }
 
 int parse_cmdline_switch_ALSA(control_t * c, char *config[])

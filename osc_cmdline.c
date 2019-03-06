@@ -25,13 +25,13 @@
 
 void help_rotary_OSC()
 {
-	printf("       ...,osc,url,path,min,max,step,default\n");
+	printf("       ...,osc,url,path[,min[,max[,step[,default]]]]\n");
 	printf("               url:     The OSC url of the receiver(s), such as\n");
 	printf("                        osc.udp://239.0.2.149:7000\n");
 	printf("               min:     minimum value (%d - %d), default 0\n", INT_MIN, INT_MAX);
 	printf("               max:     maximum value (%d - %d), default 100\n", INT_MIN, INT_MAX);
 	printf("               step:    the step size per click, default 1\n");
-	printf("               default: the initial value, default is 'min'\n\n");
+	printf("               default: the initial value, default is 'min'\n");
 }
 
 int parse_cmdline_rotary_OSC(control_t * c, char *config[])
@@ -77,19 +77,13 @@ int parse_cmdline_rotary_OSC(control_t * c, char *config[])
 
 void help_switch_OSC()
 {
-	printf("       ...,osc,url,path,toggle,min,max,default\n");
-	printf
-	    ("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level\n");
+	printf("       ...,osc,url,path[,toggle[,min[,max[,default]]]]\n");
+	printf("               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level\n");
 	printf("               path:    An OSC path, such as /mixer/level\n");
-	printf
-	    ("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
-	printf("               min:     value when open (%d - %d), default 0\n",
-	       INT_MIN, INT_MAX);
-	printf
-	    ("               max:     value when closed (%d - %d), default 100\n",
-	     INT_MIN, INT_MAX);
-	printf
-	    ("               default: the initial value, default is 'min'\n\n");
+	printf("               toggle:  can be 0 (momentary on) or 1 (toggled on/off)\n");
+	printf("               min:     value when open (%d - %d), default 0\n", INT_MIN, INT_MAX);
+	printf("               max:     value when closed (%d - %d), default 100\n", INT_MIN, INT_MAX);
+	printf("               default: the initial value, default is 'min'\n");
 }
 
 int parse_cmdline_switch_OSC(control_t * c, char *config[])

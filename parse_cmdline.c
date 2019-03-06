@@ -58,36 +58,46 @@ void usage()
 	printf("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
 	help_rotary_JACK();
+	printf("\n");
 #endif
 #ifdef HAVE_ALSA
 	help_rotary_ALSA();
+	printf("\n");
 #endif
 #ifdef HAVE_OSC
 	help_rotary_OSC();
+	printf("\n");
 	help_rotary_MASTER();
+	printf("\n");
 #endif
 	help_rotary_STDOUT();
-	printf("\n-s|--switch sw,type...\n");
+	printf("\n");
+	printf("-s|--switch sw,type...\n");
 	printf("               Set up a switch.\n");
 	printf("               sw:      the GPI pin number of the switch contact (0-%d)\n", MAXGPIO - 1);
 	printf("               Depending on 'type', the remaining parameters are:\n\n");
 #ifdef HAVE_JACK
 	help_switch_JACK();
+	printf("\n");
 #endif
 #ifdef HAVE_ALSA
 	help_switch_ALSA();
+	printf("\n");
 #endif
 #ifdef HAVE_OSC
 	help_switch_OSC();
+	printf("\n");
 	help_switch_MASTER();
+	printf("\n");
 #endif
 	help_switch_STDOUT();
+	printf("\n");
 #ifdef HAVE_OSC
 #  ifdef HAVE_ALSA
 	help_SLAVE();
 #  endif
 #endif
-	printf("\nPin numbers above are hardware GPIO numbers. They do not usually correspond\n");
+	printf("Pin numbers above are hardware GPIO numbers. They do not usually correspond\n");
 	printf("to physical pin numbers. For the RPi, check https://pinout.xyz/# and look\n");
 	printf("for the Broadcom ('BCM') numbers.\n");
 	printf("libgpiod does not know how to control the pull-up/pull-down resistors of your\n");
