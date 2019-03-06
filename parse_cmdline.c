@@ -159,7 +159,7 @@ int parse_cmdline(int argc, char *argv[])
 
 	while (1) {
 		int optind = 0;
-		o = getopt_long(argc, argv, "hvr:s:U:R:S:", long_options, &optind);
+		o = getopt_long(argc, argv, ":hvr:s:U:R:S:", long_options, &optind);
 		if (o == -1)
 			break;
 		i = tokenize(optarg, config);
@@ -356,6 +356,9 @@ int parse_cmdline(int argc, char *argv[])
 			break;
 #  endif
 #endif
+		case ':':
+			ERR("Option '-%c' requires an argument.", optopt);
+			goto error;
 		default:
 			ERR("Unknown option.");
 			goto error;
