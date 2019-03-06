@@ -171,8 +171,8 @@ int parse_cmdline(int argc, char *argv[])
 			verbose = 1;
 			continue; // skip controls update at end
 		case 'r':
-			c = (control_t *) calloc(sizeof(control_t), 1);
-			d = (control_t *) calloc(sizeof(control_t), 1);
+			c = calloc(sizeof(control_t), 1);
+			d = calloc(sizeof(control_t), 1);
 			if (c == NULL || d == NULL) {
 				ERR("calloc() failed.");
 				goto error;
@@ -246,7 +246,7 @@ int parse_cmdline(int argc, char *argv[])
 			break;
 
 		case 's':
-			c = (control_t *) calloc(sizeof(control_t), 1);
+			c = calloc(sizeof(control_t), 1);
 			if (c == NULL) {
 				ERR("calloc() failed.");
 				goto error;
