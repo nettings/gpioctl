@@ -43,10 +43,11 @@ static int process(jack_nframes_t nframes, void *arg)
 
 int setup_JACK()
 {
+	DBG("Setting up JACK.");
 	if ((client =
 	     jack_client_open(PROGRAM_NAME, JackNoStartServer, NULL)) == 0) {
 		ERR("Failed to create client. Is the JACK server running?");
-		return -1;
+		return -ENOANO;
 	}
 	jack_set_process_callback(client, process, 0);
 	output_port =
@@ -55,24 +56,32 @@ int setup_JACK()
 
 	if (jack_activate(client)) {
 		ERR("Failed to activate client.");
-		return -1;
+		return -ENOANO;
 	}
 	return 0;
 }
 
 int shutdown_JACK()
 {
+	DBG("Shutting down JACK.");
 	jack_client_close(client);
 	return 0;
 }
 
-void update_JACK(control_t * c)
+int update_JACK(control_t * c)
 {
 	unsigned char msg[MSG_SIZE];
+	int n;
 	msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
 	msg[1] = c->midi_cc;
 	msg[2] = c->value;
-	ringbuffer_write(msg, MSG_SIZE);
-	NFO("JACK:\t<%02d|%02d>\t0x%02x%02x%02x", c->pin1, c->value, msg[0],
-	    msg[1], msg[2]);
+	DBG("Updating JACK msg queue: pin %d value %d\t0x%02x%02x%02x", 
+	    c->pin1, c->value, msg[0], msg[1], msg[2]);
+	n = ringbuffer_write(msg, MSG_SIZE);
+	if (n < MSG_SIZE) {
+		ERR("JACK ringbuffer overrun. Only wrote %d out of %d bytes.", 
+		    n, MSG_SIZE);
+		return -ENOBUFS;
+	}
+	return 0;
 }
