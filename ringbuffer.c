@@ -19,22 +19,30 @@
 #include "ringbuffer.h"
 #include <jack/ringbuffer.h>
 #include <pthread.h>
+#include <errno.h>
+#include "globals.h"
 
 // event ringbuffer and lock
-#define BUF_SIZE 4096
-
 static jack_ringbuffer_t *buf;
 static pthread_mutex_t buflock = PTHREAD_MUTEX_INITIALIZER;
 
-void setup_ringbuffer()
+int setup_ringbuffer(int nbytes)
 {
-	buf = jack_ringbuffer_create(BUF_SIZE);
+	DBG("Setting up ringbuffer of %d bytes.", nbytes);
+	buf = jack_ringbuffer_create(nbytes);
+	if (buf == NULL) {
+	        ERR("Could not create JACK ringbuffer.");
+	        return -ENOMEM;
+        }
 	jack_ringbuffer_mlock(buf);
+	return 0;
 }
 
-void shutdown_ringbuffer()
+int shutdown_ringbuffer()
 {
+	DBG("Shutting down ringbuffer");
 	jack_ringbuffer_free(buf);
+	return 0;
 }
 
 int ringbuffer_write(unsigned char *msg, size_t size)

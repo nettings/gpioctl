@@ -32,6 +32,7 @@
 #define MSG_SIZE 3
 #define MAXNAME 64
 #define ALSA_CARD "default"
+#define JACK_BUFSIZE 4096
 
 #define OSC_DELTA "/" PROGRAM_NAME "/delta"
 #define OSC_MUTE "/" PROGRAM_NAME "/mute"

@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
 	setup_GPIOD(GPIOD_DEVICE, PROGRAM_NAME, &handle_gpi);
 #ifdef HAVE_JACK
 	if (use_jack) {
-		setup_ringbuffer();
+		setup_ringbuffer(JACK_BUFSIZE);
 		setup_JACK();
 	}
 #endif
