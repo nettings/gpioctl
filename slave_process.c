@@ -22,8 +22,8 @@
 #include <lo/lo.h>
 #include "globals.h"
 
-lo_server_thread server;
-void (*user_callback)();
+static lo_server_thread server;
+static void (*user_callback)();
 
 static void handle_error(int num, const char* m, const char* path) {
         ERR("liblo error %d (%s) at %s.", num, m, path);
