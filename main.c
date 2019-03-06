@@ -147,10 +147,10 @@ void handle_gpi(int line, int delta)
 #endif
 #ifdef HAVE_OSC
 	case OSC:
-		update_OSC(c, delta);
+		update_OSC(c);
 		break;
 	case MASTER:
-		update_OSC(c, delta);
+		update_OSC(c);
 		break;
 #endif
 	default:

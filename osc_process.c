@@ -32,9 +32,9 @@ void shutdown_OSC()
 {
 }
 
-void update_OSC(control_t * c, int val)
+void update_OSC(control_t * c)
 {
-	NFO("OSC handler called with c=%d, val=%d.", c->value, val);
+	NFO("OSC handler called with c->value=%d", c->value);
 	lo_address addr = lo_address_new_from_url((char *)c->param1);
 	if (addr == NULL) {
 		ERR("Could not create OSC address from URL '%s'.",

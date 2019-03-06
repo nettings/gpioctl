@@ -23,6 +23,6 @@
 
 void setup_OSC();
 void shutdown_OSC();
-void update_OSC(control_t * c, int val);
+void update_OSC(control_t * c);
 
 #endif
