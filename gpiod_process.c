@@ -45,10 +45,10 @@ typedef struct {
 	int aux;
 	unsigned long ts_last;
 	int ts_delta;
-	int (*handler) ();
 } line_t;
 
 static line_t *gpi[MAXGPIO] = { 0 };
+static void (*user_callback)();
 
 static unsigned int offsets[MAXGPIO] = { 0 };
 static int num_lines = 0;
@@ -62,7 +62,7 @@ static unsigned long msec_stamp(struct timespec t)
 	return (unsigned long)((t.tv_sec * 1000) + (t.tv_nsec / 1000000));
 }
 
-int callback(int event, unsigned int line, const struct timespec *timestamp,
+static int handle_event(int event, unsigned int line, const struct timespec *timestamp,
 	     void *data)
 {
 	int clk, dt, sw;
@@ -82,15 +82,15 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 			dt = gpiod_ctxless_get_value(device, gpi[line]->aux,
 						     ACTIVE_HIGH, consumer);
 			if (clk != dt) {
-				gpi[line]->handler(line, 1);
+				user_callback(line, 1);
 			} else {
-				gpi[line]->handler(line, -1);
+				user_callback(line, -1);
 			}
 			break;
 		case GPI_SWITCH:
 			sw = (event ==
 			      GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0;
-			gpi[line]->handler(line, sw);
+			user_callback(line, sw);
 			break;
 		default:
 			ERR("No handler for type %d. THIS SHOULD NEVER HAPPEN.",
@@ -103,10 +103,8 @@ int callback(int event, unsigned int line, const struct timespec *timestamp,
 	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
 
-void setup_gpiod_rotary(int line, int aux, void (*user_callback))
+void setup_gpiod_rotary(int line, int aux)
 {
-	DBG("int line=%d, int aux=%d, void (*user_callback)=%p", line, aux,
-	    user_callback);
 	if (gpi[line] != NULL) {
 		ERR("Line %d is already in use: %d.", line, gpi[line]->type);
 		return;
@@ -134,10 +132,9 @@ void setup_gpiod_rotary(int line, int aux, void (*user_callback))
 	gpi[line]->aux = aux;
 	gpi[line]->ts_last = NEVER;
 	gpi[line]->ts_delta = GPI_DEBOUNCE_ROTARY;
-	gpi[line]->handler = user_callback;
 }
 
-void setup_gpiod_switch(int line, void (*user_callback))
+void setup_gpiod_switch(int line)
 {
 	if (gpi[line] != NULL) {
 		ERR("Line %d is already in use: %d.", line, gpi[line]->type);
@@ -152,7 +149,6 @@ void setup_gpiod_switch(int line, void (*user_callback))
 	gpi[line]->aux = NOAUX;
 	gpi[line]->ts_last = NEVER;
 	gpi[line]->ts_delta = GPI_DEBOUNCE_SWITCH;
-	gpi[line]->handler = user_callback;
 }
 
 void shutdown_gpiod()
@@ -163,9 +159,10 @@ void shutdown_gpiod()
         shutdown = 1;
 }
 
-void setup_gpiod_handler(char *dev, char *cons)
+void setup_gpiod_handler(char *dev, char *cons, void (*callback))
 {
 	int err = 0;
+	user_callback = callback;
 	for (int line = 0; line < MAXGPIO; line++) {
 		if (gpi[line] != NULL && gpi[line]->type != GPI_AUX) {
 			DBG("Added Pin %d in position %d.", line, num_lines);
@@ -181,7 +178,7 @@ void setup_gpiod_handler(char *dev, char *cons)
 	}
 	err = gpiod_ctxless_event_loop_multiple(device, offsets, num_lines,
 						ACTIVE_HIGH, consumer, FOREVER,
-						NULL, callback, NULL);
+						NULL, &handle_event, NULL);
 	ERR("gpiod_ctxless_event_loop_multple: err = %d, errno = %d (%s).", err,
 	    errno, strerror(errno));
 }

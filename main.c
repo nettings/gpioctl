@@ -216,10 +216,10 @@ int main(int argc, char *argv[])
 		case MASTER:
 			switch (c->type) {
 			case ROTARY:
-				setup_gpiod_rotary(c->pin1, c->pin2, &handle_gpi);
+				setup_gpiod_rotary(c->pin1, c->pin2);
 				break;
 			case SWITCH:
-				setup_gpiod_switch(c->pin1, &handle_gpi);
+				setup_gpiod_switch(c->pin1);
 				break;
 			default:
 				ERR("c->type %d can't happen here. BUG?", c->type);
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, &signal_handler);
 	signal(SIGINT, &signal_handler);
 
-	setup_gpiod_handler(GPIOD_DEVICE, PROGRAM_NAME);
+	setup_gpiod_handler(GPIOD_DEVICE, PROGRAM_NAME, &handle_gpi);
 #ifdef HAVE_OSC
 	if (use_slave) start_SLAVE();
 #endif
