@@ -50,7 +50,7 @@ typedef struct {
 
 static line_t *gpi[MAXGPIO] = { 0 };
 
-static unsigned int offsets[MAXGPIO];
+static unsigned int offsets[MAXGPIO] = { 0 };
 static int num_lines = 0;
 static int shutdown = 0;
 
@@ -175,6 +175,10 @@ void setup_gpiod_handler(char *dev, char *cons)
 	strncpy(consumer, cons, MAXNAME);
 	strncpy(device, dev, MAXNAME);
 	errno = 0;
+	if (num_lines == 0) {
+		DBG("No GPIO pins configured, skipping gpiod event handler.");
+		return;
+	}
 	err = gpiod_ctxless_event_loop_multiple(device, offsets, num_lines,
 						ACTIVE_HIGH, consumer, FOREVER,
 						NULL, callback, NULL);
