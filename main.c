@@ -53,7 +53,7 @@ int use_stdout = 0;
 
 char* osc_url;
 
-static void signal_handler(int sig)
+static void shutdown(int sig)
 {
 	NFO("Received signal, terminating.");
 #ifdef HAVE_ALSA
@@ -206,7 +206,8 @@ int main(int argc, char *argv[])
 		setup_OSC();
 	}
 	if (use_slave) {
-		setup_SLAVE(osc_url, &handle_osc);
+		if (setup_SLAVE(osc_url, &handle_osc))
+			exit(2); // fatal with segfaults down the line
 	}
 #endif
 	for (int i = 0; i < NCONTROLLERS; i++) {
@@ -248,8 +249,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	signal(SIGTERM, &signal_handler);
-	signal(SIGINT, &signal_handler);
+	signal(SIGTERM, &shutdown);
+	signal(SIGINT, &shutdown);
 #ifdef HAVE_OSC
 	if (use_slave) start_SLAVE(); // this one spawns a thread
 #endif

@@ -18,8 +18,8 @@
 
 #include "slave_process.h"
 #include <string.h>
-#include <stdlib.h>
 #include <lo/lo.h>
+#include <errno.h>
 #include "globals.h"
 
 static lo_server_thread server;
@@ -37,27 +37,45 @@ static int handle_osc(const char* path, const char* types,
         return 0;
 }
 
-void setup_SLAVE(char* osc_url, void (*callback))
+int setup_SLAVE(char* osc_url, void (*callback))
 {
+        DBG("Setting up SLAVE.");
         server = lo_server_thread_new_from_url(osc_url, &handle_error);
         user_callback = callback;
         if (server == NULL) {
-                ERR("Could not create server listening at %s.", osc_url);
-                exit(2);
+                ERR("Could not create OSC server at %s.", osc_url);
+                return -ENOANO;
         }
+        return 0;
 }
 
-void setup_SLAVE_handler(char* path, void* data) {
-        lo_server_thread_add_method(server, path, "i", &handle_osc, data);
+int setup_SLAVE_handler(char* path, void* data) {
+        DBG("Setting up SLAVE handler for '%s'.", path);
+        lo_method m;
+        m = lo_server_thread_add_method(server, path, "i", &handle_osc, data);
+        if (m == NULL) {
+                ERR("Could not add OSC path handler at '%s'.", path);
+                return -ENOANO;
+        }
+        return 0;
 }
 
 
-void start_SLAVE() {
-        lo_server_thread_start(server);
+int start_SLAVE() {
+        DBG("Starting SLAVE.");
+        int e;
+        e = lo_server_thread_start(server);
+        if (e < 0) {
+                ERR("Could not start OSC server thread (error no. %d).", e);
+                return e;
+        }
+        return 0;
 }
 
-void shutdown_SLAVE()
+int shutdown_SLAVE()
 {
+        DBG("Shutting down SLAVE.");
         lo_server_thread_stop(server);
         lo_server_thread_free(server);
+        return 0;
 }
