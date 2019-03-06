@@ -250,11 +250,10 @@ int main(int argc, char *argv[])
 
 	signal(SIGTERM, &signal_handler);
 	signal(SIGINT, &signal_handler);
-
-	start_GPIOD();
 #ifdef HAVE_OSC
-	if (use_slave) start_SLAVE();
+	if (use_slave) start_SLAVE(); // this one spawns a thread
 #endif
+	start_GPIOD(); // this one goes to sleep
 
 	sleep(-1);
 }
