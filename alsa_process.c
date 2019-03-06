@@ -24,7 +24,7 @@
 static snd_mixer_t *mixer_handle = NULL;
 char alsa_card[MAXNAME] = ALSA_CARD;
 
-int setup_ALSA_mixer()
+int setup_ALSA()
 {
 	int err;
 
@@ -40,14 +40,14 @@ int setup_ALSA_mixer()
 	return 0;
 }
 
-int shutdown_ALSA_mixer()
+int shutdown_ALSA()
 {
 	DBG("Shutting down ALSA mixer.");
 	snd_mixer_close(mixer_handle);
 	return 0;
 }
 
-snd_mixer_elem_t *setup_ALSA_mixer_elem(char *mixer_scontrol)
+snd_mixer_elem_t *setup_ALSA_elem(char *mixer_scontrol)
 {
 	DBG("Getting ALSA mixer handle for %s.", mixer_scontrol);
 	snd_mixer_selem_id_t *sid;
@@ -93,7 +93,7 @@ int update_ALSA(control_t * c)
 	return 0;
 }
 
-int get_ALSA_mixer_value(control_t* c)
+int get_ALSA_value(control_t* c)
 {
 	int err, res;
 	long i;

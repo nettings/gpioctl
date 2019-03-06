@@ -22,10 +22,10 @@
 #include <alsa/asoundlib.h>
 #include "globals.h"
 
-int setup_ALSA_mixer();
-int shutdown_ALSA_mixer();
-snd_mixer_elem_t *setup_ALSA_mixer_elem(char *mixer_scontrol);
-int get_ALSA_mixer_value(control_t* c);
+int setup_ALSA();
+int shutdown_ALSA();
+snd_mixer_elem_t *setup_ALSA_elem(char *mixer_scontrol);
+int get_ALSA_value(control_t* c);
 int update_ALSA(control_t* c);
 
 #endif

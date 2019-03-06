@@ -75,7 +75,7 @@ static void shutdown(int sig)
 	NFO("Received signal, terminating.");
 #ifdef HAVE_ALSA
 	if (use_alsa) {
-		shutdown_ALSA_mixer();
+		shutdown_ALSA();
 	}
 #endif
 #ifdef HAVE_JACK
@@ -110,7 +110,7 @@ void update(control_t* c, int delta)
 			// to avoid loudness jumps, we always re-read the current mixer value
 			// in case it got changed by someone else, and then apply a relative
 			// change
-			c->value = get_ALSA_mixer_value(c);
+			c->value = get_ALSA_value(c);
 			// clamp to our range. some mixers have min values of -999999 and max
 			// values of +4 or so...
 			if (c->value < c->min) c->value = c->min;
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
 #endif
 #ifdef HAVE_ALSA
 	if (use_alsa) {
-		setup_ALSA_mixer();
+		setup_ALSA();
 	}
 #endif
 #ifdef HAVE_OSC
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
 			continue;
 #ifdef HAVE_ALSA
 		case ALSA:
-			c->param1 = setup_ALSA_mixer_elem(c->param1);
+			c->param1 = setup_ALSA_elem(c->param1);
 			// fall-through
 #endif
 		case JACK:
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
 			break;
 #ifdef HAVE_ALSA
 		case SLAVE:
-			c->param1 = setup_ALSA_mixer_elem(c->param1);
+			c->param1 = setup_ALSA_elem(c->param1);
 			setup_SLAVE_handler(c->param2, c);
 			break;
 #endif
