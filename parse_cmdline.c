@@ -159,12 +159,12 @@ int parse_cmdline(int argc, char *argv[])
 
 	while (1) {
 		int optind = 0;
+		c = NULL;
+		d = NULL;
 		o = getopt_long(argc, argv, ":hvr:s:U:R:S:", long_options, &optind);
 		if (o == -1)
 			break;
 		i = tokenize(optarg, config);
-		c = NULL;
-		d = NULL;
 		switch (o) {
 		case 'h':
 			return EXIT_USAGE;
