@@ -30,8 +30,8 @@
 #define NOAUX -1
 #define MAXNAME 64
 // debounce time windows, in ms:
-#define GPI_DEBOUNCE_SWITCH 20
-#define GPI_DEBOUNCE_ROTARY 20
+#define GPI_DEBOUNCE_SWITCH 50
+#define GPI_DEBOUNCE_ROTARY 50
 
 typedef enum {
 	GPI_NOTSET,
