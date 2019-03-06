@@ -20,10 +20,11 @@ https://gist.github.com/savetheclocktower/9b5f67c20f6c04e65ed88f2e594d43c1
 $ ./build/gpioctl -h
 
 gpioctl handles switches and rotary encoders connected to GPIOs, using the
-portable libgpiod kernel interface, to send JACK MIDI CC messages via 
-gpioctl:midi_out, directly interact with an ALSA mixer control, or print formatted
-values to stdout.
+portable libgpiod kernel interface, to send text messages to /dev/stdout.
+If enabled at build time, you can also send JACK MIDI CC messages,
+OSC messages, or directly interact with an ALSA mixer control.
 We assume GPI pins have a pull-up, so the return should be connected to ground.
+
 -h|--help      This help.
 -v|--verbose   Print current controller values.
 
@@ -48,12 +49,19 @@ separated by commas, no spaces. Parameters in brackets are optional.
                control: the name of a simple controller in ALSA mixer
                step: the step size in dB per click, default 3
 
-       ...,osc,url,path,min,max,step,default
-               url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl
+       ...,osc,url,path[,min[,max[,step[,default]]]]
+               url:     The OSC url of the receiver(s), such as
+                        osc.udp://239.0.2.149:7000
                min:     minimum value (-2147483648 - 2147483647), default 0
                max:     maximum value (-2147483648 - 2147483647), default 100
                step:    the step size per click, default 1
                default: the initial value, default is 'min'
+
+    ...,master,url[,step]
+               Set up an network master controller for use with -R.
+               url:     The OSC url of the receiver(s), such as
+                        osc.udp://239.0.2.149:7000
+               step:    the step size per click, default 3
 
     ...,stdout,format[,min[,max[,step[,default]]]]].
                format:  a string that can contain the special tokens '%gpi%'
@@ -79,7 +87,8 @@ separated by commas, no spaces. Parameters in brackets are optional.
       ...,alsa,control
                control: the name of a simple controller in ALSA mixer
                         (switch will operate the MUTE function)
-       ...,osc,url,path,toggle,min,max,default
+
+       ...,osc,url,path[,toggle[,min[,max[,default]]]]
                url:     An OSC url, such as osc.udp://239.0.2.149/gpioctl/level
                path:    An OSC path, such as /mixer/level
                toggle:  can be 0 (momentary on) or 1 (toggled on/off)
@@ -87,13 +96,27 @@ separated by commas, no spaces. Parameters in brackets are optional.
                max:     value when closed (-2147483648 - 2147483647), default 100
                default: the initial value, default is 'min'
 
-     ...,stdout,format[,toggle[,min[,max[,default]]]]
+    ...,master,url
+               Set up a network master controller for use with -S.
+               url:     The OSC url of the receiver(s), such as
+                        osc.udp://239.0.2.149:7000
+
+    ...,stdout,format[,toggle[,min[,max[,default]]]]
                format:  a string that can contain the special tokens '%gpi%'
                         (the pin number) and '%val%' (the value)
                toggle:  can be 0 (momentary on) or 1 (toggled on/off)
                min:     minimum value (-2147483648 - 2147483647), default 0
                max:     maximum value (-2147483648 - 2147483647), default 1
                default: the start value, default is 'min'
+
+-U|--osc-url   URL to listen to, e.g. osc.udp://239.0.2.149:7000
+               This is mandatory if -R or -S are used.
+
+-R|--rotary-slave control
+               control: an ALSA mixer simple control
+
+-S|--switch-slave control
+               control: an ALSA mixer simple control (operates MUTE)
 
 Pin numbers above are hardware GPIO numbers. They do not usually correspond
 to physical pin numbers. For the RPi, check https://pinout.xyz/# and look
