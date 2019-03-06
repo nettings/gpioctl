@@ -144,9 +144,8 @@ int parse_cmdline(int argc, char *argv[])
 	char *config[MAXARG];
 
 	int ncontrols = 0;
-
-	control_t *c = NULL;
-	control_t *d = NULL;
+	control_t *c;
+	control_t *d;
 
 	static struct option long_options[] = {
 		{"help", no_argument, 0, 'h'},
@@ -164,6 +163,8 @@ int parse_cmdline(int argc, char *argv[])
 		if (o == -1)
 			break;
 		i = tokenize(optarg, config);
+		c = NULL;
+		d = NULL;
 		switch (o) {
 		case 'h':
 			return EXIT_USAGE;
