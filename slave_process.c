@@ -58,7 +58,6 @@ int setup_SLAVE(char* osc_url, void (*callback))
                 ERR("Could not create OSC server at %s.", osc_url);
                 return -ENOANO;
         }
-        lo_server_thread_add_method(server, NULL, NULL, handle_all, NULL);
         return 0;
 }
 
@@ -77,6 +76,9 @@ int setup_SLAVE_handler(char* path, void* data) {
 int start_SLAVE() {
         DBG("Starting SLAVE.");
         int e;
+        // apparently, the order of handlers is important.
+        // if this is added first, it will eat all messages.
+        lo_server_thread_add_method(server, NULL, NULL, handle_all, NULL);
         e = lo_server_thread_start(server);
         if (e < 0) {
                 ERR("Could not start OSC server thread (error no. %d).", e);
