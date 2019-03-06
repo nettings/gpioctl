@@ -1,8 +1,7 @@
 APPNAME = 'gpioctl'
-VERSION = '0.0.5'
+VERSION = '0.0.9-rc1'
 
 top = '.'
-
 
 def options(opt):
 	opt.load('compiler_c')
