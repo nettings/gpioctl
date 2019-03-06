@@ -36,7 +36,7 @@ int shutdown_OSC()
 
 int update_OSC(control_t * c)
 {
-	int n;
+	int e;
 	DBG("Updating OSC message queue: '%s %d' -> %s", 
 	    (char*)c->param2, c->value, (char *)c->param1);
 	lo_address addr = lo_address_new_from_url((char *)c->param1);
@@ -45,11 +45,11 @@ int update_OSC(control_t * c)
 		    (char *)c->param1);
                 return -EINVAL;
 	}
-	n = lo_send(addr, (char *)c->param2, "i", (char *)c->value);
+	e = lo_send(addr, (char *)c->param2, "i", (char *)c->value);
 	lo_address_free(addr);
-	if (n) {
+	if (e == -1) {
 	        ERR("Could not send OSC message '%s %d'.", 
-	            (char *)c->param1, c->value);
+	            (char *)c->param2, c->value);
                 return -ECOMM;
 	}
 	return 0;
