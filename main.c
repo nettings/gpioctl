@@ -239,16 +239,8 @@ int main(int argc, char *argv[])
 			break;
 		case SLAVE:
 			c->param1 = setup_ALSA_mixer_elem(c->param1);
-			switch (c->type) {
-			case ROTARY:
-				setup_SLAVE_handler(c->param2, c);
-				break;
-			case SWITCH:
-				setup_SLAVE_handler(c->param2, c);
-				break;
-			default:
-				 ERR("c->type %d can't happen here. BUG?", c->type);
-			}
+			setup_SLAVE_handler(c->param2, c);
+			DBG("Added OSC handler on line %d.", c->pin1);
 			break;
 		default:
 			ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
