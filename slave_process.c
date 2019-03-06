@@ -29,11 +29,23 @@ static void handle_error(int num, const char* m, const char* path) {
         ERR("liblo error %d (%s) at %s.", num, m, path);
 }
 
-static int handle_osc(const char* path, const char* types, 
+static int handle_usermsg(const char* path, const char* types, 
                           lo_arg **argv, int argc, 
-                          void* data, void* user_data) {
-        DBG("Got OSC message %s %d.", path, argv[0]->i);
+                          lo_message msg, void* user_data) {
+        DBG("User handler got OSC message %s %d.", path, argv[0]->i);
         user_callback(user_data, argv[0]->i);
+        // the same message can be handled by
+        // several registered handlers (think
+        // multiple channels reacting to the 
+        // same master)
+        return 1;
+}
+
+static int handle_all(const char* path, const char* types, 
+                          lo_arg **argv, int argc, 
+                          lo_message msg, void* user_data) {
+        DBG("Generic handler got OSC message %s %d and ate it.", path, argv[0]->i);
+        // now we mark it as dealt with.
         return 0;
 }
 
@@ -46,13 +58,14 @@ int setup_SLAVE(char* osc_url, void (*callback))
                 ERR("Could not create OSC server at %s.", osc_url);
                 return -ENOANO;
         }
+//        lo_server_thread_add_method(server, NULL, NULL, handle_all, NULL);
         return 0;
 }
 
 int setup_SLAVE_handler(char* path, void* data) {
         DBG("Setting up SLAVE handler for '%s'.", path);
         lo_method m;
-        m = lo_server_thread_add_method(server, path, "i", &handle_osc, data);
+        m = lo_server_thread_add_method(server, path, "i", &handle_usermsg, data);
         if (m == NULL) {
                 ERR("Could not add OSC path handler at '%s'.", path);
                 return -ENOANO;
