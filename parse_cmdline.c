@@ -109,8 +109,8 @@ void usage()
 
 static void debugmsg(control_t * c)
 {
-	DBG("Parsed control pin1=%d pin2=%d type=%d target=%d min=%d max=%d step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d", 
-	    c->pin1, c->pin2, c->type, c->target, c->min, c->max, c->step, c->toggle, c->midi_ch, c->midi_cc, 
+	DBG("Parsed control %s(%d|%d)->%s [%d..%d] step=%d toggle=%d midi_ch=%d midi_cc=%d param1=%s param2=%s value=%d",
+	    control_types[c->type], c->pin1, c->pin2, control_targets[c->target], c->min, c->max, c->step, c->toggle, c->midi_ch, c->midi_cc,
 	    (c->param1 == NULL) ? "''" : (char *)c->param1, (c->param2 == NULL) ? "''" : (char *)c->param2, c->value);
 }
 
@@ -360,7 +360,7 @@ int parse_cmdline(int argc, char *argv[])
 			ERR("Option '-%c' requires an argument.", optopt);
 			goto error;
 		default:
-			ERR("Unknown option.");
+			ERR("Unknown option -%c.", optopt);
 			goto error;
 		}
 		ncontrols++;
