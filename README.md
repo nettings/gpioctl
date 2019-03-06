@@ -276,6 +276,14 @@ its own slave, like so:
 ```
 $ gpioctl -U osc.udp://239.0.0.254:3000 -R Digital -S Digital -r 17,27,master,osc.udp://239.0.0.254:3000,4 -s 6,master,osc.udp://239.0.0.254:3000
 ```
+If your slave has a card with multiple channels such as the 
+[AudioInjector Octo](https://audioinjector.net), you can use link multiple
+channels to your slave instance:
+```
+$ gpioctl -U osc.udp://239.0.0.254:3000 -R DAC1 -R DAC2 -R DAC3 -R DAC4 
+```
+(The Octo does not have a mute switch in its mixer.)
+
 Note that liblo does not reliably support IPv6 multicast, and that TCP
 support in gpioctl should be considered broken.
 
