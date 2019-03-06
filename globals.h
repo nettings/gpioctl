@@ -44,8 +44,8 @@
 #include "build/config.h"
 
 #ifdef DEBUG
-#define DBG(fmt, args...) fprintf(stdout, "%s:%d %s(): " fmt "\n", __FILE__, __LINE__, __func__,  ## args)
-#define ERR(fmt, args...) fprintf(stderr, "%s:%d %s(): \x1b[01;31m" fmt "\x1b[0m\n", __FILE__, __LINE__, __func__, ## args)
+#define DBG(fmt, args...) fprintf(stdout, "%s:%d\t%s():\t" fmt "\n", __FILE__, __LINE__, __func__,  ## args)
+#define ERR(fmt, args...) fprintf(stderr, "%s:%d\t%s():\t\x1b[01;31m" fmt "\x1b[0m\n", __FILE__, __LINE__, __func__, ## args)
 #define NFO(fmt, args...) fprintf(stdout, fmt "\n", ## args)
 #else
 #define DBG(fmt, args...)
@@ -66,6 +66,7 @@ typedef enum {
 	ROTARY,
 	SWITCH
 } control_type_t;
+extern const char* control_types[];
 
 typedef enum {
 	NOTGT,
@@ -76,6 +77,7 @@ typedef enum {
 	MASTER,
 	SLAVE
 } control_target_t;
+extern const char* control_targets[];
 
 typedef struct {
 	unsigned char pin1;
@@ -95,4 +97,5 @@ typedef struct {
 
 extern control_t *controller[];
 extern char* osc_url;
+
 #endif

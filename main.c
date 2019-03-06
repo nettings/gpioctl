@@ -53,6 +53,23 @@ int use_stdout = 0;
 
 char* osc_url;
 
+const char* control_types[] = {
+        "NOCTL",
+        "AUX",
+        "ROTARY",
+        "SWITCH"
+};
+
+const char* control_targets[] = {
+        "NOTGT",
+        "ALSA",
+        "JACK",
+        "OSC",
+        "STDOUT",
+        "MASTER",
+        "SLAVE"
+};
+
 static void shutdown(int sig)
 {
 	NFO("Received signal, terminating.");
@@ -165,6 +182,7 @@ void update(control_t* c, int delta)
 		ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
 		    c->target);
 	}
+	NFO("%s\t% 3d -> %s\t% 3d", control_types[c->type], c->pin1, control_targets[c->target], c->value);
 }
 
 void handle_gpi(int line, int delta)
@@ -238,11 +256,12 @@ int main(int argc, char *argv[])
 				ERR("c->type %d can't happen here. BUG?", c->type);
 			}
 			break;
+#ifdef HAVE_ALSA
 		case SLAVE:
 			c->param1 = setup_ALSA_mixer_elem(c->param1);
 			setup_SLAVE_handler(c->param2, c);
-			DBG("Added OSC handler on line %d.", c->pin1);
 			break;
+#endif
 		default:
 			ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
 			    c->target);
