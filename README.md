@@ -257,13 +257,34 @@ $ gpioctl -r 17,27,osc,osc.udp://239.0.0.254:3000,/some/path/maybelevel,0,100,1,
 ```
 This example will send the commands to a multicast IP, so that it can be
 received by multiple hosts. Of course you can also use normal IPs. IPv6 is
-currently unsupported by liblo.
+currently unsupported by liblo. The data type will always be 'i'.
+
+## Using Master/Slave mode
+
+If you have multiple nodes with soundcards that you wish to control as a
+group, you can use the Master/Slave mode via UDP multicast. On your
+"master", i.e. the one that has the rotary hardware, do
+```
+$ gpioctl -r 17,27,master:osc.udp://239.0.0.254:3000,4 -s 6,master/osc.udp://239.0.0.254:3000
+```
+and on the slave(s), do
+```
+$ gpioctl -U osc.udp://239.0.0.254:3000 -R Digital -S Digital
+```
+If your master machine also has a soundcard that should follow, it can be 
+its own slave, like so:
+```
+$ gpioctl -U osc.udp://239.0.0.254:3000 -R Digital -S Digital -r 17,27,master,osc.udp://239.0.0.254:3000,4 -s 6,master,osc.udp://239.0.0.254:3000
+```
+Note that liblo does not reliably support IPv6 multicast, and that TCP
+support in gpioctl should be considered broken.
 
 ## Using the stdout frontend
 
 The most simple way of using gpioctl is to have it spit out controller
 values to standard output. The formatting option is currently not
-implemented and will be ignored.
+implemented and will be ignored. In its current state it makes little sense,
+and even less when you have -v or DEBUG mode active.
 ```
 $ gpioctl -r 17,27,stdout,FOOBAR -s 6,stdout,FOOBAR,1
 ```
