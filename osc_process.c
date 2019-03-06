@@ -19,30 +19,38 @@
 #include "osc_process.h"
 #include <string.h>
 #include <lo/lo.h>
+#include <errno.h>
 #include "globals.h"
 
-void setup_OSC()
+int setup_OSC()
 {
+        DBG("Setting up OSC.");
+        return 0;
 }
 
-void setup_OSC_server(char* url) {
+int shutdown_OSC()
+{
+        DBG("Shutting down OSC.");
+        return 0;
 }
 
-void shutdown_OSC()
+int update_OSC(control_t * c)
 {
-}
-
-void update_OSC(control_t * c)
-{
-	NFO("OSC handler called with c->value=%d", c->value);
+	int n;
+	DBG("Updating OSC message queue: '%s %d' -> %s", 
+	    (char*)c->param2, c->value, (char *)c->param1);
 	lo_address addr = lo_address_new_from_url((char *)c->param1);
 	if (addr == NULL) {
 		ERR("Could not create OSC address from URL '%s'.",
 		    (char *)c->param1);
-	} else {
-		DBG("Sending OSC message '%s %d' to %s.", (char *)c->param2,
-		    c->value, (char *)c->param1);
-		lo_send(addr, (char *)c->param2, "i", (char *)c->value);
-		lo_address_free(addr);
+                return -EINVAL;
 	}
+	n = lo_send(addr, (char *)c->param2, "i", (char *)c->value);
+	lo_address_free(addr);
+	if (n) {
+	        ERR("Could not send OSC message '%s %d'.", 
+	            (char *)c->param1, c->value);
+                return -ECOMM;
+	}
+	return 0;
 }

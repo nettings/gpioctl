@@ -21,8 +21,8 @@
 
 #include "globals.h"
 
-void setup_OSC();
-void shutdown_OSC();
-void update_OSC(control_t * c);
+int setup_OSC();
+int shutdown_OSC();
+int update_OSC(control_t * c);
 
 #endif
