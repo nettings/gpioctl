@@ -257,10 +257,12 @@ int main(int argc, char *argv[])
 			}
 			break;
 #ifdef HAVE_ALSA
+#  ifdef HAVE_OSC
 		case SLAVE:
 			c->param1 = setup_ALSA_elem(c->param1);
 			setup_SLAVE_handler(c->param2, c);
 			break;
+#  endif
 #endif
 		default:
 			ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",

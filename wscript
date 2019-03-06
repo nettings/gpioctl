@@ -51,9 +51,11 @@ def configure(cnf):
 			features = 'c cshlib', 
 			lib = 'jack', 
 			uselib_store = 'JACK',
+			mandatory = False,
 			define_name = 'HAVE_JACK')
 		header = cnf.check(
-			header_name = 'jack/jack.h')
+			header_name = 'jack/jack.h',
+			mandatory = False)
 		if lib and header:
 			cnf.env.libs += ['JACK']
 			cnf.env.objs += ['jack_process', 'ringbuffer', 'jack_cmdline']
@@ -62,9 +64,11 @@ def configure(cnf):
 			features = 'c cshlib',
 			lib = 'asound',
 			uselib_store = 'ASOUND',
+			mandatory = False,
 			define_name = 'HAVE_ALSA')
 		header = cnf.check(
-			header_name = 'alsa/asoundlib.h')
+			header_name = 'alsa/asoundlib.h',
+			mandatory = False)
 		if lib and header:
 			cnf.env.libs += ['ASOUND']
 			cnf.env.objs += ['alsa_process', 'alsa_cmdline']
@@ -73,9 +77,11 @@ def configure(cnf):
 			features = 'c cshlib',
 			lib = 'lo',
 			uselib_store = 'LO',
+			mandatory = False,
 			define_name = 'HAVE_OSC')
 		header = cnf.check(
-			header_name = 'lo/lo.h')
+			header_name = 'lo/lo.h',
+			mandatory = False)
 		if lib and header:
 			cnf.env.libs += ['LO']
 			cnf.env.objs += ['osc_process', 'osc_cmdline', 'master_cmdline', 'slave_cmdline', 'slave_process']
@@ -105,9 +111,6 @@ def build(bld):
 		bld.objects(
 			source = 'alsa_cmdline.c',
 			target = 'alsa_cmdline')
-		bld.objects(
-			source = 'slave_cmdline.c',
-			target = 'slave_cmdline')
 	if 'LO' in bld.env.libs:
 		bld.objects(
 			source = 'osc_process.c',
@@ -121,6 +124,9 @@ def build(bld):
 		bld.objects(
 			source = 'master_cmdline.c',
 			target = 'master_cmdline')
+		bld.objects(
+			source = 'slave_cmdline.c',
+			target = 'slave_cmdline')
 	bld.objects(
 		source = ['parse_cmdline.c'],
 		target = 'parse_cmdline')
