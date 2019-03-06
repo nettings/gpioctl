@@ -24,28 +24,33 @@
 
 static int slave_index = 0;
 
-void help_rotary_SLAVE()
+void help_SLAVE()
 {
-        printf("-R|--rotary-slave url,control\n");
-        printf("               url:     URL to listen to, e.g. osc.udp://239.0.2.149:7000\n");
+        printf("-U|--osc-url   URL to listen to, e.g. osc.udp://239.0.2.149:7000\n");
+        printf("               This is mandatory if -R or -S are used.\n");
+        printf("-R|--rotary-slave control\n");
         printf("               control: an ALSA mixer simple control\n");
+        printf("-S|--switch-slave control\n");
+        printf("               control: an ALSA mixer simple control (operates MUTE)\n");
 }
 
 int parse_cmdline_rotary_SLAVE(control_t * c, char *config[])
 {
+	c->type = ROTARY;
 	c->target = SLAVE;
 	if (slave_index < MAXSLAVE) {
-		c->pin1 = slave_index++;
+		c->pin1 = MAXGPIO + slave_index++;
 	} else {
 		ERR("Too many slaves. Compile-time limit is %d.", MAXSLAVE);
+		return -1;
 	}
-	c->param1 = strncpy(c->param1, config[3], MAXNAME);
-	if (config[4] == NULL) {
-		c->step = 3;
-	} else {
-		c->step = atoi(config[4]);
+	if (config[0] == NULL) {
+		ERR("control must not be empty.");
+		return -1;
 	}
-	if (config[5] != NULL) {
+	c->param1 = strncpy(c->param1, config[0], MAXNAME);
+	c->param2 = OSC_LEVEL;
+	if (config[1] != NULL) {
 		ERR("Too many arguments.");
 		return -1;
 	}
@@ -56,23 +61,24 @@ int parse_cmdline_rotary_SLAVE(control_t * c, char *config[])
 	return 0;
 }
 
-void help_switch_SLAVE()
-{
-        printf("-S|--switch-slave url,control\n");
-        printf("               url:     URL to listen to, e.g. osc.udp://239.0.2.149:7000\n");
-        printf("               control: an ALSA mixer simple control (operates MUTE)\n");
-}
 
 int parse_cmdline_switch_SLAVE(control_t * c, char *config[])
 {
+	c->type = SWITCH;
 	c->target = SLAVE;
 	if (slave_index < MAXSLAVE) {
-		c->pin1 = slave_index++;
+		c->pin1 = MAXGPIO + slave_index++;
 	} else {
 		ERR("Too many slaves. Compile-time limit is %d.", MAXSLAVE);
+		return -1;
 	}
-	c->param1 = strncpy(c->param1, config[2], MAXNAME);
-	if (config[3] != NULL) {
+	if (config[0] == NULL) {
+		ERR("control must not be empty.");
+		return -1;
+	}
+	c->param1 = strncpy(c->param1, config[0], MAXNAME);
+	c->param2 = OSC_MUTE;
+	if (config[1] != NULL) {
 		ERR("Too many arguments.");
 		return -1;
 	}

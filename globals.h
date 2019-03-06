@@ -33,6 +33,10 @@
 #define MAXNAME 64
 #define ALSA_CARD "default"
 
+#define OSC_LEVEL "/" PROGRAM_NAME "/level"
+#define OSC_MUTE "/" PROGRAM_NAME "/mute"
+
+
 // one more than real max, so we can check for excess arguments:
 #define MAXARG 10
 
@@ -54,6 +58,7 @@ int use_jack;
 int use_alsa;
 int use_osc;
 int use_stdout;
+int use_slave;
 
 typedef enum {
 	NOCTL,
@@ -64,12 +69,12 @@ typedef enum {
 
 typedef enum {
 	NOTGT,
-	STDOUT,
-	JACK,
 	ALSA,
+	JACK,
 	OSC,
-	SLAVE,
-	MASTER
+	STDOUT,
+	MASTER,
+	SLAVE
 } control_target_t;
 
 typedef struct {
@@ -89,5 +94,5 @@ typedef struct {
 } control_t;
 
 extern control_t *controller[];
-
+extern char* osc_url;
 #endif

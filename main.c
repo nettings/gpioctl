@@ -40,6 +40,7 @@
 
 #ifdef HAVE_OSC
 #include "osc_process.h"
+#include "slave_process.h"
 #endif
 
 control_t *controller[NCONTROLLERS] = { 0 };
@@ -49,6 +50,8 @@ int use_alsa = 0;
 int use_jack = 0;
 int use_osc = 0;
 int use_stdout = 0;
+
+char* osc_url;
 
 static void signal_handler(int sig)
 {
@@ -67,6 +70,9 @@ static void signal_handler(int sig)
 #ifdef HAVE_OSC
 	if (use_osc) {
 		shutdown_OSC();
+	}
+	if (use_slave) {
+		shutdown_SLAVE();
 	}
 #endif
 	shutdown_gpiod();
@@ -153,6 +159,11 @@ void handle_gpi(int line, int delta)
 	}
 }
 
+void handle_osc(control_t *c, int val) {
+	c->value = val;
+	DBG("handle_osc called for line %d with value %d.", c->pin1, c->value);
+}
+
 int main(int argc, char *argv[])
 {
 	control_t *c;
@@ -180,38 +191,54 @@ int main(int argc, char *argv[])
 	if (use_osc) {
 		setup_OSC();
 	}
+	if (use_slave) {
+		setup_SLAVE(osc_url, &handle_osc);
+	}
 #endif
 	for (int i = 0; i < NCONTROLLERS; i++) {
 		if (controller[i] == NULL)
 			continue;
 		c = controller[i];
-		switch (c->type) {
-		case ROTARY:
-			setup_gpiod_rotary(c->pin1, c->pin2, &handle_gpi);
-			break;
-		case SWITCH:
-			setup_gpiod_switch(c->pin1, &handle_gpi);
-			break;
-		case AUX:
+		switch (c->target) {
+		case NOTGT:
 			// this line is a dt pin for a rotary, without its own handler
 			continue;
-		default:
-			ERR("Unknown c->type %d. THIS SHOULD NEVER HAPPEN.",
-			    c->type);
-		}
-		switch (c->target) {
 #ifdef HAVE_ALSA
 		case ALSA:
 			c->param1 = setup_ALSA_mixer_elem(c->param1);
 			// always start from the actual mixer value to avoid jumps
 			c->value = get_ALSA_mixer_value(c);
-			break;
+			// fall-through
 #endif
 		case JACK:
 		case OSC:
 		case STDOUT:
 		case MASTER:
+			switch (c->type) {
+			case ROTARY:
+				setup_gpiod_rotary(c->pin1, c->pin2, &handle_gpi);
+				break;
+			case SWITCH:
+				setup_gpiod_switch(c->pin1, &handle_gpi);
+				break;
+			default:
+				ERR("c->type %d can't happen here. BUG?", c->type);
+			}
+			break;
 		case SLAVE:
+			c->param1 = setup_ALSA_mixer_elem(c->param1);
+			switch (c->type) {
+			case ROTARY:
+				// always start from the actual mixer value to avoid jumps
+				c->value = get_ALSA_mixer_value(c);
+				setup_SLAVE_handler(c->param2, c);
+				break;
+			case SWITCH:
+				setup_SLAVE_handler(c->param2, c);
+				break;
+			default:
+				 ERR("c->type %d can't happen here. BUG?", c->type);
+			}
 			break;
 		default:
 			ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
@@ -223,6 +250,9 @@ int main(int argc, char *argv[])
 	signal(SIGINT, &signal_handler);
 
 	setup_gpiod_handler(GPIOD_DEVICE, PROGRAM_NAME);
+#ifdef HAVE_OSC
+	if (use_slave) start_SLAVE();
+#endif
 
 	sleep(-1);
 }

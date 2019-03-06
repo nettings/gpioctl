@@ -67,7 +67,7 @@ def configure(cnf):
 			header_name = 'alsa/asoundlib.h')
 		if lib and header:
 			cnf.env.libs += ['ASOUND']
-			cnf.env.objs += ['alsa_process', 'alsa_cmdline', 'slave_cmdline']
+			cnf.env.objs += ['alsa_process', 'alsa_cmdline']
 	if not cnf.options.noosc:
 		lib = cnf.check(
 			features = 'c cshlib',
@@ -78,7 +78,7 @@ def configure(cnf):
 			header_name = 'lo/lo.h')
 		if lib and header:
 			cnf.env.libs += ['LO']
-			cnf.env.objs += ['osc_process', 'osc_cmdline', 'master_cmdline']
+			cnf.env.objs += ['osc_process', 'osc_cmdline', 'master_cmdline', 'slave_cmdline', 'slave_process']
 	cnf.cc_add_flags()
 	cnf.link_add_flags()
 	cnf.cxx_add_flags()
@@ -112,6 +112,9 @@ def build(bld):
 		bld.objects(
 			source = 'osc_process.c',
 			target = 'osc_process')
+		bld.objects(
+			source = 'slave_process.c',
+			target = 'slave_process')
 		bld.objects(
 			source = 'osc_cmdline.c',
 			target = 'osc_cmdline')

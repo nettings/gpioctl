@@ -21,9 +21,8 @@
 
 #include "globals.h"
 
-void help_rotary_SLAVE();
+void help_SLAVE();
 int parse_cmdline_rotary_SLAVE(control_t * c, char *config[]);
-void help_switch_SLAVE();
 int parse_cmdline_switch_SLAVE(control_t * c, char *config[]);
 
 #endif

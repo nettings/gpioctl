@@ -39,7 +39,7 @@ int parse_cmdline_rotary_MASTER(control_t * c, char *config[])
 		return -1;
 	}
 	c->param1 = strncpy(c->param1, config[3], MAXNAME);
-	snprintf(c->param2, MAXNAME, "/%s/level", PROGRAM_NAME);
+	c->param2 = OSC_LEVEL;
 	if (config[4] == NULL) {
 		c->step = 3;
 	} else {
@@ -75,7 +75,7 @@ int parse_cmdline_switch_MASTER(control_t * c, char *config[])
 		return -1;
 	}
 	c->param1 = strncpy(c->param1, config[2], MAXNAME);
-	snprintf(c->param2, MAXNAME, "/%s/mute", PROGRAM_NAME);
+	c->param2 = OSC_MUTE;
 	if (config[3] != NULL) {
 		ERR("Too many arguments.");
 		return -1;
