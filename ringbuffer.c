@@ -21,7 +21,8 @@
 #include <pthread.h>
 
 // event ringbuffer and lock
-#define BUF_SIZE 128
+#define BUF_SIZE 4096
+
 static jack_ringbuffer_t *buf;
 static pthread_mutex_t buflock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -39,6 +40,8 @@ void shutdown_ringbuffer()
 int ringbuffer_write(unsigned char *msg, size_t size)
 {
 	int nbytes;
+	// there can be multiple writer threads, ensure only
+	// one can write at the same time:
 	pthread_mutex_lock(&buflock);
 	nbytes = jack_ringbuffer_write(buf, (char *)msg, size);
 	pthread_mutex_unlock(&buflock);
