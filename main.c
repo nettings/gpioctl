@@ -115,6 +115,12 @@ void update(control_t* c, int delta)
 			// values of +4 or so...
 			if (c->value < c->min) c->value = c->min;
 			if (c->value > c->max) c->value = c->max;
+			// fader taper:
+			c->step = 20;
+			if (c->value > -70) c->step = 10;
+			if (c->value > -45) c->step = 5;
+			if (c->value > -25) c->step = 3;
+			if (c->value > -7) c->step = 1;
 		}
 #endif
 		if ((delta < 0 && c->value > c->min)) {
