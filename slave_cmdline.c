@@ -49,15 +49,15 @@ int parse_cmdline_rotary_SLAVE(control_t * c, char *config[])
 		return -1;
 	}
 	c->param1 = strncpy(c->param1, config[0], MAXNAME);
-	c->param2 = OSC_LEVEL;
+	c->param2 = OSC_DELTA;
 	if (config[1] != NULL) {
 		ERR("Too many arguments.");
 		return -1;
 	}
-	c->min = -100;
+	c->min = -60;
 	c->max = 0;
 	c->value = c->min;
-
+	c->step = 1; // times the delta coming from the master
 	return 0;
 }
 
@@ -85,7 +85,8 @@ int parse_cmdline_switch_SLAVE(control_t * c, char *config[])
 	c->min = 0;
 	c->max = 1;
 	c->value = 0;
-	c->toggle = 1;
+	// the master is toggled
+	c->toggle = 0;
 	
 	return 0;
 }

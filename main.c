@@ -79,20 +79,27 @@ static void signal_handler(int sig)
 	exit(0);
 }
 
-void handle_gpi(int line, int delta)
+void update(control_t* c, int delta)
 {
-	control_t *c = controller[line];
-
-#ifdef HAVE_ALSA
-	if (c->target == ALSA) {
-		// to avoid loudness jumps, we always re-read the current mixer value
-		// in case it got changed by someone else, and then apply a relative 
-		// change
-		c->value = get_ALSA_mixer_value(c);
-	}
-#endif
 	switch (c->type) {
 	case ROTARY:
+		if (c->target == MASTER) {
+			// only send relative changes to slaves
+			c->value = delta * c->step;
+			break;
+		}
+#ifdef HAVE_ALSA
+		if (c->target == ALSA || c->target == SLAVE) {
+			// to avoid loudness jumps, we always re-read the current mixer value
+			// in case it got changed by someone else, and then apply a relative
+			// change
+			c->value = get_ALSA_mixer_value(c);
+			// clamp to our range. some mixers have min values of -999999 and max
+			// values of +4 or so...
+			if (c->value < c->min) c->value = c->min;
+			if (c->value > c->max) c->value = c->max;
+		}
+#endif
 		if ((delta < 0 && c->value > c->min)) {
 			if (c->value - c->step > c->min) {
 				c->value -= c->step;
@@ -144,6 +151,7 @@ void handle_gpi(int line, int delta)
 		break;
 	case SLAVE:
 		update_ALSA(c);
+		break;
 #endif
 #ifdef HAVE_OSC
 	case OSC:
@@ -159,9 +167,14 @@ void handle_gpi(int line, int delta)
 	}
 }
 
-void handle_osc(control_t *c, int val) {
-	c->value = val;
-	DBG("handle_osc called for line %d with value %d.", c->pin1, c->value);
+void handle_gpi(int line, int delta)
+{
+	control_t *c = controller[line];
+	update(c, delta);
+}
+
+void handle_osc(control_t *c, int delta) {
+	update(c, delta);
 }
 
 int main(int argc, char *argv[])
@@ -207,8 +220,6 @@ int main(int argc, char *argv[])
 #ifdef HAVE_ALSA
 		case ALSA:
 			c->param1 = setup_ALSA_mixer_elem(c->param1);
-			// always start from the actual mixer value to avoid jumps
-			c->value = get_ALSA_mixer_value(c);
 			// fall-through
 #endif
 		case JACK:
@@ -230,8 +241,6 @@ int main(int argc, char *argv[])
 			c->param1 = setup_ALSA_mixer_elem(c->param1);
 			switch (c->type) {
 			case ROTARY:
-				// always start from the actual mixer value to avoid jumps
-				c->value = get_ALSA_mixer_value(c);
 				setup_SLAVE_handler(c->param2, c);
 				break;
 			case SWITCH:

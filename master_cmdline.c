@@ -39,7 +39,7 @@ int parse_cmdline_rotary_MASTER(control_t * c, char *config[])
 		return -1;
 	}
 	c->param1 = strncpy(c->param1, config[3], MAXNAME);
-	c->param2 = OSC_LEVEL;
+	c->param2 = OSC_DELTA;
 	if (config[4] == NULL) {
 		c->step = 3;
 	} else {
@@ -49,13 +49,7 @@ int parse_cmdline_rotary_MASTER(control_t * c, char *config[])
 		ERR("Too many arguments.");
 		return -1;
 	}
-	// we use four times the usual range of a volume control
-	// to avoid ever hitting the limits before the slaves do
-	c->min = -200;
-	c->max = 200;
-	c->value = 0;
-	c->step = 3;
-
+	// min, max, unused, we send raw delta values to slaves.
 	return 0;
 }
 
@@ -82,8 +76,7 @@ int parse_cmdline_switch_MASTER(control_t * c, char *config[])
 	}
 	c->min = 0;
 	c->max = 1;
-	c->value = 0;
+	c->value = c->min;
 	c->toggle = 1;
-	
 	return 0;
 }
