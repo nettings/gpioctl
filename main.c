@@ -100,6 +100,7 @@ void update(control_t* c, int delta)
 {
 	switch (c->type) {
 	case ROTARY:
+	case AUX:
 		if (c->target == MASTER) {
 			// only send relative changes to slaves
 			c->value = delta * c->step;
@@ -242,9 +243,11 @@ int main(int argc, char *argv[])
 			continue;
 		c = controller[i];
 		switch (c->target) {
+/* // can't happen since we gave auxes their own gpio handler
 		case NOTGT:
 			// this line is a dt pin for a rotary, without its own handler
 			continue;
+*/
 #ifdef HAVE_ALSA
 		case ALSA:
 			c->param1 = setup_ALSA_elem(c->param1);
@@ -260,6 +263,9 @@ int main(int argc, char *argv[])
 				break;
 			case SWITCH:
 				setup_GPIOD_switch(c->pin1);
+				break;
+			case AUX:
+				// do nothing
 				break;
 			default:
 				ERR("c->type %d can't happen here. BUG?", c->type);

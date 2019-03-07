@@ -31,7 +31,7 @@
 #define MAXNAME 64
 // debounce time windows, in ms:
 #define GPI_DEBOUNCE_SWITCH 50
-#define GPI_DEBOUNCE_ROTARY 50
+#define GPI_DEBOUNCE_ROTARY 0
 
 typedef enum {
 	GPI_NOTSET,
@@ -42,11 +42,43 @@ typedef enum {
 
 typedef struct {
 	line_type_t type;
-	int aux;
+	unsigned int aux;
 	unsigned long ts_last;
 	int ts_delta;
 } line_t;
 
+// Yay. A bit-wise state machine :)
+// We start at 0000. Due to bounces, we allow an arbitrary number of
+// 00xy oscillations due to contact bounce. 
+// As soon as we pass through 0011 (half a step),
+// we arm the trigger mechanism. Again, we allow an arbitrary number
+// of 01xy oscillations.
+// As soon as we now pass though x000, we fire the event callback.
+// The direction is stored in the first bit.
+
+
+#define CLK 0x1
+#define DT 0x2
+#define ARMED 0x4
+#define CLOCKWISE 0x8
+
+#define UPDATE_CLK(state,clk) ((*state) = ((clk == 0) ? (*state) & ~CLK : (*state) | CLK))
+#define UPDATE_DT(state,dt) ((*state) = ((dt == 0) ? (*state) & ~DT : (*state) | DT))
+#define GET_CLK(state) ((*state) & CLK)
+#define GET_DT(state) (((*state) & DT) >> 1)
+
+#define IS_READY(state) (((*state) & CLK) && ((*state) & DT))
+#define IS_ARMED(state) ((*state) & 0x4)
+#define ARM(state) ((*state) |= 0x4)
+#define DISARM(state) ((*state) &= ~0x4)
+
+#define IS_CLOCKWISE(state) ((*state) & 0x8)
+#define SET_CLOCKWISE(state) ((*state) |= CLOCKWISE)
+#define SET_CCW(state) ((*state) &= ~CLOCKWISE)
+ 
+#define FIRE(state) (IS_ARMED(state) & ~(CLK | DT))
+#define INIT(state) ((*state) = 0x0)
+ 
 static line_t *gpi[MAXGPIO] = { 0 };
 static void (*user_callback)();
 
@@ -57,44 +89,51 @@ static int shutdown = 0;
 static char consumer[MAXNAME];
 static char device[MAXNAME];
 
-static unsigned long msec_stamp(struct timespec t)
+static unsigned long usec_stamp(struct timespec t)
 {
-	return (unsigned long)((t.tv_sec * 1000) + (t.tv_nsec / 1000000));
+	return (unsigned long)((t.tv_sec * 1000000) + (t.tv_nsec / 1000));
+}
+
+static char* uint_pp(unsigned int bitfield, int nbits) {
+	char* output = calloc(sizeof(char), nbits);
+	for (int i=0; i<nbits; i++) {
+		int shift = nbits - i - 1;
+		output[i] = (char)(((bitfield & (1U << shift)) >> shift ) + '0');
+	}
+	return output;	
 }
 
 static int handle_event(int event, unsigned int line, const struct timespec *timestamp,
 	     void *data)
 {
-	int clk, dt, sw;
 	unsigned long now;
+	int value;
+	unsigned int* state;
 
 	if (shutdown)
 		return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
 
-	now = msec_stamp(*timestamp);
+	now = usec_stamp(*timestamp);
+	value = (event == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
+	DBG("Time %d\tType %d value %d:", now, gpi[line]->type, value);
 	if ((now - gpi[line]->ts_last) > gpi[line]->ts_delta) {
 		// we're not bouncing:
+		gpi[line]->ts_last = now;
 		switch (gpi[line]->type) {
 		case GPI_ROTARY:
-			clk = (event == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
-			dt = gpi[gpi[line]->aux]->aux; // nice, isn't it?
-			if (clk != dt) {
-				user_callback(line, 1);
-			} else {
-				user_callback(line, -1);
-			}
-			break;
-		case GPI_AUX:
 			// lazy hack:
 			// store current value in aux field,
 			// because an aux can't have an aux.
-			gpi[line]->aux = (event == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
-			// no user callback for this one
+			state = &(gpi[gpi[line]->aux]->aux);
+			UPDATE_CLK(state, value);
+			break;
+		case GPI_AUX:
+			state = &(gpi[line]->aux);
+			UPDATE_DT(state, value);
 			break;
 		case GPI_SWITCH:
-			sw = (event ==
-			      GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0;
-			user_callback(line, sw);
+			user_callback(line, 1 - value); // look for falling edge
+			return GPIOD_CTXLESS_EVENT_CB_RET_OK; // skip state machine
 			break;
 		default:
 			ERR("No handler for type %d. THIS SHOULD NEVER HAPPEN.",
@@ -102,7 +141,23 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 			return GPIOD_CTXLESS_EVENT_CB_RET_ERR;
 			break;
 		}
-		gpi[line]->ts_last = now;
+		DBG("state before: %s", uint_pp(*state, 4));
+		if (FIRE(state)) { 
+			if (IS_CLOCKWISE(state)) {
+				user_callback(line, 1);
+			} else {
+				user_callback(line, -1);
+			}
+			INIT(state);
+		} else
+		if (IS_ARMED(state)) { 
+			if (GET_CLK(state) > GET_DT(state)) 
+				SET_CLOCKWISE(state);
+			else if (GET_CLK(state) < GET_DT(state))
+				SET_CCW(state);
+		} else
+		if (IS_READY(state)) ARM(state);
+		DBG("state after: %s", uint_pp(*state, 4));
 	}
 	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }

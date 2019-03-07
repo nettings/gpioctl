@@ -208,8 +208,6 @@ int parse_cmdline(int argc, char *argv[])
 				ERR("calloc() failed.");
 				goto error;
 			}
-			controller[c->pin2] = d;
-			d->type = AUX;
 #ifdef HAVE_JACK
 			if (match(config[2], "jack")) {
 				if (parse_cmdline_rotary_JACK(c, config))
@@ -244,6 +242,24 @@ int parse_cmdline(int argc, char *argv[])
 				ERR("Unknown type '%s'.", config[2]);
 				goto error;
 			}
+			controller[c->pin2] = d;
+			d->type = AUX;
+			d->target = c->target;
+			d->min = c->min;
+			d->max = c->max;
+			d->step = c->step;
+			d->toggle = c->toggle;
+			d->midi_ch = c->midi_ch;
+			d->midi_cc = c->midi_cc;
+			d->param1 = calloc(sizeof(char), MAXNAME);
+			d->param2 = calloc(sizeof(char), MAXNAME);
+			if (c->param1 == NULL || c->param2 == NULL) {
+				ERR("calloc() failed.");
+				goto error;
+			}
+			strncpy(d->param1, c->param1, MAXNAME);
+			strncpy(d->param2, c->param2, MAXNAME);
+			d->value = c->value;
 			break;
 
 		case 's':
@@ -384,8 +400,13 @@ int parse_cmdline(int argc, char *argv[])
 				free(c->param2);
 			free(c);
 		}
-		if (d != NULL)
+		if (d != NULL) {
+			if (d->param1 != NULL)
+				free(d->param1);
+			if (d->param2 != NULL)
+				free(d->param2);
 			free(d);
+		}
 		printf("Use -h for help.\n");
 		return EXIT_ERR;
 	}
