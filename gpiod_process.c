@@ -31,7 +31,7 @@
 #define MAXNAME 64
 // debounce time windows, in ms:
 #define GPI_DEBOUNCE_SWITCH 50
-#define GPI_DEBOUNCE_ROTARY 50
+#define GPI_DEBOUNCE_ROTARY 1
 
 typedef enum {
 	GPI_NOTSET,
@@ -65,7 +65,7 @@ static unsigned long msec_stamp(struct timespec t)
 static int handle_event(int event, unsigned int line, const struct timespec *timestamp,
 	     void *data)
 {
-	int clk, dt, sw;
+	int pthis, pprev;
 	unsigned long now;
 
 	if (shutdown)
@@ -76,21 +76,28 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 		// we're not bouncing:
 		switch (gpi[line]->type) {
 		case GPI_ROTARY:
-			clk =
-			    (event ==
-			     GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
-			dt = gpiod_ctxless_get_value(device, gpi[line]->aux,
+			// smart debouncing algo from http://www.technoblogy.com/show?1YHJ
+			// While clk may be bouncing, we store the current state of dt
+			// (which is assumed has settled by now). No matter how often we
+			// bounce, the stored state will be the same - basically a clean
+			// version of clk, so we use it instead!
+			pthis = gpiod_ctxless_get_value(device, gpi[line]->aux,
 						     ACTIVE_HIGH, consumer);
-			if (clk != dt) {
-				user_callback(line, 1);
+			// We compare it with the previous value (we stored it in the 
+			// unused aux field of our aux line), to see how it changed:
+			pprev = gpi[gpi[line]->aux]->aux;
+			if (pthis == pprev) break; // nothing to do
+			if (pthis == (event == GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0) {
+				user_callback(line, 1); // falling edge, clockwise
 			} else {
-				user_callback(line, -1);
+				user_callback(line, -1); // rising edge, counterclockwise
 			}
+			gpi[gpi[line]->aux]->aux = pthis;
 			break;
 		case GPI_SWITCH:
-			sw = (event ==
+			pthis = (event ==
 			      GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE) ? 1 : 0;
-			user_callback(line, sw);
+			user_callback(line, pthis);
 			break;
 		default:
 			ERR("No handler for type %d. THIS SHOULD NEVER HAPPEN.",
