@@ -31,7 +31,7 @@
 #define MAXNAME 64
 // debounce time windows, in ms:
 #define GPI_DEBOUNCE_SWITCH 50
-#define GPI_DEBOUNCE_ROTARY 1
+#define GPI_DEBOUNCE_ROTARY 0
 
 typedef enum {
 	GPI_NOTSET,
@@ -57,21 +57,22 @@ static int shutdown = 0;
 static char consumer[MAXNAME];
 static char device[MAXNAME];
 
-static unsigned long msec_stamp(struct timespec t)
+static unsigned long long usec_stamp(struct timespec t)
 {
-	return (unsigned long)((t.tv_sec * 1000) + (t.tv_nsec / 1000000));
+	return (unsigned long long)((t.tv_sec * 1000000ULL) + (t.tv_nsec / 1000ULL));
 }
 
 static int handle_event(int event, unsigned int line, const struct timespec *timestamp,
 	     void *data)
 {
 	int pthis, pprev;
-	unsigned long now;
+	unsigned long long now;
 
 	if (shutdown)
 		return GPIOD_CTXLESS_EVENT_CB_RET_STOP;
 
-	now = msec_stamp(*timestamp);
+	now = usec_stamp(*timestamp);
+	DBG("GPIOD handler at time %lld", now);
 	if ((now - gpi[line]->ts_last) > gpi[line]->ts_delta) {
 		// we're not bouncing:
 		switch (gpi[line]->type) {
