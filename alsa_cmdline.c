@@ -46,7 +46,7 @@ int parse_cmdline_rotary_ALSA(control_t * c, char *config[])
 		ERR("Too many arguments.");
 		return -1;
 	}
-	c->min = -60;
+	c->min = -100;
 	c->max = 0;
 	c->value = c->min;
 

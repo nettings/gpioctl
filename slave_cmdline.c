@@ -54,7 +54,7 @@ int parse_cmdline_rotary_SLAVE(control_t * c, char *config[])
 		ERR("Too many arguments.");
 		return -1;
 	}
-	c->min = -60;
+	c->min = -100;
 	c->max = 0;
 	c->value = c->min;
 	c->step = 1; // times the delta coming from the master
