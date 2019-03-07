@@ -89,9 +89,9 @@ static int shutdown = 0;
 static char consumer[MAXNAME];
 static char device[MAXNAME];
 
-static unsigned long usec_stamp(struct timespec t)
+static unsigned long long usec_stamp(struct timespec t)
 {
-	return (unsigned long)((t.tv_sec * 1000000) + (t.tv_nsec / 1000));
+	return (unsigned long long)((t.tv_sec * 1000000ULL) + (t.tv_nsec / 1000ULL));
 }
 
 static char* uint_pp(unsigned int bitfield, int nbits) {
@@ -106,7 +106,7 @@ static char* uint_pp(unsigned int bitfield, int nbits) {
 static int handle_event(int event, unsigned int line, const struct timespec *timestamp,
 	     void *data)
 {
-	unsigned long now;
+	unsigned long long now;
 	int value;
 	unsigned int* state;
 
@@ -115,7 +115,7 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 
 	now = usec_stamp(*timestamp);
 	value = (event == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
-	DBG("Time %d\tType %d value %d:", now, gpi[line]->type, value);
+	DBG("Time %lld\tType %d value %d:", now, gpi[line]->type, value);
 	if ((now - gpi[line]->ts_last) > gpi[line]->ts_delta) {
 		// we're not bouncing:
 		gpi[line]->ts_last = now;
@@ -142,6 +142,12 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 			break;
 		}
 		DBG("state before: %s", uint_pp(*state, 4));
+		if (IS_ARMED(state)) { 
+			if (GET_CLK(state) > GET_DT(state)) 
+				SET_CLOCKWISE(state);
+			else if (GET_CLK(state) < GET_DT(state))
+				SET_CCW(state);
+		}
 		if (FIRE(state)) { 
 			if (IS_CLOCKWISE(state)) {
 				user_callback(line, 1);
@@ -149,12 +155,6 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 				user_callback(line, -1);
 			}
 			INIT(state);
-		} else
-		if (IS_ARMED(state)) { 
-			if (GET_CLK(state) > GET_DT(state)) 
-				SET_CLOCKWISE(state);
-			else if (GET_CLK(state) < GET_DT(state))
-				SET_CCW(state);
 		} else
 		if (IS_READY(state)) ARM(state);
 		DBG("state after: %s", uint_pp(*state, 4));
