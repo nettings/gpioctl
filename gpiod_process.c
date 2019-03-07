@@ -76,16 +76,20 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 		// we're not bouncing:
 		switch (gpi[line]->type) {
 		case GPI_ROTARY:
-			clk =
-			    (event ==
-			     GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
-			dt = gpiod_ctxless_get_value(device, gpi[line]->aux,
-						     ACTIVE_HIGH, consumer);
+			clk = (event == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
+			dt = gpi[gpi[line]->aux]->aux; // nice, isn't it?
 			if (clk != dt) {
 				user_callback(line, 1);
 			} else {
 				user_callback(line, -1);
 			}
+			break;
+		case GPI_AUX:
+			// lazy hack:
+			// store current value in aux field,
+			// because an aux can't have an aux.
+			gpi[line]->aux = (event == GPIOD_CTXLESS_EVENT_CB_RISING_EDGE) ? 1 : 0;
+			// no user callback for this one
 			break;
 		case GPI_SWITCH:
 			sw = (event ==
@@ -129,9 +133,12 @@ int setup_GPIOD_rotary(int line, int aux)
 		return -ENOMEM;
 	}
 	gpi[line]->type = GPI_ROTARY;
-	gpi[aux]->type = GPI_AUX;
 	gpi[line]->aux = aux;
 	gpi[line]->ts_last = NEVER;
+	gpi[line]->ts_delta = GPI_DEBOUNCE_ROTARY;
+	gpi[aux]->type = GPI_AUX;
+	gpi[aux]->aux = 0;
+	gpi[aux]->ts_last = NEVER;
 	gpi[line]->ts_delta = GPI_DEBOUNCE_ROTARY;
 	return 0;
 }
@@ -180,7 +187,7 @@ int start_GPIOD()
 	int err = 0;
 	DBG("Starting GPIOD handler.");
 	for (int line = 0; line < MAXGPIO; line++) {
-		if (gpi[line] != NULL && gpi[line]->type != GPI_AUX) {
+		if (gpi[line] != NULL) {
 			offsets[num_lines++] = line;
 		}
 	}
