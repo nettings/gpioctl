@@ -205,7 +205,7 @@ Once you've found the appropriate control name, plug it into the following
 command instead of "Digital", which is the default for HifiBerry AMP2 users.
 Now you can run
 ```
-$ gpioctl -v -r 17,27,alsa,Digital -s 6,alsa
+$ gpioctl -v -r 17,27,alsa,Digital -s 6,alsa,Digital
 ```
 You can also run 
 ```
@@ -256,10 +256,9 @@ Then, on the machine that has the rotary connected, try this:
 $ gpioctl -r 17,27,osc,osc.udp://239.0.0.254:3000,/some/path/maybelevel,0,100,1,0 -s 6,osc,osc.udp://239.0.0.254:3000,/some/path/maybemute,1,0,1,0
 ```
 This example will send the commands to a multicast IP, so that it can be
-received by multiple hosts. Of course you can also use normal IPs. IPv6 is
-currently unsupported by liblo. The data type will always be 'i'.
+received by multiple hosts. Of course you can also use normal IPs. The data type will always be 'i'.
 
-## Using Master/Slave mode
+### Using OSC Master/Slave mode
 
 If you have multiple nodes with soundcards that you wish to control as a
 group, you can use the Master/Slave mode via UDP multicast. On your
@@ -277,12 +276,13 @@ its own slave, like so:
 $ gpioctl -U osc.udp://239.0.0.254:3000 -R Digital -S Digital -r 17,27,master,osc.udp://239.0.0.254:3000,4 -s 6,master,osc.udp://239.0.0.254:3000
 ```
 If your slave has a card with multiple channels such as the 
-[AudioInjector Octo](https://audioinjector.net), you can use link multiple
+[AudioInjector Octo](https://audioinjector.net), you can link multiple
 channels to your slave instance:
 ```
 $ gpioctl -U osc.udp://239.0.0.254:3000 -R DAC1 -R DAC2 -R DAC3 -R DAC4 
 ```
-(The Octo does not have a mute switch in its mixer.)
+(The Octo does not have a mute switch in its mixer, so we only use faders
+here.)
 
 Note that liblo does not reliably support IPv6 multicast, and that TCP
 support in gpioctl should be considered broken.
