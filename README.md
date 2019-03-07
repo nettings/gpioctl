@@ -311,13 +311,16 @@ differ on your system.)
 The build system is waf. My understanding of it is very limited. For
 now, from the root your working copy do
 ```
-$ CFLAGS="-DDEBUG -g" ./waf configure  # for very verbose output, or
-$ ./waf configure                      # for production code, or
-$ ./waf configure --prefix=/foo        # if you don't like /usr/local/, and
-$ ./waf                                # to build
+$ CFLAGS="-DDEBUG -g -Wall" ./waf configure  # for very verbose output, or
+$ ./waf configure                            # for production code, or
+$ ./waf configure --prefix=/foo              # if you don't like /usr/local/, and
+$ ./waf                                      # to build
 ```
+During the configuration step, you can selectively disable unneeded features with
+`--disable-{alsa|jack|osc}`.
+
 You can run it without installing from ./build/gpioctl, or install it with
 ```
-$ sudo ./waf install                   # installs to prefix set before, or
-$ sudo ./waf install --destdir=/bar    # for packagers
+$ sudo ./waf install                         # installs to prefix set before, or
+$ sudo ./waf install --destdir=/bar          # for packagers
 ```
