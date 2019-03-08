@@ -198,9 +198,12 @@ void update(control_t* c, int delta)
 
 void handle_gpi(int line, int delta)
 {
+	// in order to properly debounce both rotary contacts, 
+	// aux lines now get their own event handler on the libgpiod side.
+	// over here, we must redirect them to their rotary main line.
+	// the linear search is ugly. FIXME!
 	control_t *c = controller[line];
 	if (c->type == AUX) {
-		// redirect to its rotary:
 		for (int i=0; i < NCONTROLLERS; i++) {
 			if (controller[i] == NULL) continue;
 			if (controller[i]->pin2 == line) {
