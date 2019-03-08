@@ -48,30 +48,40 @@ typedef struct {
 } line_t;
 
 /* Yay. A bit-wise state machine :)
+ *
  * State:
  *   nnnn
- *   |||+----> clk state
- *   ||+-----> dt state
+ *   |||+----> clk bit
+ *   ||+-----> dt bit
  *   |+------> clockwise bit
  *   +-------> outer ring bit
+ *
+ * The clk and dt bits are set by interrupt handlers.
+ * They can change rapidly when the switch hardware
+ * bounces.
+ *
  * Two rings:
- *  Outer       1100*___  ____1000*
- *               /      \/      \
- *  Inner       /      0x00      \
+ *  Outer        1100*_    _1000*
+ *                /    \  /    \
+ *  Inner        /     0x00     \
  *              |      /  \      |
- *              |   0010  0101   |
- *            1101    |    |    1010
+ *            1101  0010  0101  1010
+  *             |     |    |     |
  *               \  0011* 0111* /
  *                \    \  /    /
- *                 ----1x11---- 
+ *                 \___1x11___/ 
  *
  * The starred states will fire a callback.
- * Between unstarred states, we tolerate bouncing.
+ * Between two unstarred states, we tolerate bouncing.
  * A starred state cannot bounce back, because we 
- * change rings immediately, so that it cannot
- * trigger again.
+ * change rings immediately, so that it cannot trigger 
+ * again.
+ * We need two firing states per ring, because
+ * in the (clk == dt) case, we cannot tell which
+ * direction we're going.
  */
  
+// FIXME: this implementation has (ahem!) optimization and clarification potential
 #define CLK 0x1
 #define DT 0x2
 #define CLOCKWISE 0x4
