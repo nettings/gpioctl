@@ -47,37 +47,52 @@ typedef struct {
 	int ts_delta;
 } line_t;
 
-// Yay. A bit-wise state machine :)
-// We start at 0000. Due to bounces, we allow an arbitrary number of
-// 00xy oscillations due to contact bounce. 
-// As soon as we pass through 0011 (half a step),
-// we arm the trigger mechanism. Again, we allow an arbitrary number
-// of 01xy oscillations.
-// As soon as we now pass though x000, we fire the event callback.
-// The direction is stored in the first bit.
-
-
+/* Yay. A bit-wise state machine :)
+ * State:
+ *   nnnn
+ *   |||+----> clk state
+ *   ||+-----> dt state
+ *   |+------> clockwise bit
+ *   +-------> outer ring bit
+ * Two rings:
+ *  Outer       1100*___  ____1000*
+ *               /      \/      \
+ *  Inner       /      0x00      \
+ *              |      /  \      |
+ *              |   0010  0101   |
+ *            1101    |    |    1010
+ *               \  0011* 0111* /
+ *                \    \  /    /
+ *                 ----1x11---- 
+ *
+ * The starred states will fire a callback.
+ * Between unstarred states, we tolerate bouncing.
+ * A starred state cannot bounce back, because we 
+ * change rings immediately, so that it cannot
+ * trigger again.
+ */
+ 
 #define CLK 0x1
 #define DT 0x2
-#define ARMED 0x4
-#define CLOCKWISE 0x8
+#define CLOCKWISE 0x4
+#define OUTER 0x8
 
-#define UPDATE_CLK(state,clk) ((*state) = ((clk == 0) ? (*state) & ~CLK : (*state) | CLK))
-#define UPDATE_DT(state,dt) ((*state) = ((dt == 0) ? (*state) & ~DT : (*state) | DT))
-#define GET_CLK(state) ((*state) & CLK)
-#define GET_DT(state) (((*state) & DT) >> 1)
+#define UPDATE_CLK(state,clk) (state = ((clk == 0) ? (state & ~CLK) : (state | CLK)))
+#define UPDATE_DT(state,dt) (state = ((dt == 0) ? (state & ~DT) : (state | DT)))
+#define GET_CLK(state) (state & CLK)
+#define GET_DT(state) ((state & DT) >> 1)
 
-#define IS_READY(state) (((*state) & CLK) && ((*state) & DT))
-#define IS_ARMED(state) ((*state) & 0x4)
-#define ARM(state) ((*state) |= 0x4)
-#define DISARM(state) ((*state) &= ~0x4)
+#define IS_CLOCKWISE(state) ((state & CLOCKWISE) && 1)
+#define SET_CLOCKWISE(state) (state |= CLOCKWISE)
+#define SET_CCW(state) (state &= ~CLOCKWISE)
 
-#define IS_CLOCKWISE(state) ((*state) & 0x8)
-#define SET_CLOCKWISE(state) ((*state) |= CLOCKWISE)
-#define SET_CCW(state) ((*state) &= ~CLOCKWISE)
- 
-#define FIRE(state) (IS_ARMED(state) & ~(CLK | DT))
-#define INIT(state) ((*state) = 0x0)
+#define IS_OUTER(state) ((state & OUTER) && 1)
+#define SET_OUTER(state) (state |= OUTER)
+#define SET_INNER(state) (state &= ~OUTER)
+
+#define FIRE_INNER(state) ((state & CLK) && (state & DT) && !IS_OUTER(state))
+#define FIRE_OUTER(state) (!(state & CLK) && !(state &DT) && IS_OUTER(state))
+
  
 static line_t *gpi[MAXGPIO] = { 0 };
 static void (*user_callback)();
@@ -125,11 +140,11 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 			// store current value in aux field,
 			// because an aux can't have an aux.
 			state = &(gpi[gpi[line]->aux]->aux);
-			UPDATE_CLK(state, value);
+			UPDATE_CLK(*state, value);
 			break;
 		case GPI_AUX:
 			state = &(gpi[line]->aux);
-			UPDATE_DT(state, value);
+			UPDATE_DT(*state, value);
 			break;
 		case GPI_SWITCH:
 			user_callback(line, 1 - value); // look for falling edge
@@ -142,21 +157,24 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 			break;
 		}
 		DBG("state before: %s", uint_pp(*state, 4));
-		if (IS_ARMED(state)) { 
-			if (GET_CLK(state) > GET_DT(state)) 
-				SET_CLOCKWISE(state);
-			else if (GET_CLK(state) < GET_DT(state))
-				SET_CCW(state);
+		// which direction?
+		if (IS_OUTER(*state)) {
+			if (GET_CLK(*state) < GET_DT(*state)) 
+				SET_CLOCKWISE(*state);
+			else if (GET_CLK(*state) > GET_DT(*state))
+				SET_CCW(*state);
+		} else if (GET_CLK(*state) > GET_DT(*state)) 
+                                SET_CLOCKWISE(*state);
+                        else if (GET_CLK(*state) < GET_DT(*state))
+                                SET_CCW(*state);
+     
+		if (FIRE_INNER(*state)) {
+			user_callback(line, -1 + 2 * IS_CLOCKWISE(*state));	
+			SET_OUTER(*state);
+		} else if (FIRE_OUTER(*state)) {
+			user_callback(line, -1 + 2 * IS_CLOCKWISE(*state));
+			SET_INNER(*state);
 		}
-		if (FIRE(state)) { 
-			if (IS_CLOCKWISE(state)) {
-				user_callback(line, 1);
-			} else {
-				user_callback(line, -1);
-			}
-			INIT(state);
-		} else
-		if (IS_READY(state)) ARM(state);
 		DBG("state after: %s", uint_pp(*state, 4));
 	}
 	return GPIOD_CTXLESS_EVENT_CB_RET_OK;
