@@ -193,7 +193,7 @@ void update(control_t* c, int delta)
 		ERR("Unknown c->target %d. THIS SHOULD NEVER HAPPEN.",
 		    c->target);
 	}
-	NFO("%s\t% 3d -> %s\t% 3d", control_types[c->type], c->pin1, control_targets[c->target], c->value);
+	NFO("%s% 3d\t-> %s\t% 3d", control_types[c->type], c->pin1, control_targets[c->target], c->value);
 }
 
 void handle_gpi(int line, int delta)
