@@ -98,6 +98,7 @@ static void shutdown(int sig)
 
 void update(control_t* c, int delta)
 {
+	DBG("update: delta = %d", delta);
 	switch (c->type) {
 	case ROTARY:
 	case AUX:
@@ -198,7 +199,18 @@ void update(control_t* c, int delta)
 void handle_gpi(int line, int delta)
 {
 	control_t *c = controller[line];
-	update(c, delta);
+	if (c->type == AUX) {
+		// redirect to its rotary:
+		for (int i=0; i < NCONTROLLERS; i++) {
+			if (controller[i] == NULL) continue;
+			if (controller[i]->pin2 == line) {
+				update(controller[i], delta);
+				break;
+			}
+		}
+	} else {
+		update(c, delta);
+	}
 }
 
 void handle_osc(control_t *c, int delta) {
