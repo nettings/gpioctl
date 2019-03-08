@@ -45,7 +45,7 @@
 #include "build/config.h"
 
 #ifdef DEBUG
-#define DBG(fmt, args...) fprintf(stdout, "%s:%d\t%s():\t" fmt "\n", __FILE__, __LINE__, __func__,  ## args)
+#define DBG(fmt, args...) if (verbose) fprintf(stdout, "%s:%d\t%s():\t" fmt "\n", __FILE__, __LINE__, __func__,  ## args);
 #define ERR(fmt, args...) fprintf(stderr, "%s:%d\t%s():\t\x1b[01;31m" fmt "\x1b[0m\n", __FILE__, __LINE__, __func__, ## args)
 #define NFO(fmt, args...) fprintf(stdout, fmt "\n", ## args)
 #else
