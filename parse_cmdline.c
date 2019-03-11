@@ -119,8 +119,8 @@ static int tokenize(char *argument, char *config[])
         int i = 0;
 	if (argument == NULL) return 0;
         config[0] = strtok(argument, ",");
-        // always go up to MAXARG, to make sure we overwrite all previous hits with NULL
-        for (int k = 1; k <= MAXARG; k++) {
+        // always handle MAXARG entries, to make sure we overwrite all previous hits with NULL
+        for (int k = 1; k < MAXARG; k++) {
                 if (config[i] != NULL)
                         i++;
                 config[k] = strtok(NULL, ",");
