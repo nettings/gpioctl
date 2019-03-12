@@ -31,7 +31,7 @@
 #define MAXNAME 64
 // debounce time windows, in us:
 #define GPI_DEBOUNCE_SWITCH 50
-#define GPI_DEBOUNCE_ROTARY 0
+#define GPI_DEBOUNCE_ROTARY 10
 
 typedef enum {
 	GPI_NOTSET,
@@ -81,27 +81,21 @@ typedef struct {
  * direction we're going.
  */
  
-// FIXME: this implementation has (ahem!) optimization and clarification potential
 #define CLK 0x1
 #define DT 0x2
 #define CLOCKWISE 0x4
 #define OUTER 0x8
 
-#define UPDATE_CLK(state,clk) (state = ((clk == 0) ? (state & ~CLK) : (state | CLK)))
-#define UPDATE_DT(state,dt) (state = ((dt == 0) ? (state & ~DT) : (state | DT)))
-#define GET_CLK(state) (state & CLK)
-#define GET_DT(state) ((state & DT) >> 1)
+#define UPDATE(state,mask,value) (state = (state & ~mask) + (value & mask))
+#define IS_SET(state,mask) ((state & mask) == mask)
+#define IS_UNSET(state,mask) ((~state & mask) == mask)
 
-#define IS_CLOCKWISE(state) ((state & CLOCKWISE) && 1)
-#define SET_CLOCKWISE(state) (state |= CLOCKWISE)
-#define SET_CCW(state) (state &= ~CLOCKWISE)
+#define SET(state,mask) (UPDATE(state, mask, ~0))
+#define UNSET(state,mask) (UPDATE(state, mask, 0))
+#define TOGGLE(state,mask) (state ^= mask)
 
-#define IS_OUTER(state) ((state & OUTER) && 1)
-#define SET_OUTER(state) (state |= OUTER)
-#define SET_INNER(state) (state &= ~OUTER)
-
-#define FIRE_INNER(state) ((state & CLK) && (state & DT) && !IS_OUTER(state))
-#define FIRE_OUTER(state) (!(state & CLK) && !(state &DT) && IS_OUTER(state))
+#define FIRE_INNER(state) (IS_SET(state,(CLK | DT)) && IS_UNSET(state, OUTER))
+#define FIRE_OUTER(state) (IS_UNSET(state,(CLK | DT)) && IS_SET(state, OUTER)) 
 
  
 static line_t *gpi[MAXGPIO] = { 0 };
@@ -150,11 +144,11 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 			// store current value in aux field,
 			// because an aux can't have an aux.
 			state = &(gpi[gpi[line]->aux]->aux);
-			UPDATE_CLK(*state, value);
+			UPDATE(*state, CLK, ~0 * value);
 			break;
 		case GPI_AUX:
 			state = &(gpi[line]->aux);
-			UPDATE_DT(*state, value);
+			UPDATE(*state, DT, ~0 * value);
 			break;
 		case GPI_SWITCH:
 			user_callback(line, 1 - value); // look for falling edge
@@ -168,22 +162,23 @@ static int handle_event(int event, unsigned int line, const struct timespec *tim
 		}
 		DBG("state before: %s", uint_pp(*state, 4));
 		// which direction?
-		if (IS_OUTER(*state)) {
-			if (GET_CLK(*state) < GET_DT(*state)) 
-				SET_CLOCKWISE(*state);
-			else if (GET_CLK(*state) > GET_DT(*state))
-				SET_CCW(*state);
-		} else if (GET_CLK(*state) > GET_DT(*state)) 
-                                SET_CLOCKWISE(*state);
-                        else if (GET_CLK(*state) < GET_DT(*state))
-                                SET_CCW(*state);
-     
+		if (IS_SET(*state, OUTER)) {
+			if (IS_UNSET(*state, CLK) && IS_SET(*state, DT)) 
+				SET(*state, CLOCKWISE);
+			else if (IS_SET(*state, CLK) && IS_UNSET(*state, DT))
+				UNSET(*state, CLOCKWISE);
+		} else {
+			if (IS_SET(*state, CLK) && IS_UNSET(*state, DT)) 
+                                SET(*state, CLOCKWISE);
+                        else if (IS_UNSET(*state, CLK) && IS_SET(*state, DT))
+                                UNSET(*state, CLOCKWISE);
+		}
 		if (FIRE_INNER(*state)) {
-			user_callback(line, -1 + 2 * IS_CLOCKWISE(*state));	
-			SET_OUTER(*state);
+			user_callback(line, -1 + 2 * IS_SET(*state, CLOCKWISE));	
+			SET(*state, OUTER);
 		} else if (FIRE_OUTER(*state)) {
-			user_callback(line, -1 + 2 * IS_CLOCKWISE(*state));
-			SET_INNER(*state);
+			user_callback(line, -1 + 2 * IS_SET(*state, CLOCKWISE));
+			UNSET(*state, OUTER);
 		}
 		DBG("state after: %s", uint_pp(*state, 4));
 	}
