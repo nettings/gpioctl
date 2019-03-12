@@ -1,5 +1,5 @@
 APPNAME = 'gpioctl'
-VERSION = '0.0.9-rc1'
+VERSION = '0.0.9-rc3'
 
 top = '.'
 
