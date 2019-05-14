@@ -265,6 +265,7 @@ int main(int argc, char *argv[])
 */
 #ifdef HAVE_ALSA
 		case ALSA:
+			if (c->type == AUX) break;
 			c->param1 = setup_ALSA_elem(c->param1);
 			// fall-through
 #endif
