@@ -72,7 +72,7 @@ int update_JACK(control_t * c)
 {
 	unsigned char msg[MSG_SIZE];
 	int n;
-	msg[0] = (MIDI_CC << 4) + (c->midi_ch - 1);
+	msg[0] = (MIDI_CC << 4) + c->midi_ch;
 	msg[1] = c->midi_cc;
 	msg[2] = c->value;
 	DBG("Updating JACK msg queue: pin %d value %d\t0x%02x%02x%02x", 
