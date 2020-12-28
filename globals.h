@@ -21,7 +21,16 @@
 
 #define PROGRAM_NAME "gpioctl"
 #define JACK_PORT_NAME "midi_out"
-#define GPIOD_DEVICE "pinctrl-bcm2835"
+
+// this would work only on RPi 2B, 3B, and 3B+
+// #define GPIOD_DEVICE "pinctrl-bcm2835"
+
+// this would work only on RPi 4B
+// #define GPIOD_DEVICE_ "pinctrl-bcm2711"
+
+// this seems to be the generic solution
+#define GPIOD_DEVICE "gpiochip0"
+
 #define MAXGPIO 64
 #define MAXSLAVE 16
 #define NCONTROLLERS (MAXGPIO + MAXSLAVE)
