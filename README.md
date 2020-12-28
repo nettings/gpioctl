@@ -183,7 +183,7 @@ $ raspi-gpio get
 for a quick overview of the state of all GPIOs.
 
 **NOTE:** if you are using any HATs in addition to gpioctl controllers, be
-sure the GPIO lines you are about to recondfigure are not in use. You might
+sure the GPIO lines you are about to reconfigure are not in use. You might
 crash the system and even damage your hardware.
 
 If your pin requirements do not change at runtime, you can also  preconfigure
