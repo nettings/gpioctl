@@ -225,13 +225,19 @@ int main(int argc, char *argv[])
 	control_t *c;
 
 	int rval = parse_cmdline(argc, argv);
-	if (rval == EXIT_USAGE) {
+	switch (rval) {
+	case EXIT_USAGE:
 		usage();
 		exit(0);
-	}
-	if (rval != EXIT_CLEAN) {
+	case EXIT_VERSION:
+		printf("%s %s\n", PROGRAM_NAME, PROGRAM_VERSION);
+		exit(0);
+	case EXIT_CLEAN:
+		break;
+	default:
 		exit(rval);
 	}
+
 	setup_GPIOD(GPIOD_DEVICE, PROGRAM_NAME, &handle_gpi);
 #ifdef HAVE_JACK
 	if (use_jack) {

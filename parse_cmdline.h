@@ -22,6 +22,7 @@
 #define EXIT_USAGE -1
 #define EXIT_CLEAN 0
 #define EXIT_ERR -2
+#define EXIT_VERSION -3
 
 int parse_cmdline(int argc, char *argv[]);
 void usage();

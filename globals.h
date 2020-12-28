@@ -20,6 +20,8 @@
 #define GLOBALS_H
 
 #define PROGRAM_NAME "gpioctl"
+#define PROGRAM_VERSION "0.2.0"
+
 #define JACK_PORT_NAME "midi_out"
 
 // this would work only on RPi 2B, 3B, and 3B+
