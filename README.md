@@ -19,13 +19,14 @@ https://gist.github.com/savetheclocktower/9b5f67c20f6c04e65ed88f2e594d43c1
 ```
 $ ./build/gpioctl -h
 
-gpioctl handles switches and rotary encoders connected to GPIOs, using the
+gpioctl v0.2.0 handles switches and rotary encoders connected to GPIOs, using the
 portable libgpiod kernel interface, to send text messages to /dev/stdout.
 If enabled at build time, you can also send JACK MIDI CC messages,
 OSC messages, or directly interact with an ALSA mixer control.
 We assume GPI pins have a pull-up, so the return should be connected to ground.
 
 -h|--help      This help.
+-V|--version   Print version and exit.
 -v|--verbose   Print current controller values.
 
 The following options may be specified multiple times. All parameters must be
