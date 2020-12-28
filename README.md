@@ -170,20 +170,20 @@ currently able to set other pin features. So you will have to use a
 hardware-specific tool to enable pull-ups, or connect your controller board to
 an appropriate voltage source and add physical pull-ups.
 
-On the Raspberry Pi, you can use the `gpio` command that comes with
-wiringpi:
+Sadly, the wiringpi suite on the Raspberry Pi is [no longer
+maintained](http://wiringpi.com/wiringpi-deprecated/). Thanks Gordon for
+your amazing work, and all the best!
 
+The tool of choice is now raspi-gpio, check out
+`tools/enable_input_and_pullups.sh` for a practical example, and
 ```
-$ sudo apt-get install wiringpi         # if you don't have it yet
-$ gpio -g mode 17 up
-$ gpio -g mode 27 up
-$ gpio -g mode 6 up
+$ raspi-gpio get
 ```
+for a quick overview of the state of all GPIOs.
 
-AFAIK, it is not possible to read out the state of the pull-ups on the Pi,
-but you can verify the correct setting by running `gpio readall` and then
-run it again after moving the rotary by one click or while holding down the
-switch. The value ("V") column should change.
+**NOTE:** if you are using any HATs in addition to gpioctl controllers, be
+sure the GPIO lines you are about to recondfigure are not in use. You might
+crash the system and even damage your hardware.
 
 If your pin requirements do not change at runtime, you can also  preconfigure
 your pin states via
