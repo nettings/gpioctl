@@ -26,7 +26,7 @@ def options(opt):
 
 def configure(cnf):
 	cnf.env.libs = ['GPIOD', 'PTHREAD']
-        cnf.env.objs = ['parse_cmdline', 'gpiod_process', 'stdout_process', 'stdout_cmdline']
+	cnf.env.objs = ['parse_cmdline', 'gpiod_process', 'stdout_process', 'stdout_cmdline']
 	cnf.load('compiler_c',
 		cache = True)
 	cnf.check(
@@ -42,7 +42,7 @@ def configure(cnf):
 		lib = 'pthread',
 		uselib_store = 'PTHREAD',
 		mandatory = True)
-  	cnf.check(
+	cnf.check(
 		header_name = 'pthread.h',
 		mandatory = True)
 	if not cnf.options.nojack:
