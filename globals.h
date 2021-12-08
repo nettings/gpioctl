@@ -65,12 +65,12 @@
 #define NFO(fmt, args...) if (verbose) fprintf(stdout, fmt "\n", ## args);
 #endif
 
-int verbose;
-int use_jack;
-int use_alsa;
-int use_osc;
-int use_stdout;
-int use_slave;
+extern int verbose;
+extern int use_jack;
+extern int use_alsa;
+extern int use_osc;
+extern int use_stdout;
+extern int use_slave;
 
 typedef enum {
 	NOCTL,

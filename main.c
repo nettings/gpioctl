@@ -50,6 +50,7 @@ int use_alsa = 0;
 int use_jack = 0;
 int use_osc = 0;
 int use_stdout = 0;
+int use_slave = 0;
 
 char* osc_url;
 
