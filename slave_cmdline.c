@@ -28,9 +28,11 @@ void help_SLAVE()
 {
         printf("-U|--osc-url   URL to listen to, e.g. osc.udp://239.0.2.149:7000\n");
         printf("               This is mandatory if -R or -S are used.\n\n");
-        printf("-R|--rotary-slave control\n");
+        printf("-R|--rotary-slave device,control\n");
+        printf("               device:  an ALSA device name, such as hw:1\n");
         printf("               control: an ALSA mixer simple control\n\n");
-        printf("-S|--switch-slave control\n");
+        printf("-S|--switch-slave device,control\n");
+        printf("               device:  an ALSA device name, such as hw:1\n");
         printf("               control: an ALSA mixer simple control (operates MUTE)\n\n");
 }
 
@@ -45,12 +47,16 @@ int parse_cmdline_rotary_SLAVE(control_t * c, char *config[])
 		return -1;
 	}
 	if (config[0] == NULL) {
+		ERR("device must not be empty.");
+		return -1;
+	}
+	c->param2 = strncpy(c->param2, config[0], MAXNAME);
+	if (config[1] == NULL) {
 		ERR("control must not be empty.");
 		return -1;
 	}
-	c->param1 = strncpy(c->param1, config[0], MAXNAME);
-	c->param2 = OSC_DELTA;
-	if (config[1] != NULL) {
+	c->param1 = strncpy(c->param1, config[1], MAXNAME);
+	if (config[2] != NULL) {
 		ERR("Too many arguments.");
 		return -1;
 	}
@@ -73,11 +79,15 @@ int parse_cmdline_switch_SLAVE(control_t * c, char *config[])
 		return -1;
 	}
 	if (config[0] == NULL) {
+		ERR("device must not be empty.");
+		return -1;
+	}
+	c->param2 = strncpy(c->param2, config[0], MAXNAME);
+	if (config[1] == NULL) {
 		ERR("control must not be empty.");
 		return -1;
 	}
-	c->param1 = strncpy(c->param1, config[0], MAXNAME);
-	c->param2 = OSC_MUTE;
+	c->param1 = strncpy(c->param1, config[1], MAXNAME);
 	if (config[1] != NULL) {
 		ERR("Too many arguments.");
 		return -1;

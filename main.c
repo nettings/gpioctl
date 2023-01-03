@@ -76,7 +76,7 @@ static void shutdown(int sig)
 	NFO("Received signal, terminating.");
 #ifdef HAVE_ALSA
 	if (use_alsa) {
-		shutdown_ALSA();
+		shutdown_ALSA(controller);
 	}
 #endif
 #ifdef HAVE_JACK
@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
 #ifdef HAVE_ALSA
 		case ALSA:
 			if (c->type == AUX) break;
-			c->param1 = setup_ALSA_elem(c->param1);
+			setup_ALSA_elem(c);
 			// fall-through
 #endif
 		case JACK:
@@ -297,8 +297,8 @@ int main(int argc, char *argv[])
 #ifdef HAVE_ALSA
 #  ifdef HAVE_OSC
 		case SLAVE:
-			c->param1 = setup_ALSA_elem(c->param1);
-			setup_SLAVE_handler(c->param2, c);
+			setup_ALSA_elem(c);
+			setup_SLAVE_handler(c);
 			break;
 #  endif
 #endif

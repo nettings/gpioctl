@@ -61,7 +61,24 @@ int setup_SLAVE(char* osc_url, void (*callback))
         return 0;
 }
 
-int setup_SLAVE_handler(char* path, void* data) {
+int setup_SLAVE_handler(void* data) {
+        char p[MAX_OSC];
+        char *path = p;
+        control_t *c = (control_t *) data;
+
+        switch (c->type) {
+                case ROTARY:
+                        path = strncpy(path, OSC_DELTA, MAX_OSC);
+                        break;
+
+                case SWITCH:
+                        path = strncpy(path, OSC_MUTE, MAX_OSC);;
+                        break;
+                case AUX:
+                default:
+                        ERR("c->type %d can't happen for OSC slaves. BUG?", c->type);
+                        break;
+        }
         DBG("Setting up SLAVE handler for '%s'.", path);
         lo_method m;
         m = lo_server_thread_add_method(server, path, "i", &handle_usermsg, data);

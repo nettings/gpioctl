@@ -24,6 +24,6 @@
 int setup_SLAVE(char* osc_url, void (*user_callback));
 int start_SLAVE();
 int shutdown_SLAVE();
-int setup_SLAVE_handler(char* path, void* data);
+int setup_SLAVE_handler(void* data);
 
 #endif

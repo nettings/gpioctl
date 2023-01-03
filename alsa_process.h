@@ -24,7 +24,7 @@
 
 int setup_ALSA();
 int shutdown_ALSA();
-snd_mixer_elem_t *setup_ALSA_elem(char *mixer_scontrol);
+snd_mixer_elem_t *setup_ALSA_elem(control_t *c);
 int get_ALSA_value(control_t* c);
 int update_ALSA(control_t* c);
 

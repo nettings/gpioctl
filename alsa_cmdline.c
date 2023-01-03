@@ -24,7 +24,8 @@
 
 void help_rotary_ALSA()
 {
-	printf("      ...,alsa,control[,step]\n");
+	printf("      ...,alsa,device,control[,step]\n");
+	printf("               device: an ALSA hardware device such as hw:1\n");
 	printf("               control: the name of a simple controller in ALSA mixer\n");
 	printf("               step: the step size in dB per click, default 3\n");
 }
@@ -33,16 +34,21 @@ int parse_cmdline_rotary_ALSA(control_t * c, char *config[])
 {
 	c->target = ALSA;
 	if (config[3] == NULL) {
+		ERR("device cannot be empty.");
+		return -1;
+	}
+	c->param2 = strncpy(c->param2, config[3], MAXNAME);
+	if (config[4] == NULL) {
 		ERR("control cannot be empty.");
 		return -1;
 	}
-	c->param1 = strncpy(c->param1, config[3], MAXNAME);
-	if (config[4] == NULL) {
+	c->param1 = strncpy(c->param1, config[4], MAXNAME);
+	if (config[5] == NULL) {
 		c->step = 3;
 	} else {
-		c->step = atoi(config[4]);
+		c->step = atoi(config[5]);
 	}
-	if (config[5] != NULL) {
+	if (config[6] != NULL) {
 		ERR("Too many arguments.");
 		return -1;
 	}
@@ -55,7 +61,8 @@ int parse_cmdline_rotary_ALSA(control_t * c, char *config[])
 
 void help_switch_ALSA()
 {
-	printf("      ...,alsa,control\n");
+	printf("      ...,alsa,device,control\n");
+	printf("               device:  the name of an ALSA hardware device, such as hw:1\n");
 	printf("               control: the name of a simple controller in ALSA mixer\n");
 	printf("                        (switch will operate the MUTE function)\n");
 }
@@ -64,11 +71,16 @@ int parse_cmdline_switch_ALSA(control_t * c, char *config[])
 {
 	c->target = ALSA;
 	if (config[2] == NULL) {
+		ERR("device cannot be empty.");
+		return -1;
+	}
+	c->param2 = strncpy(c->param2, config[2], MAXNAME);
+	if (config[3] == NULL) {
 		ERR("control cannot be empty.");
 		return -1;
 	}
-	c->param1 = strncpy(c->param1, config[2], MAXNAME);
-	if (config[3] != NULL) {
+	c->param1 = strncpy(c->param1, config[3], MAXNAME);
+	if (config[4] != NULL) {
 		ERR("Too many arguments.");
 		return -1;
 	}

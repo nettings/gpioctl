@@ -21,47 +21,63 @@
 #include <alsa/mixer.h>
 #include "globals.h"
 
-static snd_mixer_t *mixer_handle = NULL;
-char alsa_card[MAXNAME] = ALSA_CARD;
 
 int setup_ALSA()
 {
-	int err;
+	//noop, now done per control
+}
 
-	DBG("Setting up ALSA mixer handle.");
-	err = snd_mixer_open(&mixer_handle, 0);
-	if (err) {
-		ERR("Error opening mixer: %s.", snd_strerror(err));
-		return err;
+int shutdown_ALSA(control_t **controllers)
+{
+	DBG("Shutting down ALSA handles.");
+	control_t *c;
+	for (int i=0; i<NCONTROLLERS; i++) {
+		DBG("Controller #%d:",i);
+		c = controllers[i];
+		if (c == NULL) continue;
+		DBG("\ttarget is %s, type is %s", control_targets[c->target], control_types[c->type]);
+		if (c->target == ALSA || c->target == SLAVE) {
+			if (c->param2 != NULL) {
+				snd_mixer_close(c->param2);
+				DBG("Freed mixer handle for controller #%d.", i);
+			} else {
+				ERR("No mixer handle in controller #%d.", i);
+			}
+		}
 	}
-	snd_mixer_attach(mixer_handle, alsa_card);
-	snd_mixer_selem_register(mixer_handle, NULL, NULL);
-	snd_mixer_load(mixer_handle);
 	return 0;
 }
 
-int shutdown_ALSA()
+snd_mixer_elem_t *setup_ALSA_elem(control_t * c)
 {
-	DBG("Shutting down ALSA mixer.");
-	snd_mixer_close(mixer_handle);
-	return 0;
-}
-
-snd_mixer_elem_t *setup_ALSA_elem(char *mixer_scontrol)
-{
-	DBG("Getting ALSA mixer handle for %s.", mixer_scontrol);
+	int err;
+	snd_mixer_t *mixer_handle;
 	snd_mixer_selem_id_t *sid;
 	snd_mixer_elem_t *elem;
 
-	snd_mixer_selem_id_alloca(&sid);
-	snd_mixer_selem_id_set_index(sid, 0);
-	snd_mixer_selem_id_set_name(sid, mixer_scontrol);
-	elem = snd_mixer_find_selem(mixer_handle, sid);
-	if (elem == NULL) {
-		ERR("ALSA error: could not find mixer simple element %s.",
-		    mixer_scontrol);
+	DBG("Setting up ALSA mixer handle for device %s.", c->param2);
+	err = snd_mixer_open(&mixer_handle, 0);
+	if (err) {
+		ERR("Error opening mixer: %s.", snd_strerror(err));
 		return NULL;
 	}
+	snd_mixer_attach(mixer_handle, c->param2);
+	snd_mixer_selem_register(mixer_handle, NULL, NULL);
+	snd_mixer_load(mixer_handle);
+
+	DBG("Getting ALSA mixer handle for %s.", c->param1);
+	snd_mixer_selem_id_alloca(&sid);
+	snd_mixer_selem_id_set_index(sid, 0);
+	snd_mixer_selem_id_set_name(sid, c->param1);
+	elem = snd_mixer_find_selem(mixer_handle, sid);
+	if (elem == NULL) {
+		ERR("ALSA error: could not find mixer simple element %s.", c->param1);
+		return NULL;
+	}
+	// is sid now expendable? or do we have to hold on to it while we use elem?
+	//snd_mixer_selem_id_free(sid);
+	// store mixer handle in control structure for use
+	c->param2 = (snd_mixer_t *) mixer_handle;
 	return elem;
 }
 
@@ -100,7 +116,7 @@ int get_ALSA_value(control_t* c)
 
 	// make sure we're aware of mixer changes from elsewhere
 	// (https://www.raspberrypi.org/forums/viewtopic.php?p=1165130)
-	snd_mixer_handle_events(mixer_handle);
+	snd_mixer_handle_events(c->param2);
         switch (c->type) {
         case ROTARY:
                 // ALSA handles level in milliBel!

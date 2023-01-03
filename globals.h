@@ -42,9 +42,10 @@
 #define MIDI_CC 0xb
 #define MSG_SIZE 3
 #define MAXNAME 64
-#define ALSA_CARD "default"
+#define MAX_ALSADEV 10
 #define JACK_BUFSIZE 4096
 
+#define MAX_OSC 128
 #define OSC_DELTA "/" PROGRAM_NAME "/delta"
 #define OSC_MUTE "/" PROGRAM_NAME "/mute"
 
